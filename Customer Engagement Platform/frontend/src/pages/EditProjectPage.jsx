@@ -1,0 +1,734 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import {
+  ArrowLeft,
+  Save,
+  X,
+  Upload,
+  Plus,
+  Trash2,
+  MapPin,
+  Building2,
+  Calendar,
+  IndianRupee,
+  FileText,
+  Image,
+  CheckCircle,
+  AlertCircle,
+  QrCode
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Badge } from '../components/ui/badge';
+
+import projectService from '../services/projectService';
+
+const EditProjectPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [configurations, setConfigurations] = useState([]);
+  const [amenities, setAmenities] = useState([]);
+  const [newAmenity, setNewAmenity] = useState('');
+  const [images, setImages] = useState([]);
+  const [upiQRCode, setUpiQRCode] = useState(null);
+  const [rawProject, setRawProject] = useState(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset
+  } = useForm();
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        setLoading(true);
+        const data = await projectService.getProject(id);
+        const proj = data.data?.data || data.data || data;
+
+        reset({
+          name: proj.name,
+          location: proj.location?.address || proj.location,
+          area: proj.area,
+          type: proj.type || 'Apartment',
+          builder: proj.builder,
+          rera: proj.reraId || proj.rera,
+          status: proj.status,
+          possession: proj.possession,
+          deliveryDate: proj.completionDate ? new Date(proj.completionDate).toISOString().split('T')[0] : proj.deliveryDate,
+          minPrice: proj.pricing?.basePrice ? proj.pricing.basePrice / 100000 : proj.price?.min,
+          maxPrice: proj.pricing?.basePrice ? (proj.pricing.basePrice / 100000) + 10 : proj.price?.max, // Approximate max
+          commissionPercentage: proj.pricing?.commissionPercentage || 2,
+          gstRate: proj.pricing?.gstRate || 18,
+          gstType: proj.pricing?.gstType || 'exclusive',
+          description: proj.description
+        });
+
+        setConfigurations(proj.configurations || []);
+        setAmenities((proj.amenities || []).map(a => typeof a === 'string' ? a : (a.name || '')));
+        setImages(proj.images || []);
+        setUpiQRCode(proj.pricing?.upiQRCode || null);
+        setRawProject(proj);
+      } catch (error) {
+        console.error('Failed to fetch project:', error);
+        toast.error('Failed to load project details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProject();
+  }, [id, reset]);
+
+  const onSubmit = async (data) => {
+    try {
+      setSaving(true);
+      const payload = {
+        name: data.name,
+        type: data.type,
+        builder: data.builder,
+        possession: data.possession,
+        status: data.status,
+        area: data.area,
+        description: data.description,
+        reraId: data.rera || undefined, // Send as undefined if empty to avoid sending empty string
+        completionDate: data.deliveryDate || undefined, // Send as undefined if empty
+        pricing: {
+          basePrice: Number(data.minPrice) * 100000,
+          commissionPercentage: Number(data.commissionPercentage) || 2,
+          gstRate: Number(data.gstRate) || 18,
+          gstType: data.gstType || 'exclusive',
+          upiQRCode: upiQRCode
+        },
+        location: {
+          address: data.location,
+          latitude: 12.9716, // Default coordinate if not provided
+          longitude: 77.5946
+        },
+        configurations: configurations.map(c => ({
+          ...c,
+          price: c.price.toString().includes('Lac') ? c.price : (c.price.toString().includes('L') ? c.price : `${c.price} Lac`)
+        })),
+        amenities: amenities.map(name => ({ name })),
+        images: images
+      };
+
+      await projectService.updateProject(id, payload);
+      toast.success('Project updated successfully!');
+      navigate('/admin/projects');
+    } catch (error) {
+      console.error('Failed to update project:', error);
+      const msg = error.response?.data?.message || error.response?.data?.error || 'Failed to update project';
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleAddAmenity = (e) => {
+    e.preventDefault();
+    if (newAmenity.trim() && !amenities.includes(newAmenity.trim())) {
+      setAmenities([...amenities, newAmenity.trim()]);
+      setNewAmenity('');
+      toast.success('Amenity added');
+    }
+  };
+
+  const handleRemoveAmenity = (amenity) => {
+    setAmenities(amenities.filter(a => a !== amenity));
+    toast.success('Amenity removed');
+  };
+
+  const handleAddConfiguration = () => {
+    setConfigurations([
+      ...configurations,
+      { type: '', area: '', price: '', available: 0 }
+    ]);
+  };
+
+  const handleRemoveConfiguration = (index) => {
+    setConfigurations(configurations.filter((_, i) => i !== index));
+    toast.success('Configuration removed');
+  };
+
+  const handleConfigurationChange = (index, field, value) => {
+    const updated = [...configurations];
+    updated[index][field] = value;
+    setConfigurations(updated);
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    // In production, these would be uploaded to a server
+    const newImages = files.map(file => ({
+      id: Date.now() + Math.random(),
+      name: file.name,
+      url: URL.createObjectURL(file)
+    }));
+    setImages([...images, ...newImages]);
+    toast.success(`${files.length} image(s) added`);
+  };
+
+  const handleRemoveImage = (imageId) => {
+    setImages(images.filter(img => img.id !== imageId));
+    toast.success('Image removed');
+  };
+
+  const handleQRUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Mock upload for now - in production use projectService.uploadImage
+      setUpiQRCode({
+        url: URL.createObjectURL(file),
+        name: file.name
+      });
+      toast.success('UPI QR Code uploaded locally');
+    }
+  };
+
+  const handleRemoveQR = () => {
+    setUpiQRCode(null);
+    toast.success('QR Code removed');
+  };
+
+  const getTimeAgo = (date) => {
+    if (!date) return 'Never';
+    const now = new Date();
+    const then = new Date(date);
+    const diff = now - then;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                className="text-white hover:bg-white/20"
+                onClick={() => navigate(-1)}
+              >
+                <ArrowLeft className="h-5 w-5 mr-2" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold">Edit Project</h1>
+                <p className="text-white/80">Update project information</p>
+              </div>
+            </div>
+            <Badge className="bg-white/20 text-white">
+              Project ID: #{id}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Main Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Basic Information */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <Building2 className="h-5 w-5 mr-2" />
+                  Basic Information
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Project Name *
+                    </label>
+                    <Input
+                      {...register('name', { required: 'Project name is required' })}
+                      placeholder="Enter project name"
+                    />
+                    {errors.name && (
+                      <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Location *
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        {...register('location', { required: 'Location is required' })}
+                        placeholder="Enter location"
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.location && (
+                      <p className="text-red-500 text-xs mt-1">{errors.location.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Property Type *
+                    </label>
+                    <select
+                      {...register('type', { required: 'Type is required' })}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="Apartment">Apartment</option>
+                      <option value="Villa">Villa</option>
+                      <option value="Plot">Plot</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Builder Name *
+                    </label>
+                    <Input
+                      {...register('builder', { required: 'Builder name is required' })}
+                      placeholder="Enter builder name"
+                    />
+                    {errors.builder && (
+                      <p className="text-red-500 text-xs mt-1">{errors.builder.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      RERA Number
+                    </label>
+                    <Input
+                      {...register('rera')}
+                      placeholder="Enter RERA registration number"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Status *
+                    </label>
+                    <select
+                      {...register('status', { required: 'Status is required' })}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="upcoming">Upcoming</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="completed">Completed</option>
+                      <option value="ongoing">Ongoing</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Possession Status
+                    </label>
+                    <select
+                      {...register('possession')}
+                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="Ready to Move">Ready to Move</option>
+                      <option value="Under Construction">Under Construction</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Delivery Date
+                    </label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="date"
+                        {...register('deliveryDate')}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Pricing */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <IndianRupee className="h-5 w-5 mr-2" />
+                  Pricing Range
+                </h2>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Minimum Price (in Lac) *
+                    </label>
+                    <Input
+                      type="number"
+                      {...register('minPrice', {
+                        required: 'Minimum price is required',
+                        min: { value: 0, message: 'Price must be positive' }
+                      })}
+                      placeholder="e.g., 75"
+                    />
+                    {errors.minPrice && (
+                      <p className="text-red-500 text-xs mt-1">{errors.minPrice.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Maximum Price (in Lac) *
+                    </label>
+                    <Input
+                      type="number"
+                      {...register('maxPrice', {
+                        required: 'Maximum price is required',
+                        min: { value: 0, message: 'Price must be positive' }
+                      })}
+                      placeholder="e.g., 125"
+                    />
+                    {errors.maxPrice && (
+                      <p className="text-red-500 text-xs mt-1">{errors.maxPrice.message}</p>
+                    )}
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-2 text-purple-600 font-bold">
+                      Platform Commission (%) *
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      {...register('commissionPercentage', {
+                        required: 'Commission is required',
+                        min: { value: 0, message: 'Commission must be positive' }
+                      })}
+                      placeholder="e.g., 2"
+                      className="border-purple-200 focus:ring-purple-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Percentage the platform earns per sale/installment.</p>
+                    {errors.commissionPercentage && (
+                      <p className="text-red-500 text-xs mt-1">{errors.commissionPercentage.message}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-indigo-600 font-bold">
+                      GST Rate (%) *
+                    </label>
+                    <Input
+                      type="number"
+                      step="1"
+                      {...register('gstRate', {
+                        required: 'GST Rate is required',
+                        min: { value: 0, message: 'GST Rate must be positive' }
+                      })}
+                      placeholder="e.g., 18"
+                      className="border-indigo-200 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-indigo-600 font-bold">
+                      GST Type *
+                    </label>
+                    <select
+                      {...register('gstType')}
+                      className="w-full px-3 py-2 border border-indigo-200 rounded-lg dark:bg-gray-800 focus:ring-indigo-500"
+                    >
+                      <option value="exclusive">Exclusive (Add on top)</option>
+                      <option value="inclusive">Inclusive (Deduct from commission)</option>
+                    </select>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Description */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Description
+                </h2>
+                <textarea
+                  {...register('description', { required: 'Description is required' })}
+                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="4"
+                  placeholder="Enter project description..."
+                />
+                {errors.description && (
+                  <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>
+                )}
+              </Card>
+
+              {/* Amenities */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Amenities
+                </h2>
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    value={newAmenity}
+                    onChange={e => setNewAmenity(e.target.value)}
+                    placeholder="e.g. Gym, Swimming Pool"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddAmenity(e)}
+                  />
+                  <Button type="button" onClick={handleAddAmenity}>Add</Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {amenities.map(amenity => (
+                    <Badge key={amenity} variant="secondary" className="flex items-center gap-1 py-1.5 px-3">
+                      {amenity}
+                      <X className="h-3 w-3 cursor-pointer hover:text-red-500" onClick={() => handleRemoveAmenity(amenity)} />
+                    </Badge>
+                  ))}
+                  {amenities.length === 0 && (
+                    <p className="text-sm text-gray-400 italic">No amenities added yet.</p>
+                  )}
+                </div>
+              </Card>
+
+              {/* Configurations */}
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Configurations</h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddConfiguration}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Configuration
+                  </Button>
+                </div>
+                <div className="space-y-4">
+                  {configurations.map((config, index) => (
+                    <div key={index} className="p-4 border rounded-lg">
+                      <div className="grid md:grid-cols-4 gap-3">
+                        <Input
+                          placeholder="Type (e.g., 2 BHK)"
+                          value={config.type}
+                          onChange={(e) => handleConfigurationChange(index, 'type', e.target.value)}
+                        />
+                        <Input
+                          placeholder="Area (e.g., 1200 sq.ft)"
+                          value={config.area}
+                          onChange={(e) => handleConfigurationChange(index, 'area', e.target.value)}
+                        />
+                        <Input
+                          placeholder="Price (e.g., 75 Lac)"
+                          value={config.price}
+                          onChange={(e) => handleConfigurationChange(index, 'price', e.target.value)}
+                        />
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            placeholder="Units"
+                            value={config.available}
+                            onChange={(e) => handleConfigurationChange(index, 'available', e.target.value)}
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => handleRemoveConfiguration(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {configurations.length === 0 && (
+                    <p className="text-gray-500 text-center py-4">
+                      No configurations added. Click "Add Configuration" to start.
+                    </p>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Sidebar */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* UPI QR Code */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <QrCode className="h-5 w-5 mr-2" />
+                  Owner UPI QR Code
+                </h2>
+                <div className="space-y-4">
+                  {!upiQRCode ? (
+                    <label className="block">
+                      <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-indigo-300 border-dashed rounded-lg appearance-none cursor-pointer hover:border-indigo-400 focus:outline-none">
+                        <div className="flex flex-col items-center space-y-2">
+                          <Upload className="h-8 w-8 text-indigo-400" />
+                          <span className="text-sm text-gray-600">
+                            Upload Owner's Payment QR
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleQRUpload}
+                      />
+                    </label>
+                  ) : (
+                    <div className="relative group rounded-xl overflow-hidden border-2 border-indigo-100 p-2">
+                      <img
+                        src={upiQRCode.url}
+                        alt="UPI QR"
+                        className="w-full h-48 object-contain rounded-lg"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleRemoveQR}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Remove QR
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-center mt-2 text-indigo-600 font-bold uppercase tracking-widest italic">Official Payment QR</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Image Upload */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <Image className="h-5 w-5 mr-2" />
+                  Project Images
+                </h2>
+                <div className="space-y-4">
+                  <label className="block">
+                    <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-lg appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+                      <div className="flex flex-col items-center space-y-2">
+                        <Upload className="h-8 w-8 text-gray-400" />
+                        <span className="text-sm text-gray-600">
+                          Drop files or click to upload
+                        </span>
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                    />
+                  </label>
+
+                  {images.length > 0 && (
+                    <div className="space-y-2">
+                      {images.map((image) => (
+                        <div key={image.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <span className="text-sm truncate flex-1">{image.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveImage(image.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Actions */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Actions</h2>
+                <div className="space-y-3">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <>
+                        <motion.div
+                          className="h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => reset()}
+                  >
+                    Reset Form
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to cancel? All changes will be lost.')) {
+                        navigate(-1);
+                      }
+                    }}
+                  >
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                </div>
+              </Card>
+
+              {/* Status */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Status</h2>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Last Updated</span>
+                    <span className="text-sm font-medium">{rawProject ? getTimeAgo(rawProject.updatedAt) : '-'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Created</span>
+                    <span className="text-sm font-medium">Jan 14, 2026</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Views</span>
+                    <span className="text-sm font-medium">{rawProject?.views?.toLocaleString() || 0}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Enquiries</span>
+                    <span className="text-sm font-medium">{rawProject?.enquiryCount || 0}</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default EditProjectPage;

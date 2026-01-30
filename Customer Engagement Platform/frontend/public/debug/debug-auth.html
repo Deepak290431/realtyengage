@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+
+        .error {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .success {
+            border-left-color: #28a745;
+            background: #f0fff4;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .danger {
+            background: #dc3545;
+        }
+
+        .danger:hover {
+            background: #c82333;
+        }
+
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 RealtyEngage Auth Debug Tool</h1>
+
+        <div id="status"></div>
+
+        <div style="margin: 20px 0;">
+            <button onclick="checkLocalStorage()">Check LocalStorage</button>
+            <button onclick="testProfileEndpoint()">Test Profile Endpoint</button>
+            <button onclick="clearStorage()" class="danger">Clear LocalStorage</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        function showResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            resultsDiv.innerHTML += `<div class="info-box ${className}">${message}</div>`;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function checkLocalStorage() {
+            clearResults();
+            showResult('<h3>LocalStorage Contents:</h3>');
+
+            const token = localStorage.getItem('token');
+            const refreshToken = localStorage.getItem('refreshToken');
+            const user = localStorage.getItem('user');
+
+            if (token) {
+                showResult(`<strong>Token:</strong> ${token.substring(0, 50)}...`, 'success');
+
+                // Decode JWT (basic decode, not verification)
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    showResult(`<strong>Token Payload:</strong><pre>${JSON.stringify(payload, null, 2)}</pre>`, 'info');
+
+                    // Check if expired
+                    const now = Math.floor(Date.now() / 1000);
+                    if (payload.exp && payload.exp < now) {
+                        showResult(`<strong>⚠️ Token is EXPIRED!</strong> Expired at: ${new Date(payload.exp * 1000).toLocaleString()}`, 'error');
+                    } else if (payload.exp) {
+                        showResult(`<strong>✓ Token is valid</strong> Expires at: ${new Date(payload.exp * 1000).toLocaleString()}`, 'success');
+                    }
+                } catch (e) {
+                    showResult(`<strong>Error decoding token:</strong> ${e.message}`, 'error');
+                }
+            } else {
+                showResult('<strong>No token found</strong>', 'error');
+            }
+
+            if (refreshToken) {
+                showResult(`<strong>Refresh Token:</strong> ${refreshToken.substring(0, 50)}...`, 'info');
+            } else {
+                showResult('<strong>No refresh token found</strong>', 'error');
+            }
+
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    showResult(`<strong>User Data:</strong><pre>${JSON.stringify(userData, null, 2)}</pre>`, 'success');
+                } catch (e) {
+                    showResult(`<strong>Error parsing user data:</strong> ${e.message}`, 'error');
+                }
+            } else {
+                showResult('<strong>No user data found</strong>', 'error');
+            }
+        }
+
+        async function testProfileEndpoint() {
+            clearResults();
+            showResult('<h3>Testing Profile Endpoint:</h3>');
+
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                showResult('<strong>No token found!</strong> Please login first.', 'error');
+                return;
+            }
+
+            try {
+                showResult('Sending request to /api/auth/profile...', 'info');
+
+                const response = await fetch(`${API_URL}/auth/profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                showResult(`<strong>Response Status:</strong> ${response.status} ${response.statusText}`,
+                    response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+                showResult(`<strong>Response Data:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`,
+                    response.ok ? 'success' : 'error');
+
+                if (!response.ok) {
+                    showResult('<strong>💡 Suggestions:</strong><ul>' +
+                        '<li>If token is expired: Clear localStorage and login again</li>' +
+                        '<li>If user not found: The user may have been deleted from database</li>' +
+                        '<li>If 500 error: Check backend server logs</li>' +
+                        '</ul>', 'error');
+                }
+            } catch (error) {
+                showResult(`<strong>Network Error:</strong> ${error.message}`, 'error');
+                showResult('<strong>💡 Possible causes:</strong><ul>' +
+                    '<li>Backend server is not running</li>' +
+                    '<li>CORS issue</li>' +
+                    '<li>Network connectivity problem</li>' +
+                    '</ul>', 'error');
+            }
+        }
+
+        function clearStorage() {
+            if (confirm('Are you sure you want to clear all localStorage data?')) {
+                localStorage.clear();
+                clearResults();
+                showResult('<strong>✓ LocalStorage cleared!</strong> You can now login again.', 'success');
+            }
+        }
+
+        // Auto-check on load
+        window.onload = function () {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+
+</html>
