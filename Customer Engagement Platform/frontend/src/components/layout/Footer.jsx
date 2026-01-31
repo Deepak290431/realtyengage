@@ -43,10 +43,10 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
+    <footer className="bg-[#020617] text-white mt-auto">
       {/* Newsletter Section */}
       <div className="border-b border-gray-800">
-        <div className="w-full px-4 md:px-10 lg:px-16 py-8">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-semibold mb-1">Stay Updated</h3>
@@ -58,7 +58,7 @@ const Footer = () => {
                 placeholder="Enter your email"
                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 w-full md:min-w-[300px]"
               />
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+              <Button className="bg-primary hover:bg-primary/90 text-white">
                 Subscribe
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -68,13 +68,13 @@ const Footer = () => {
       </div>
 
       {/* Main Footer Content */}
-      <div className="w-full px-4 md:px-10 lg:px-16 py-12">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center space-x-2 mb-4">
               <Building className="h-8 w-8 text-blue-400" />
-              <span className="text-2xl font-bold">RealtyEngage</span>
+              <span className="text-2xl font-black brand-font tracking-tight">RealtyEngage</span>
             </Link>
             <p className="text-gray-400 mb-4 pr-4">
               Your trusted partner in real estate. We provide premium villa projects,
@@ -180,7 +180,7 @@ const Footer = () => {
 
       {/* Bottom Bar */}
       <div className="bg-gray-950 py-4">
-        <div className="w-full px-4 md:px-10 lg:px-16">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <div className="flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
             <p className="flex items-center">
               © {currentYear} RealtyEngage. All rights reserved. Made with

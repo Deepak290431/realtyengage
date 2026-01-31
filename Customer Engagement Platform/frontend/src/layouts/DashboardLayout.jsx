@@ -9,7 +9,7 @@ const DashboardLayout = ({ isAdmin = false }) => {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', pt: isAdmin ? { xs: '64px', lg: 0 } : '64px' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', pt: isAdmin ? { xs: '96px', lg: 0 } : '64px' }}>
       {(!isAdmin) ? <Header /> : <div className="lg:hidden"><Header /></div>}
       {isAdmin && <AdminSidebar onToggleChatbot={() => setIsChatbotOpen(true)} />}
       <Box
@@ -20,7 +20,9 @@ const DashboardLayout = ({ isAdmin = false }) => {
           width: { lg: isAdmin ? `calc(100% - 288px)` : '100%' },
           minHeight: '100vh',
           display: 'flex',
-          flexDirection: 'column'
+          flexDirection: 'column',
+          overflowX: 'hidden',
+          minWidth: 0
         }}
       >
         <div className="flex-1 w-full relative">

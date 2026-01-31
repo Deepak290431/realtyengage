@@ -196,7 +196,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <section className="relative overflow-hidden bg-[#F8FAFC] dark:bg-gray-950">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="w-full px-4 md:px-16 lg:px-24 py-16 md:py-24 relative z-10">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
@@ -211,7 +211,7 @@ const HomePage = () => {
               </Badge>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 md:mb-8 leading-[1.1] bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                 Find Your Dream Home with{' '}
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="text-primary">
                   RealtyEngage
                 </span>
               </h1>
@@ -221,7 +221,7 @@ const HomePage = () => {
               </p>
               <div className="flex flex-wrap gap-5 mb-10">
                 <Button
-                  className="h-14 px-8 text-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-xl shadow-blue-500/20"
+                  className="h-14 px-8 text-lg bg-primary hover:bg-primary/90 shadow-xl shadow-blue-500/20"
                   onClick={() => navigate('/projects')}
                 >
                   <Home className="mr-3 h-6 w-6" />
@@ -311,7 +311,7 @@ const HomePage = () => {
                   transition={{ delay: index * 0.1 }}
                   className="text-center"
                 >
-                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white mb-4">
+                  <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary text-white mb-4">
                     <Icon className="h-6 w-6" />
                   </div>
                   <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
@@ -447,7 +447,7 @@ const HomePage = () => {
             <Button
               size="lg"
               onClick={() => navigate('/projects')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               View All Projects
               <ArrowRight className="ml-2 h-5 w-5" />
@@ -519,7 +519,7 @@ const HomePage = () => {
                 />
                 <div className="flex justify-center mb-4">
                   {[...Array(testimonials[currentTestimonial].rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    <Star key={i} className="h-5 w-5 text-primary fill-current" />
                   ))}
                 </div>
                 <p className="text-lg text-gray-600 dark:text-gray-400 mb-6 italic">
@@ -536,7 +536,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="py-20 hero-gradient">
         <div className="w-full px-4 md:px-10 lg:px-16 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

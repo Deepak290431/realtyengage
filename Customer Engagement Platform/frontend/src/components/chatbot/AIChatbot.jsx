@@ -67,7 +67,7 @@ const AIChatbot = ({ isOpen, onClose }) => {
     try {
       // Call real API
       const response = await chatbotAPI.sendMessage(inputMessage);
-      
+
       const botResponse = {
         id: messages.length + 2,
         type: 'bot',
@@ -77,14 +77,14 @@ const AIChatbot = ({ isOpen, onClose }) => {
       };
 
       setMessages(prev => [...prev, botResponse]);
-      
+
       // Update quick actions if provided
       if (response.quickActions || response.data?.quickActions) {
         setQuickActions(response.quickActions || response.data.quickActions);
       }
     } catch (error) {
       console.error('Chatbot error:', error);
-      
+
       // Fallback response
       const botResponse = {
         id: messages.length + 2,
@@ -92,7 +92,7 @@ const AIChatbot = ({ isOpen, onClose }) => {
         text: 'I apologize for the inconvenience. I\'m having trouble processing your request. Please try again or contact our support team directly at +91-9876543210.',
         timestamp: new Date(),
       };
-      
+
       setMessages(prev => [...prev, botResponse]);
     } finally {
       setIsTyping(false);
@@ -120,7 +120,7 @@ const AIChatbot = ({ isOpen, onClose }) => {
       >
         <Card className="shadow-2xl border-0 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4">
+          <div className="hero-gradient text-white p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
@@ -164,21 +164,18 @@ const AIChatbot = ({ isOpen, onClose }) => {
                     key={message.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${
-                      message.type === 'user' ? 'justify-end' : 'justify-start'
-                    }`}
+                    className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'
+                      }`}
                   >
                     <div
-                      className={`flex items-start space-x-3 max-w-[80%] ${
-                        message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                      }`}
+                      className={`flex items-start space-x-3 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
+                        }`}
                     >
                       <div
-                        className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${
-                          message.type === 'user'
-                            ? 'bg-gradient-to-r from-blue-600 to-purple-600'
+                        className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${message.type === 'user'
+                            ? 'bg-primary'
                             : 'bg-gray-200 dark:bg-gray-700'
-                        }`}
+                          }`}
                       >
                         {message.type === 'user' ? (
                           <User className="h-4 w-4 text-white" />
@@ -188,11 +185,10 @@ const AIChatbot = ({ isOpen, onClose }) => {
                       </div>
                       <div className="flex-1">
                         <div
-                          className={`rounded-lg p-3 ${
-                            message.type === 'user'
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                          className={`rounded-lg p-3 ${message.type === 'user'
+                              ? 'bg-primary text-white'
                               : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
-                          }`}
+                            }`}
                         >
                           <div className="text-sm whitespace-pre-wrap">{message.text}</div>
                           {message.type === 'bot' && (
@@ -270,7 +266,7 @@ const AIChatbot = ({ isOpen, onClose }) => {
                   <Button
                     type="submit"
                     disabled={!inputMessage.trim() || isTyping}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    className="bg-primary hover:bg-primary/90 text-white"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

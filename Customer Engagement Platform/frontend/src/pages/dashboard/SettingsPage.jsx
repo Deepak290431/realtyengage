@@ -17,7 +17,7 @@ import { Badge } from '../../components/ui/badge';
 const Toggle = ({ checked, onChange }) => (
     <button
         onClick={() => onChange(!checked)}
-        className={`w-11 h-6 rounded-full transition-colors flex items-center px-1 ${checked ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
+        className={`w-11 h-6 rounded-full transition-colors flex items-center px-1 ${checked ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'
             }`}
     >
         <div
@@ -126,21 +126,20 @@ const SettingsPage = () => {
         { id: 'general', label: 'General', icon: Globe },
         { id: 'property', label: 'Property', icon: Home },
         { id: 'payment', label: 'Payments', icon: CreditCard },
-        { id: 'notification', label: 'Notifications', icon: Bell },
         { id: 'roles', label: 'Roles & Permissions', icon: Shield },
     ];
 
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
         )
     }
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12">
-            <div className="container mx-auto px-4 py-8">
+            <div className="w-full px-4 md:px-6 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent flex items-center gap-3">
@@ -151,7 +150,7 @@ const SettingsPage = () => {
                             Control platform-wide configurations and preferences.
                         </p>
                     </div>
-                    <Button onClick={handleSave} disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">
+                    <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 shadow-lg px-8">
                         {saving ? 'Saving...' : (
                             <>
                                 <Save className="h-4 w-4 mr-2" /> Save Changes
@@ -169,11 +168,11 @@ const SettingsPage = () => {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id
-                                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300 shadow-sm'
+                                        ? 'bg-blue-50 text-primary dark:bg-blue-900/20 dark:text-blue-300 shadow-sm'
                                         : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                                         }`}
                                 >
-                                    <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? 'text-indigo-600' : 'text-gray-400'}`} />
+                                    <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? 'text-primary' : 'text-gray-400'}`} />
                                     {tab.label}
                                 </button>
                             ))}
@@ -192,7 +191,7 @@ const SettingsPage = () => {
                                 <div className="space-y-6">
                                     <Card className="p-6 border-none shadow-md">
                                         <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                            <Smartphone className="h-5 w-5 text-indigo-500" /> App Details
+                                            <Smartphone className="h-5 w-5 text-primary" /> App Details
                                         </h2>
                                         <div className="grid md:grid-cols-2 gap-6">
                                             <div className="space-y-2">
@@ -237,7 +236,7 @@ const SettingsPage = () => {
                                                     <Input
                                                         type="color"
                                                         className="w-20 h-10 p-1"
-                                                        value={settings.general?.brandColors?.primary || '#4f46e5'}
+                                                        value={settings.general?.brandColors?.primary || '#2563eb'}
                                                         onChange={(e) => updateNestedSetting('general', 'brandColors', 'primary', e.target.value)}
                                                     />
                                                     <span className="text-sm text-gray-500 uppercase">{settings.general?.brandColors?.primary}</span>
@@ -291,7 +290,7 @@ const SettingsPage = () => {
                                             <label className="text-sm font-medium">Property Categories</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {(settings.property?.categories || ['Residential', 'Commercial']).map((cat, i) => (
-                                                    <div key={i} className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-sm font-medium">
+                                                    <div key={i} className="px-3 py-1 bg-blue-100 text-primary rounded-full text-sm font-medium">
                                                         {cat}
                                                     </div>
                                                 ))}
@@ -351,13 +350,13 @@ const SettingsPage = () => {
                                                                 key={gw}
                                                                 onClick={() => updateSetting('payment', 'gateway', gw)}
                                                                 className={`cursor-pointer p-4 border rounded-xl flex items-center gap-3 transition-all ${settings.payment?.gateway === gw
-                                                                    ? 'border-indigo-600 bg-indigo-50 ring-1 ring-indigo-600'
-                                                                    : 'border-gray-200 hover:border-indigo-300'
+                                                                    ? 'border-primary bg-blue-50 ring-1 ring-primary'
+                                                                    : 'border-gray-200 hover:border-blue-300'
                                                                     }`}
                                                             >
-                                                                <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${settings.payment?.gateway === gw ? 'border-indigo-600' : 'border-gray-400'
+                                                                <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${settings.payment?.gateway === gw ? 'border-primary' : 'border-gray-400'
                                                                     }`}>
-                                                                    {settings.payment?.gateway === gw && <div className="h-2 w-2 rounded-full bg-indigo-600" />}
+                                                                    {settings.payment?.gateway === gw && <div className="h-2 w-2 rounded-full bg-primary" />}
                                                                 </div>
                                                                 <span className="capitalize font-medium">{gw}</span>
                                                             </div>
@@ -370,53 +369,18 @@ const SettingsPage = () => {
                                 </Card>
                             )}
 
-                            {activeTab === 'notification' && (
-                                <Card className="p-6 border-none shadow-md">
-                                    <h2 className="text-xl font-semibold mb-6">Notification Channels</h2>
-                                    <div className="space-y-6">
-                                        {[
-                                            { id: 'emailEnabled', label: 'Email Notifications', desc: 'Send updates via email' },
-                                            { id: 'whatsappEnabled', label: 'WhatsApp Alerts', desc: 'Send critical alerts via WhatsApp' }
-                                        ].map(item => (
-                                            <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                                <div>
-                                                    <p className="font-medium">{item.label}</p>
-                                                    <p className="text-sm text-gray-500">{item.desc}</p>
-                                                </div>
-                                                <Toggle
-                                                    checked={settings.notification?.[item.id]}
-                                                    onChange={(val) => updateSetting('notification', item.id, val)}
-                                                />
-                                            </div>
-                                        ))}
 
-                                        <div className="pt-4 border-t">
-                                            <h3 className="font-medium mb-4">Admin Alerts</h3>
-                                            <div className="flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-sm font-medium">New Enquiry Alert</p>
-                                                    <p className="text-xs text-gray-500">Notify admin when a new lead comes in</p>
-                                                </div>
-                                                <Toggle
-                                                    checked={settings.notification?.adminAlerts?.newEnquiry}
-                                                    onChange={(val) => updateNestedSetting('notification', 'adminAlerts', 'newEnquiry', val)}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </Card>
-                            )}
 
                             {activeTab === 'roles' && (
                                 <Card className="p-6 border-none shadow-md text-center py-12">
-                                    <div className="bg-purple-100 dark:bg-purple-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Shield className="h-8 w-8 text-purple-600" />
+                                    <div className="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Shield className="h-8 w-8 text-primary" />
                                     </div>
                                     <h3 className="text-xl font-bold mb-2">Advanced Role Management</h3>
                                     <p className="text-gray-500 max-w-md mx-auto mb-6">
                                         Granular permission controls for Staff, Sales, and Support roles will be available in the next update.
                                     </p>
-                                    <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-md px-4 py-1">
+                                    <Badge className="bg-blue-100 text-primary border-blue-200 text-md px-4 py-1">
                                         Coming Soon
                                     </Badge>
                                 </Card>

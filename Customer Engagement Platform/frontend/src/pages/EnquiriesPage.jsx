@@ -174,7 +174,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
     const getStatusColor = (status) => {
         switch (status) {
             case 'new': return 'text-blue-600 bg-blue-50 border-blue-200';
-            case 'in_progress': return 'text-purple-600 bg-purple-50 border-purple-200';
+            case 'in_progress': return 'text-primary bg-blue-50 border-blue-200';
             case 'follow_up': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
             case 'converted': return 'text-green-600 bg-green-50 border-green-200';
             case 'closed': return 'text-gray-600 bg-gray-50 border-gray-200';
@@ -193,13 +193,23 @@ const EnquiriesPage = ({ isAdmin = false }) => {
         }
     };
 
+    const cardVariants = [
+        { bar: 'bg-blue-600', bg: 'bg-blue-50/15', darkBg: 'dark:bg-blue-900/5', ring: 'ring-blue-100', darkRing: 'dark:ring-blue-900/20' },
+        { bar: 'bg-emerald-600', bg: 'bg-emerald-50/15', darkBg: 'dark:bg-emerald-900/5', ring: 'ring-emerald-100', darkRing: 'dark:ring-emerald-900/20' },
+        { bar: 'bg-purple-600', bg: 'bg-purple-50/15', darkBg: 'dark:bg-purple-900/5', ring: 'ring-purple-100', darkRing: 'dark:ring-purple-900/20' },
+        { bar: 'bg-amber-600', bg: 'bg-amber-50/15', darkBg: 'dark:bg-amber-900/5', ring: 'ring-amber-100', darkRing: 'dark:ring-amber-900/20' },
+        { bar: 'bg-rose-600', bg: 'bg-rose-50/15', darkBg: 'dark:bg-rose-900/5', ring: 'ring-rose-100', darkRing: 'dark:ring-rose-900/20' },
+        { bar: 'bg-indigo-600', bg: 'bg-indigo-50/15', darkBg: 'dark:bg-indigo-900/5', ring: 'ring-indigo-100', darkRing: 'dark:ring-indigo-900/20' },
+        { bar: 'bg-cyan-600', bg: 'bg-cyan-50/15', darkBg: 'dark:bg-cyan-900/5', ring: 'ring-cyan-100', darkRing: 'dark:ring-cyan-900/20' },
+    ];
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12">
             {/* Header Section */}
             {isAdmin ? (
                 <div className="w-full px-6 md:px-10 lg:px-16 py-8">
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                        <h1 className="text-3xl font-bold text-primary">
                             Enquiry Management
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -208,8 +218,8 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                     </div>
                 </div>
             ) : (
-                <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-12">
-                    <div className="w-full px-6 md:px-10 lg:px-16">
+                <div className="hero-gradient text-white py-12">
+                    <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16">
                         <div className="max-w-4xl mx-auto text-center">
                             <motion.h1
                                 initial={{ opacity: 0, y: 20 }}
@@ -233,7 +243,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                             >
                                 <Button
                                     size="lg"
-                                    className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold"
+                                    className="bg-white text-primary hover:bg-white/90 font-bold"
                                     onClick={() => setShowAddModal(true)}
                                 >
                                     <Plus className="h-5 w-5 mr-2" />
@@ -245,8 +255,8 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                 </div>
             )}
 
-            <div className={`w-full px-6 md:px-10 lg:px-16 ${isAdmin ? '' : 'mt-8'}`}>
-                <Card className="p-6 shadow-xl border-none bg-white/80 backdrop-blur-md dark:bg-gray-800/80 mb-8">
+            <div className={`${isAdmin ? 'w-full px-4 md:px-6' : 'max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12'} ${isAdmin ? '' : 'mt-8'}`}>
+                <Card className="p-6 shadow-xl border-none bg-white dark:bg-gray-800/80 mb-8 ring-1 ring-gray-200 dark:ring-gray-700">
                     <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                         <div className="relative flex-1 w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -289,156 +299,161 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                     </div>
                 ) : (
                     <div className="grid gap-6">
-                        {filteredEnquiries.map((enquiry) => (
-                            <motion.div
-                                key={enquiry._id}
-                                layout
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                            >
-                                <Card className="overflow-hidden hover:shadow-lg transition-shadow border-none shadow-md">
-                                    <div className="flex flex-col md:flex-row">
-                                        <div className={`w-2 md:w-3 ${getStatusColor(enquiry.status).split(' ')[1]}`}></div>
-                                        <div className="flex-1 p-6">
-                                            <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
-                                                <div>
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
-                                                            {enquiry.projectId?.name || 'Project Enquiry'}
-                                                        </h3>
-                                                        <Badge className={`${getStatusColor(enquiry.status)} border px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider`}>
-                                                            {enquiry.status.replace('_', ' ')}
-                                                        </Badge>
-                                                        <Badge variant="outline" className={`${getPriorityColor(enquiry.priority)} px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm`}>
-                                                            {enquiry.priority}
-                                                        </Badge>
-                                                        {enquiry.isOk && (
-                                                            <Badge className="bg-green-100 text-green-700 border-green-200 px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
-                                                                <CheckCircle className="h-3 w-3" /> OK TAG
+                        {filteredEnquiries.map((enquiry, index) => {
+                            const variant = cardVariants[index % cardVariants.length];
+                            return (
+                                <motion.div
+                                    key={enquiry._id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                >
+                                    <Card className={`overflow-hidden hover:shadow-xl transition-all border-none shadow-md ${variant.bg} ${variant.darkBg} ring-1 ${variant.ring} ${variant.darkRing}`}>
+                                        <div className="flex flex-col md:flex-row">
+                                            <div className={`w-2 md:w-3.5 ${variant.bar} shadow-[2px_0_8px_rgba(0,0,0,0.05)]`}></div>
+                                            <div className="flex-1 p-6">
+                                                <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                                                    <div>
+                                                        <div className="flex items-center gap-3 mb-1">
+                                                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                                                                {enquiry.projectId?.name || 'Project Enquiry'}
+                                                            </h3>
+                                                            <Badge className={`${getStatusColor(enquiry.status)} border px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider`}>
+                                                                {enquiry.status.replace('_', ' ')}
                                                             </Badge>
-                                                        )}
+                                                            <Badge variant="outline" className={`${getPriorityColor(enquiry.priority)} px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm`}>
+                                                                {enquiry.priority}
+                                                            </Badge>
+                                                            {enquiry.isOk && (
+                                                                <Badge className="bg-green-100 text-green-700 border-green-200 px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
+                                                                    <CheckCircle className="h-3 w-3" /> OK TAG
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                                            <span className="flex items-center gap-1">
+                                                                <Calendar className="h-4 w-4" />
+                                                                {new Date(enquiry.createdAt).toLocaleDateString()}
+                                                            </span>
+                                                            <span className="flex items-center gap-1">
+                                                                <Tag className="h-4 w-4" />
+                                                                {enquiry.enquiryType}
+                                                            </span>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                                                        <span className="flex items-center gap-1">
-                                                            <Calendar className="h-4 w-4" />
-                                                            {new Date(enquiry.createdAt).toLocaleDateString()}
-                                                        </span>
-                                                        <span className="flex items-center gap-1">
-                                                            <Tag className="h-4 w-4" />
-                                                            {enquiry.enquiryType}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                {isAdmin ? (
-                                                    <div className="flex items-center gap-2">
-                                                        <select
-                                                            onChange={(e) => handleUpdateStatus(enquiry._id, e.target.value)}
-                                                            value={enquiry.status}
-                                                            className="text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700"
-                                                        >
-                                                            <option value="new">Set New</option>
-                                                            <option value="in_progress">Set In Progress</option>
-                                                            <option value="follow_up">Set Follow Up</option>
-                                                            <option value="converted">Set Converted</option>
-                                                            <option value="closed">Set Closed</option>
-                                                        </select>
-                                                        <Button
-                                                            size="sm"
-                                                            variant={enquiry.isOk ? "default" : "outline"}
-                                                            className={enquiry.isOk ? "bg-green-600 hover:bg-green-700 h-8" : "h-8"}
-                                                            onClick={() => handleToggleOk(enquiry._id, enquiry.isOk)}
-                                                        >
-                                                            {enquiry.isOk ? 'OK' : 'Give OK'}
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            className="h-8 bg-red-600 hover:bg-red-700 text-white"
-                                                            onClick={() => handleUpdateStatus(enquiry._id, 'rejected')}
-                                                        >
-                                                            Reject
-                                                        </Button>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            onClick={() => {
-                                                                setSelectedEnquiry(enquiry);
-                                                                setShowNoteModal(true);
-                                                            }}
-                                                        >
-                                                            <Plus className="h-4 w-4" />
-                                                        </Button>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center gap-2">
-                                                        {enquiry.isOk && (
+                                                    {isAdmin ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <select
+                                                                onChange={(e) => handleUpdateStatus(enquiry._id, e.target.value)}
+                                                                value={enquiry.status}
+                                                                className="text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700"
+                                                            >
+                                                                <option value="new">Set New</option>
+                                                                <option value="in_progress">Set In Progress</option>
+                                                                <option value="follow_up">Set Follow Up</option>
+                                                                <option value="converted">Set Converted</option>
+                                                                <option value="closed">Set Closed</option>
+                                                            </select>
                                                             <Button
                                                                 size="sm"
-                                                                className="bg-green-600 hover:bg-green-700 text-white font-bold h-9 px-4"
-                                                                onClick={() => navigate('/dashboard/payments')}
+                                                                variant={enquiry.isOk ? "default" : "outline"}
+                                                                className={enquiry.isOk ? "bg-green-600 hover:bg-green-700 h-8" : "h-8"}
+                                                                onClick={() => handleToggleOk(enquiry._id, enquiry.isOk)}
                                                             >
-                                                                <CreditCard className="h-4 w-4 mr-2" />
-                                                                Pay Now
+                                                                {enquiry.isOk ? 'OK' : 'Give OK'}
                                                             </Button>
-                                                        )}
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
-                                                <p className="text-gray-700 dark:text-gray-300 italic whitespace-pre-wrap">
-                                                    "{enquiry.details}"
-                                                </p>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                <div className="space-y-2">
-                                                    <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Contact Info</h4>
-                                                    <div className="text-sm space-y-1">
-                                                        {isAdmin && (
-                                                            <p className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
-                                                                <User className="h-4 w-4 text-gray-400" />
-                                                                {enquiry.customerId?.name}
-                                                            </p>
-                                                        )}
-                                                        <p className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                                            <Mail className="h-4 w-4 text-gray-400" />
-                                                            {enquiry.customerId?.email || 'N/A'}
-                                                        </p>
-                                                        <p className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                                                            <Phone className="h-4 w-4 text-gray-400" />
-                                                            {enquiry.customerId?.phone || 'N/A'}
-                                                        </p>
-                                                    </div>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="destructive"
+                                                                className="h-8 bg-red-600 hover:bg-red-700 text-white"
+                                                                onClick={() => handleUpdateStatus(enquiry._id, 'rejected')}
+                                                            >
+                                                                Reject
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => {
+                                                                    setSelectedEnquiry(enquiry);
+                                                                    setShowNoteModal(true);
+                                                                }}
+                                                            >
+                                                                <Plus className="h-4 w-4" />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            {enquiry.isOk && (
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="bg-green-600 hover:bg-green-700 text-white font-bold h-9 px-4"
+                                                                    onClick={() => navigate('/dashboard/payments')}
+                                                                >
+                                                                    <CreditCard className="h-4 w-4 mr-2" />
+                                                                    Pay Now
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    )}
                                                 </div>
 
-                                                <div className="space-y-2">
-                                                    <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Preferences</h4>
-                                                    <div className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
-                                                        <p>Method: <span className="text-gray-900 dark:text-gray-100 font-medium uppercase">{enquiry.preferredContactMethod}</span></p>
-                                                        <p>Time: <span className="text-gray-900 dark:text-gray-100 font-medium">{enquiry.preferredContactTime || 'Anytime'}</span></p>
-                                                    </div>
+                                                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 mb-4">
+                                                    <p className="text-gray-700 dark:text-gray-300 italic whitespace-pre-wrap">
+                                                        "{enquiry.details}"
+                                                    </p>
                                                 </div>
 
-                                                {enquiry.notes && enquiry.notes.length > 0 && (
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                     <div className="space-y-2">
-                                                        <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Latest Note</h4>
-                                                        <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded p-2 text-xs border border-indigo-100 dark:border-indigo-900/30">
-                                                            <p className="text-indigo-800 dark:text-indigo-300 line-clamp-2">
-                                                                {enquiry.notes[enquiry.notes.length - 1].text}
+                                                        <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Contact Info</h4>
+                                                        <div className="text-sm space-y-1">
+                                                            {isAdmin && (
+                                                                <p className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+                                                                    <User className="h-4 w-4 text-gray-400" />
+                                                                    {enquiry.customerId?.name}
+                                                                </p>
+                                                            )}
+                                                            <p className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-medium">
+                                                                <Mail className="h-4 w-4 text-primary" />
+                                                                <span className="bg-blue-50 dark:bg-primary/20 text-primary dark:text-blue-300 px-2 py-0.5 rounded-md border border-blue-100 dark:border-primary/30">
+                                                                    {enquiry.customerId?.email || 'N/A'}
+                                                                </span>
                                                             </p>
-                                                            <p className="text-[10px] text-indigo-500 mt-1">
-                                                                {new Date(enquiry.notes[enquiry.notes.length - 1].addedAt).toLocaleDateString()}
+                                                            <p className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                                                <Phone className="h-4 w-4 text-gray-400" />
+                                                                {enquiry.customerId?.phone || 'N/A'}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                )}
+
+                                                    <div className="space-y-2">
+                                                        <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Preferences</h4>
+                                                        <div className="text-sm space-y-1 text-gray-600 dark:text-gray-400">
+                                                            <p>Method: <span className="text-gray-900 dark:text-gray-100 font-medium uppercase">{enquiry.preferredContactMethod}</span></p>
+                                                            <p>Time: <span className="text-gray-900 dark:text-gray-100 font-medium">{enquiry.preferredContactTime || 'Anytime'}</span></p>
+                                                        </div>
+                                                    </div>
+
+                                                    {enquiry.notes && enquiry.notes.length > 0 && (
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Latest Note</h4>
+                                                            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded p-2 text-xs border border-indigo-100 dark:border-indigo-900/30">
+                                                                <p className="text-indigo-800 dark:text-indigo-300 line-clamp-2">
+                                                                    {enquiry.notes[enquiry.notes.length - 1].text}
+                                                                </p>
+                                                                <p className="text-[10px] text-indigo-500 mt-1">
+                                                                    {new Date(enquiry.notes[enquiry.notes.length - 1].addedAt).toLocaleDateString()}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </Card>
-                            </motion.div>
-                        ))}
+                                    </Card>
+                                </motion.div>
+                            )
+                        })}
                     </div>
                 )}
             </div>

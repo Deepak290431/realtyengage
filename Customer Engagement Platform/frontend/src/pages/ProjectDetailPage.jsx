@@ -186,9 +186,9 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 overflow-x-hidden">
             {/* Image Gallery */}
-            <div className="relative h-[500px] bg-black">
+            <div className="relative h-[400px] md:h-[500px] bg-black">
                 <img
                     src={images[currentImageIndex]}
                     alt={project.name}
@@ -251,22 +251,22 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                 </div>
 
                 {/* Project Info Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 text-white text-shadow-lg bg-gradient-to-t from-black/80 to-transparent">
-                    <div className="w-full px-4 md:px-10 lg:px-16">
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <Badge className="bg-blue-600 text-white mb-2 uppercase tracking-wide">
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white text-shadow-lg bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+                    <div className={isAdmin ? "w-full" : "max-w-[1440px] mx-auto"}>
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                            <div className="flex-1 space-y-3">
+                                <Badge className="bg-primary text-white uppercase tracking-wider px-3 py-1 text-[10px] md:text-xs">
                                     <Clock className="h-3 w-3 mr-1" />
                                     {project.status?.replace('_', ' ')}
                                 </Badge>
-                                <h1 className="text-2xl md:text-4xl font-black mb-2">{project.name}</h1>
-                                <div className="flex items-center space-x-4 text-lg text-white/90">
-                                    <span className="flex items-center">
-                                        <MapPin className="h-5 w-5 mr-1" />
-                                        {project.location?.address || project.location}
+                                <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">{project.name}</h1>
+                                <div className="flex flex-wrap items-center gap-4 text-sm md:text-lg text-white/90">
+                                    <span className="flex items-center break-words">
+                                        <MapPin className="h-4 w-4 md:h-5 md:w-5 mr-1.5 text-primary flex-shrink-0" />
+                                        <span className="truncate sm:whitespace-normal">{project.location?.address || project.location}</span>
                                     </span>
                                     <span className="flex items-center">
-                                        <Star className="h-5 w-5 mr-1 fill-yellow-400 text-yellow-400" />
+                                        <Star className="h-4 w-4 md:h-5 md:w-5 mr-1.5 fill-primary text-primary flex-shrink-0" />
                                         {project.rating || '4.5'} ({project.reviews || 0} reviews)
                                     </span>
                                 </div>
@@ -274,9 +274,10 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
 
                             {/* Admin Actions */}
                             {isAdmin && (
-                                <div className="flex space-x-2">
+                                <div className="flex flex-wrap gap-2 pt-2 md:pt-0">
                                     <Button
                                         variant="secondary"
+                                        className="bg-white/95 hover:bg-white text-gray-900 border-none shadow-xl"
                                         onClick={() => navigate(`/admin/projects/edit/${project._id}`)}
                                     >
                                         <Edit className="h-4 w-4 mr-2" />
@@ -284,6 +285,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                     </Button>
                                     <Button
                                         variant="destructive"
+                                        className="shadow-xl"
                                         onClick={async () => {
                                             if (window.confirm('Are you sure you want to delete this project?')) {
                                                 try {
@@ -307,39 +309,39 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                 </div>
             </div>
 
-            <div className="w-full px-4 md:px-10 lg:px-16 py-8">
+            <div className={isAdmin ? "w-full px-4 md:px-6 py-8" : "max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8"}>
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Price & Quick Info */}
                         <Card className="p-6">
-                            <div className="flex items-center justify-between mb-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                 <div>
-                                    <div className="flex items-baseline mb-2">
-                                        <IndianRupee className="h-8 w-8 text-primary" />
-                                        <span className="text-4xl font-bold">{(project.pricing?.basePrice / 100000).toFixed(1)}</span>
-                                        <span className="text-xl text-gray-500 ml-2">Lakhs onwards</span>
+                                    <div className="flex items-baseline mb-1">
+                                        <IndianRupee className="h-6 w-6 md:h-8 md:w-8 text-primary mr-1" />
+                                        <span className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white">{(project.pricing?.basePrice / 100000).toFixed(1)}</span>
+                                        <span className="text-lg md:text-xl text-gray-500 ml-2 font-medium">Lakhs onwards</span>
                                     </div>
-                                    <p className="text-sm text-gray-500">Starting Price</p>
+                                    <p className="text-xs md:text-sm text-gray-500 font-bold uppercase tracking-wider">Starting Price</p>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-500">RERA ID</p>
-                                    <p className="font-mono text-sm uppercase">{project.reraId || 'PRM/KA/RERA/1251'}</p>
+                                <div className="sm:text-right bg-gray-50 dark:bg-gray-800 p-2 rounded-lg border border-gray-100 dark:border-gray-700 sm:bg-transparent sm:border-none sm:p-0">
+                                    <p className="text-[10px] md:text-sm text-gray-500 font-bold uppercase tracking-wider">RERA ID</p>
+                                    <p className="font-mono text-xs md:text-sm uppercase font-bold text-primary">{project.reraId || 'PRM/KA/RERA/1251'}</p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4 pt-4 border-t">
-                                <div>
-                                    <p className="text-sm text-gray-500 text-[10px] uppercase font-bold tracking-wider">Property Type</p>
-                                    <p className="font-semibold capitalize">{project.type}</p>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t">
+                                <div className="col-span-1">
+                                    <p className="text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Property Type</p>
+                                    <p className="font-bold text-sm sm:text-base capitalize">{project.type}</p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 text-[10px] uppercase font-bold tracking-wider">Developer</p>
-                                    <p className="font-semibold">{project.developer?.name || 'Prestige Group'}</p>
+                                <div className="col-span-1">
+                                    <p className="text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Developer</p>
+                                    <p className="font-bold text-sm sm:text-base truncate">{project.developer?.name || 'Prestige Group'}</p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500 text-[10px] uppercase font-bold tracking-wider">Completion</p>
-                                    <p className="font-semibold">{project.completionDate ? new Date(project.completionDate).toLocaleDateString() : 'Dec 2025'}</p>
+                                <div className="col-span-2 sm:col-span-1">
+                                    <p className="text-gray-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Completion</p>
+                                    <p className="font-bold text-sm sm:text-base">{project.completionDate ? new Date(project.completionDate).toLocaleDateString() : 'Dec 2025'}</p>
                                 </div>
                             </div>
                         </Card>
@@ -354,13 +356,13 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
 
                         {/* Configurations */}
                         <Card className="p-6">
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-2xl font-semibold">Available Configurations</h2>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                                <h2 className="text-2xl font-bold text-primary">Available Configurations</h2>
                                 {isAdmin && (
                                     <Button
+                                        className="w-full sm:w-auto shadow-md"
                                         onClick={() => {
                                             toast.success('Add configuration form opened');
-                                            // Navigate to add configuration page or open modal
                                         }}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
@@ -368,7 +370,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                     </Button>
                                 )}
                             </div>
-                            <div className="grid md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {(project.configurations && project.configurations.length > 0) ? (
                                     project.configurations.map((config, index) => (
                                         <div key={index} className="p-4 border rounded-lg hover:border-primary transition-colors relative group">
@@ -392,7 +394,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                                     </button>
                                                 </div>
                                             )}
-                                            <div className="flex justify-between items-start mb-3">
+                                            <div className="flex flex-col sm:flex-row justify-between items-start mb-3 gap-2">
                                                 <div>
                                                     <h3 className="font-semibold text-lg">{config.type}</h3>
                                                     <p className="text-sm text-gray-500">{config.area}</p>
@@ -403,7 +405,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                             </div>
                                             <div className="flex items-baseline mb-3">
                                                 <IndianRupee className="h-4 w-4 text-primary mr-1" />
-                                                <span className="text-2xl font-bold">{config.price}</span>
+                                                <span className="text-xl md:text-2xl font-bold">{config.price}</span>
                                             </div>
                                             {(!isAdmin && user?.role !== 'admin') && (
                                                 <Button className="w-full" onClick={handleEnquiry}>
@@ -423,9 +425,9 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                         </Card>
 
                         {/* Amenities */}
-                        <Card className="p-6">
-                            <h2 className="text-2xl font-semibold mb-6">World-Class Amenities</h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <Card className="p-4 sm:p-6 overflow-hidden">
+                            <h2 className="text-2xl font-black text-primary mb-6">World-Class Amenities</h2>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-6">
                                 {(project.amenities && project.amenities.length > 0) ? (
                                     project.amenities.map((amenity, index) => {
                                         // Dynamic icon mapping
@@ -448,11 +450,11 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                         const AmenityIcon = IconMap[amenity.icon] || IconMap[amenity.name] || CheckCircle;
 
                                         return (
-                                            <div key={index} className="flex flex-col items-center p-5 bg-white border border-gray-100 dark:bg-gray-800 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                                                <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center mb-3">
-                                                    <AmenityIcon className="h-6 w-6 text-primary" />
+                                            <div key={index} className="flex flex-col items-center p-3 sm:p-5 bg-white border border-gray-100 dark:bg-gray-800 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                                                <div className="h-10 w-10 sm:h-12 sm:w-12 bg-primary/10 rounded-full flex items-center justify-center mb-2 sm:mb-3">
+                                                    <AmenityIcon className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                                                 </div>
-                                                <span className="text-sm font-medium text-center text-gray-700 dark:text-gray-300">
+                                                <span className="text-[11px] sm:text-sm font-bold text-center text-gray-700 dark:text-gray-300 line-clamp-1">
                                                     {amenity.name}
                                                 </span>
                                             </div>
@@ -475,11 +477,13 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                             <div className="grid md:grid-cols-2 gap-4">
                                 {(project.specifications && project.specifications.length > 0) ? (
                                     project.specifications.map((spec, index) => (
-                                        <div key={index} className="flex justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-100 transition-all">
-                                            <span className="text-gray-600 dark:text-gray-400 font-medium">
+                                        <div key={index} className="flex flex-col md:flex-row md:items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-white hover:shadow-sm border border-gray-100/50 dark:border-gray-700/50 transition-all gap-1 md:gap-4">
+                                            <span className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-bold uppercase tracking-wider">
                                                 {spec.label || spec.type}
                                             </span>
-                                            <span className="font-bold text-gray-900 dark:text-gray-100">{spec.value}</span>
+                                            <span className="font-black text-gray-900 dark:text-white text-sm md:text-base break-words">
+                                                {spec.value}
+                                            </span>
                                         </div>
                                     ))
                                 ) : (
@@ -524,7 +528,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                             />
 
                             {/* Location Highlights */}
-                            <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg">
+                            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-primary/10">
                                 <h3 className="font-semibold mb-3 flex items-center">
                                     <MapPin className="h-5 w-5 mr-2 text-primary" />
                                     Location Advantages

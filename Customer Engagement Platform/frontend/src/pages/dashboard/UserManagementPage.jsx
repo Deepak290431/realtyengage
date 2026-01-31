@@ -73,7 +73,7 @@ const UserManagementPage = () => {
 
     const getRoleBadge = (role) => {
         switch (role) {
-            case 'admin': return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'admin': return 'bg-blue-100 text-primary border-blue-200';
             case 'editor': return 'bg-blue-100 text-blue-700 border-blue-200';
             default: return 'bg-green-100 text-green-700 border-green-200';
         }
@@ -82,12 +82,11 @@ const UserManagementPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12">
             {/* Header */}
-            {/* Header */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="w-full px-4 md:px-6 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent flex items-center gap-3">
-                            <Users className="h-8 w-8 text-indigo-600" />
+                        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+                            <Users className="h-8 w-8 text-primary" />
                             Customer Management
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -106,8 +105,8 @@ const UserManagementPage = () => {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4">
-                <div className="max-w-6xl mx-auto space-y-6">
+            <div className="w-full px-4">
+                <div className="w-full space-y-6">
                     {/* Filters Card */}
                     <Card className="p-6 shadow-xl border-none backdrop-blur-md bg-white/90 dark:bg-gray-800/90">
                         <div className="flex flex-col md:flex-row gap-4">
@@ -165,11 +164,11 @@ const UserManagementPage = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                 >
                                     <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-none group">
-                                        <div className={`h-2 w-full ${user.role === 'admin' ? 'bg-purple-500' : 'bg-blue-500'}`} />
+                                        <div className={`h-2 w-full ${user.role === 'admin' ? 'bg-primary' : 'bg-blue-500'}`} />
                                         <div className="p-6">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${user.role === 'admin' ? 'bg-purple-600' : 'bg-blue-600'}`}>
+                                                    <div className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${user.role === 'admin' ? 'bg-primary' : 'bg-blue-600'}`}>
                                                         {user.firstName?.[0]}{user.lastName?.[0]}
                                                     </div>
                                                     <div>

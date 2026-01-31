@@ -112,18 +112,19 @@ userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`;
 });
 
-// Generate password reset token
+// Generate password reset token (6-digit OTP)
 userSchema.methods.generatePasswordResetToken = function () {
-  const resetToken = require('crypto').randomBytes(32).toString('hex');
+  // Generate a 6-digit numeric OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   this.resetPasswordToken = require('crypto')
     .createHash('sha256')
-    .update(resetToken)
+    .update(otp)
     .digest('hex');
 
-  this.resetPasswordExpires = Date.now() + 30 * 60 * 1000; // 30 minutes
+  this.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes for OTP
 
-  return resetToken;
+  return otp;
 };
 
 // Generate verification token

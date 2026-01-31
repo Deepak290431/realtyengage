@@ -176,9 +176,9 @@ const ProjectsPage = ({ isAdmin = false }) => {
       {/* Hero Section */}
       {/* Hero Section */}
       {isAdmin ? (
-        <div className="w-full px-4 md:px-10 lg:px-16 py-8">
+        <div className="w-full px-4 md:px-6 py-8">
           <div className="mb-0">
-            <h1 className="text-3xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-black text-primary">
               Property Management
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1 font-bold">
@@ -187,8 +187,8 @@ const ProjectsPage = ({ isAdmin = false }) => {
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16 w-full flex flex-col items-center">
-          <div className="w-full px-4 md:px-10 lg:px-16 text-center">
+        <div className="hero-gradient text-white py-16 w-full flex flex-col items-center">
+          <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -223,7 +223,7 @@ const ProjectsPage = ({ isAdmin = false }) => {
         </div>
       )}
       <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 w-full">
-        <div className="w-full px-4 md:px-10 lg:px-16 py-3">
+        <div className={isAdmin ? "w-full px-4 md:px-6 py-3" : "max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-3"}>
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center space-x-3">
               {isAdmin && (
@@ -277,7 +277,7 @@ const ProjectsPage = ({ isAdmin = false }) => {
         </div>
       </div>
 
-      <div className="w-full px-4 md:px-10 lg:px-16 py-8">
+      <div className={isAdmin ? "w-full px-4 md:px-6 py-8" : "max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8"}>
         <div className="flex gap-8">
           {/* Filters Sidebar */}
           <AnimatePresence>
@@ -463,7 +463,7 @@ const ProjectsPage = ({ isAdmin = false }) => {
 
                           <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center text-sm">
-                              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500 mr-1" />
+                              <Star className="h-4 w-4 text-primary fill-primary mr-1" />
                               <span>{project.rating || '4.5'}</span>
                               <span className="text-gray-500 ml-1">({project.reviews || 0})</span>
                             </div>

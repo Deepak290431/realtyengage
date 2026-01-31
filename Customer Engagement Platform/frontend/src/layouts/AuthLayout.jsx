@@ -4,9 +4,9 @@ import { Box } from '@mui/material';
 
 const AuthLayout = () => {
   return (
-    <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+    <div className="w-full h-full min-h-screen flex">
       <Outlet />
-    </Box>
+    </div>
   );
 };
 

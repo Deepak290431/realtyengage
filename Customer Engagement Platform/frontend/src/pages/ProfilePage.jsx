@@ -219,8 +219,8 @@ const ProfilePage = ({ isAdmin = false }) => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
-        <div className="w-full px-6 md:px-10 lg:px-16">
+      <div className="hero-gradient text-white py-12">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16">
           <div className="flex items-center space-x-6">
             <div className="relative">
               <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center overflow-hidden">
@@ -252,7 +252,7 @@ const ProfilePage = ({ isAdmin = false }) => {
       </div>
 
 
-      <div className="w-full px-6 md:px-10 lg:px-16 py-8 space-y-12">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8 space-y-12">
         {/* Profile Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

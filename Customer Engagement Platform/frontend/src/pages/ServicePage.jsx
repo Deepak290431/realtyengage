@@ -70,8 +70,8 @@ const ServicePage = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-gray-950">
             {/* Hero */}
-            <section className="relative py-20 px-4">
-                <div className="container mx-auto">
+            <section className="relative py-20">
+                <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
@@ -98,8 +98,8 @@ const ServicePage = () => {
             </section>
 
             {/* Features */}
-            <section className="py-20 px-4 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
-                <div className="container mx-auto">
+            <section className="py-20 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100">
+                <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold mb-4">Our Approach</h2>
                         <p className="text-gray-500 max-w-2xl mx-auto">{content.detailedDesc}</p>
@@ -140,7 +140,7 @@ const ServicePage = () => {
 
             {/* CTA */}
             <section className="py-20 bg-blue-600 text-white text-center">
-                <div className="container mx-auto px-4">
+                <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
                     <h2 className="text-4xl font-bold mb-6">Ready to Get Started?</h2>
                     <p className="text-xl mb-8 opacity-90">Book a free consultation call with our {content.title} team today.</p>
                     <Button size="lg" variant="secondary" className="px-12 h-14 text-blue-600 font-bold hover:bg-gray-100 border-none">

@@ -105,9 +105,18 @@ const authService = {
   },
 
   // Forgot password
-  forgotPassword: async (email) => {
-    const response = await axios.post(`${API_URL}/auth/forgot-password`, {
-      email,
+  forgotPassword: async (identifier) => {
+    // identifier can be { email } or { phone }
+    const response = await axios.post(`${API_URL}/auth/forgot-password`, identifier);
+    return response;
+  },
+
+  // Verify OTP
+  verifyOTP: async (identifier, otp) => {
+    // identifier can be { email } or { phone }
+    const response = await axios.post(`${API_URL}/auth/verify-otp`, {
+      ...identifier,
+      otp,
     });
     return response;
   },

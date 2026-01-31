@@ -21,7 +21,7 @@ import { updateProfile, logout } from '../../store/slices/authSlice';
 const Toggle = ({ checked, onChange, icon: Icon }) => (
     <button
         onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${checked ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${checked ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'
             }`}
     >
         <span
@@ -36,7 +36,7 @@ const Toggle = ({ checked, onChange, icon: Icon }) => (
 
 const SectionHeader = ({ icon: Icon, title, subtitle }) => (
     <div className="flex items-start gap-4 mb-6">
-        <div className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+        <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-primary dark:text-blue-400">
             <Icon className="h-6 w-6" />
         </div>
         <div>
@@ -78,7 +78,7 @@ const OTPModal = ({ isOpen, onClose, target, onVerify }) => {
                 className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl"
             >
                 <div className="text-center mb-6">
-                    <div className="h-16 w-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600">
+                    <div className="h-16 w-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                         <Lock className="h-8 w-8" />
                     </div>
                     <h3 className="text-2xl font-bold mb-2">Verify it's you</h3>
@@ -93,7 +93,7 @@ const OTPModal = ({ isOpen, onClose, target, onVerify }) => {
                             type="text"
                             value={digit}
                             onChange={(e) => handleInput(i, e.target.value)}
-                            className="w-14 h-14 text-center text-2xl font-bold border-2 border-gray-100 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none dark:bg-gray-700"
+                            className="w-14 h-14 text-center text-2xl font-bold border-2 border-gray-100 dark:border-gray-700 rounded-xl focus:border-primary focus:outline-none dark:bg-gray-700"
                             maxLength={1}
                         />
                     ))}
@@ -208,7 +208,7 @@ const CustomerSettingsPage = () => {
                 }}
             />
 
-            <div className="container mx-auto px-4">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Sidebar Nav */}
                     <aside className="lg:w-80">

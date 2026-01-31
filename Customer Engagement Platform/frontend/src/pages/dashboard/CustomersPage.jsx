@@ -99,7 +99,7 @@ const CustomersPage = () => {
             case 'in_progress':
             case 'contacted': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
             case 'interested': return 'bg-green-100 text-green-700 border-green-200';
-            case 'converted': return 'bg-purple-100 text-purple-700 border-purple-200';
+            case 'converted': return 'bg-blue-100 text-primary border-blue-200';
             case 'closed':
             case 'lost': return 'bg-red-100 text-red-700 border-red-200';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
@@ -107,13 +107,13 @@ const CustomersPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12 relative overflow-hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12 relative text-left">
             {/* Header */}
-            <div className="container mx-auto px-4 py-8">
+            <div className="w-full px-4">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent flex items-center gap-3">
-                            <Users className="h-8 w-8 text-indigo-600" />
+                        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
+                            <Users className="h-8 w-8 text-primary" />
                             Customers & Leads
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -138,7 +138,7 @@ const CustomersPage = () => {
                             />
                         </div>
                         <select
-                            className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
@@ -154,8 +154,13 @@ const CustomersPage = () => {
 
                 {/* List View */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
+                    <div className="p-5 pb-0 md:hidden">
+                        <div className="text-[10px] text-gray-400 font-medium mb-1 flex items-center gap-1">
+                            <ChevronRight className="h-3 w-3 animate-pulse" /> Swipe to see more details
+                        </div>
+                    </div>
+                    <div className="scrollable-container">
+                        <table className="text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
                                     <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Customer</th>
@@ -190,7 +195,7 @@ const CustomersPage = () => {
                                         >
                                             <td className="p-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                                                    <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
                                                         {customer.fullName?.charAt(0)}
                                                     </div>
                                                     <span className="font-medium text-gray-900 dark:text-white">
@@ -210,7 +215,7 @@ const CustomersPage = () => {
                                             </td>
                                             <td className="p-5">
                                                 <span className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    <Building className="w-4 h-4 text-indigo-500" />
+                                                    <Building className="w-4 h-4 text-primary" />
                                                     {customer.interestedProperty}
                                                 </span>
                                             </td>
@@ -264,7 +269,7 @@ const CustomersPage = () => {
                             {customerDetails ? (
                                 <div className="p-0 min-h-full flex flex-col">
                                     {/* Header */}
-                                    <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg sticky top-0 z-10">
+                                    <div className="p-6 hero-gradient text-white shadow-lg sticky top-0 z-10">
                                         <div className="flex justify-between items-start mb-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="h-14 w-14 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold backdrop-blur-md">
@@ -357,7 +362,7 @@ const CustomersPage = () => {
                                                     {activeTab === tab && (
                                                         <motion.div
                                                             layoutId="activeTab"
-                                                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"
+                                                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                                                         />
                                                     )}
                                                 </button>
@@ -376,7 +381,7 @@ const CustomersPage = () => {
                                                 >
                                                     <Card className="p-4 space-y-3">
                                                         <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                                            <User className="h-4 w-4 text-indigo-500" /> Personal Info
+                                                            <User className="h-4 w-4 text-primary" /> Personal Info
                                                         </h3>
                                                         <div className="grid grid-cols-2 gap-4 text-sm">
                                                             <div>
@@ -399,7 +404,7 @@ const CustomersPage = () => {
                                                     <div className="space-y-4">
                                                         <h3 className="font-semibold text-gray-900 dark:text-white px-2">Enquiries</h3>
                                                         {customerDetails.enquiries?.map((enq, idx) => (
-                                                            <Card key={idx} className="p-4 border-l-4 border-l-indigo-500">
+                                                            <Card key={idx} className="p-4 border-l-4 border-l-primary">
                                                                 <h4 className="font-bold text-gray-800 dark:text-gray-200">{enq.projectId?.name || 'General Projects'}</h4>
                                                                 <p className="text-sm text-gray-600 mt-1">{enq.details}</p>
                                                                 <div className="mt-3 flex gap-2 text-xs text-gray-500">

@@ -26,7 +26,6 @@ import {
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { logout } from '../../store/slices/authSlice';
-import { toggleTheme } from '../../store/slices/themeSlice';
 import AIChatbot from '../chatbot/AIChatbot';
 import VoiceSearch from '../voice/VoiceSearch';
 
@@ -63,10 +62,13 @@ const Header = () => {
   };
 
   const navItems = [
-    { label: 'Home', path: '/', icon: Home },
-    { label: 'Projects', path: user?.role === 'admin' ? '/admin/projects' : '/projects', icon: Building },
+    ...(isAuthenticated && user?.role === 'admin' ? [] : [
+      { label: 'Home', path: '/', icon: Home },
+      { label: 'Projects', path: '/projects', icon: Building }
+    ]),
     ...(isAuthenticated && user?.role === 'admin' ? [
       { label: 'Admin Dashboard', path: '/admin', icon: LayoutDashboard },
+      { label: 'Properties', path: '/admin/projects', icon: Building },
       { label: 'Enquiries', path: '/admin/enquiries', icon: FileQuestion },
       { label: 'Transactions', path: '/admin/payments', icon: CreditCard },
       { label: 'Customers', path: '/admin/customers', icon: Users },
@@ -96,7 +98,7 @@ const Header = () => {
           : 'bg-white dark:bg-gray-900'
           }`}
       >
-        <div className="w-full px-4 md:px-10 lg:px-12">
+        <div className="w-full px-6 md:px-10">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2">
@@ -105,15 +107,15 @@ const Header = () => {
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center"
               >
-                <Building className="h-8 w-8 text-primary" />
-                <span className="ml-2 text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  RealtyEngage
+                <Building className="h-8 w-8 text-[#0B1F33]" />
+                <span className="ml-2 text-2xl font-black text-[#0B1F33] dark:text-white brand-font tracking-tight">
+                  RealtyAdmin
                 </span>
               </motion.div>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-1">
+            {/* Desktop Navigation - Centered */}
+            <nav className="hidden lg:flex items-center space-x-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -140,7 +142,7 @@ const Header = () => {
               })}
             </nav>
 
-            {/* Right Side Actions */}
+            {/* Actions Section - Right Aligned */}
             <div className="flex items-center space-x-3">
               {/* Search */}
               <Button
@@ -173,19 +175,7 @@ const Header = () => {
                 <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
               </Button>
 
-              {/* Theme Toggle */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => dispatch(toggleTheme())}
-                className="hidden lg:flex"
-              >
-                {theme === 'dark' ? (
-                  <Sun className="h-5 w-5" />
-                ) : (
-                  <Moon className="h-5 w-5" />
-                )}
-              </Button>
+
 
               {isAuthenticated ? (
                 <>
@@ -210,8 +200,8 @@ const Header = () => {
                       onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                       className="flex items-center space-x-2"
                     >
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                        {user?.name?.charAt(0) || 'U'}
+                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+                        {user?.firstName?.charAt(0) || user?.name?.charAt(0) || 'U'}
                       </div>
                     </Button>
 
@@ -226,7 +216,7 @@ const Header = () => {
                           <div className="p-3 border-b border-gray-200 dark:border-gray-700">
                             <p className="font-semibold truncate">{user?.name}</p>
                             <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-                            <Badge variant={user?.role === 'admin' ? 'destructive' : 'secondary'} className="mt-1">
+                            <Badge variant={user?.role === 'admin' ? 'destructive' : 'secondary'} className="mt-1 bg-primary/10 text-primary border-none">
                               {user?.role}
                             </Badge>
                           </div>
@@ -279,7 +269,7 @@ const Header = () => {
                   </Button>
                   <Button
                     onClick={() => navigate('/register')}
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-base px-6 py-3 h-auto shadow-md"
+                    className="bg-[#0B1F33] hover:bg-[#06121f] text-white text-base px-6 py-3 h-auto shadow-md"
                   >
                     Get Started
                   </Button>
@@ -301,114 +291,113 @@ const Header = () => {
               </Button>
             </div>
           </div>
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: -20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                className="lg:hidden absolute top-20 right-0 w-[85vw] max-w-[320px] max-h-[calc(100vh-6rem)] bg-white dark:bg-gray-800 shadow-2xl border-l border-b border-gray-100 dark:border-gray-700 overflow-y-auto z-[200] rounded-bl-3xl scrollbar-hide"
-              >
-                {/* User Profile Info (if authenticated) */}
-                {isAuthenticated && (
-                  <div className="p-3 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-800 border-b border-gray-100 dark:border-gray-700">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white text-lg font-bold shadow-lg">
-                        {user?.name?.charAt(0) || 'U'}
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name}</p>
-                        <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
-                        <Badge variant={user?.role === 'admin' ? 'destructive' : 'secondary'} className="mt-0.5 text-[9px] h-4 font-semibold px-1.5 uppercase tracking-tight">
-                          {user?.role}
-                        </Badge>
-                      </div>
+        </div>
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20 }}
+              className="lg:hidden absolute top-20 right-0 w-[85vw] max-w-[320px] max-h-[calc(100vh-6rem)] bg-white dark:bg-gray-800 shadow-2xl border-l border-b border-gray-100 dark:border-gray-700 overflow-y-auto z-[200] rounded-bl-3xl scrollbar-hide"
+            >
+              {/* User Profile Info (if authenticated) */}
+              {isAuthenticated && (
+                <div className="p-3 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900/80 dark:to-gray-800 border-b border-gray-100 dark:border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-full bg-[#0B1F33] flex items-center justify-center text-white text-lg font-bold shadow-lg">
+                      {user?.name?.charAt(0) || 'U'}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name}</p>
+                      <p className="text-[11px] text-gray-700 dark:text-gray-300 font-semibold truncate">{user?.email}</p>
+                      <Badge variant={user?.role === 'admin' ? 'destructive' : 'secondary'} className="mt-0.5 text-[9px] h-4 font-semibold px-1.5 uppercase tracking-tight">
+                        {user?.role}
+                      </Badge>
                     </div>
                   </div>
+                </div>
+              )}
+
+              <div className="p-3 space-y-0.5">
+                {/* Main Navigation */}
+                <div className="px-4 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-2">
+                  Main Menu
+                </div>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.label}
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all ${isActivePath(item.path)
+                        ? 'bg-primary text-white shadow-sm font-bold'
+                        : 'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold'
+                        }`}
+                    >
+                      <Icon className={`h-4 w-4 ${isActivePath(item.path) ? 'text-white' : 'text-primary'}`} />
+                      <span className="text-xs md:text-sm">{item.label}</span>
+                    </Link>
+                  );
+                })}
+
+                {/* Quick Tools (hidden for admins, except logout) */}
+                {!(isAuthenticated && user?.role === 'admin') && (
+                  <>
+                    <div className="px-3 py-1 mt-3 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                      Quick Tools
+                    </div>
+
+                    <button
+                      onClick={() => { setIsVoiceSearchOpen(true); setIsMobileMenuOpen(false); }}
+                      className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                    >
+                      <Mic className="h-4 w-4 text-purple-600" />
+                      <span className="text-xs md:text-sm">Voice Search</span>
+                    </button>
+
+                    <button
+                      onClick={() => { setIsChatbotOpen(true); setIsMobileMenuOpen(false); }}
+                      className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                    >
+                      <MessageSquare className="h-4 w-4 text-green-600" />
+                      <span className="text-xs md:text-sm">AI Assistant</span>
+                    </button>
+
+
+                  </>
                 )}
 
-                <div className="p-3 space-y-0.5">
-                  {/* Main Navigation */}
-                  <div className="px-4 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-2">
-                    Main Menu
+                {isAuthenticated ? (
+                  <>
+                    <div className="border-t border-gray-100 dark:border-gray-700 my-2 pt-1" />
+                    <Link
+                      to={user?.role === 'admin' ? '/admin/profile' : '/dashboard/profile'}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                    >
+                      <User className="h-4 w-4 text-orange-600" />
+                      <span className="text-xs md:text-sm">My Profile</span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 font-bold transition-all"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span className="text-xs md:text-sm">Logout</span>
+                    </button>
+                  </>
+                ) : (
+                  <div className="p-2 grid grid-cols-1 gap-2 border-t border-gray-100 dark:border-gray-700 mt-2">
+                    <Button className="h-9 text-xs font-bold bg-[#0B1F33] hover:bg-[#06121f] shadow-lg shadow-blue-500/20" onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }}>
+                      Get Started
+                    </Button>
                   </div>
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.label}
-                        to={item.path}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={`flex items-center space-x-2.5 px-3 py-2 rounded-lg transition-all ${isActivePath(item.path)
-                          ? 'bg-primary text-white shadow-sm font-bold'
-                          : 'text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold'
-                          }`}
-                      >
-                        <Icon className={`h-4 w-4 ${isActivePath(item.path) ? 'text-white' : 'text-primary'}`} />
-                        <span className="text-xs md:text-sm">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-
-                  <div className="px-3 py-1 mt-3 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-                    Quick Tools
-                  </div>
-
-                  <button
-                    onClick={() => { setIsVoiceSearchOpen(true); setIsMobileMenuOpen(false); }}
-                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                  >
-                    <Mic className="h-4 w-4 text-purple-600" />
-                    <span className="text-xs md:text-sm">Voice Search</span>
-                  </button>
-
-                  <button
-                    onClick={() => { setIsChatbotOpen(true); setIsMobileMenuOpen(false); }}
-                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                  >
-                    <MessageSquare className="h-4 w-4 text-green-600" />
-                    <span className="text-xs md:text-sm">AI Assistant</span>
-                  </button>
-
-                  <button
-                    onClick={() => dispatch(toggleTheme())}
-                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                  >
-                    {theme === 'dark' ? <Sun className="h-4 w-4 text-yellow-500" /> : <Moon className="h-4 w-4 text-indigo-600" />}
-                    <span className="text-xs md:text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                  </button>
-
-                  {isAuthenticated ? (
-                    <>
-                      <div className="border-t border-gray-100 dark:border-gray-700 my-2 pt-1" />
-                      <Link
-                        to={user?.role === 'admin' ? '/admin/profile' : '/dashboard/profile'}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                      >
-                        <User className="h-4 w-4 text-orange-600" />
-                        <span className="text-xs md:text-sm">My Profile</span>
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 font-bold transition-all"
-                      >
-                        <LogOut className="h-4 w-4" />
-                        <span className="text-xs md:text-sm">Logout</span>
-                      </button>
-                    </>
-                  ) : (
-                    <div className="p-2 grid grid-cols-1 gap-2 border-t border-gray-100 dark:border-gray-700 mt-2">
-                      <Button className="h-9 text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-blue-500/20" onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }}>
-                        Get Started
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* Chatbot */}

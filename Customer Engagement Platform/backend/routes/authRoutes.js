@@ -347,40 +347,136 @@ router.post('/change-password',
 // @access  Public
 router.post('/forgot-password',
   authRateLimiter,
-  [body('email').isEmail().normalizeEmail()],
+  [
+    body('email').optional().isEmail().normalizeEmail(),
+    body('phone').optional().matches(/^[0-9]{10}$/)
+  ],
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { email } = req.body;
+      const { email, phone } = req.body;
 
-      const user = await User.findOne({ email });
-
-      if (!user) {
-        // Don't reveal if email exists
-        return res.json({
-          success: true,
-          message: 'If the email exists, a reset link has been sent'
+      if (!email && !phone) {
+        return res.status(400).json({
+          error: 'Request failed',
+          message: 'Please provide either email or phone number'
         });
       }
 
-      // Generate reset token
+      const query = email ? { email } : { phone };
+      const user = await User.findOne(query);
+
+      if (!user) {
+        // For security, return success even if user not found
+        return res.json({
+          success: true,
+          message: `If the ${email ? 'email' : 'mobile number'} exists, an OTP has been sent`
+        });
+      }
+
+      // Generate reset token (OTP)
       const resetToken = user.generatePasswordResetToken();
       await user.save();
 
-      // TODO: Send email with reset token
-      // For now, just return the token (remove in production)
+      if (email) {
+        // Send email with OTP
+        const sendEmail = require('../utils/emailService');
+        try {
+          await sendEmail({
+            to: user.email,
+            subject: 'Your Password Reset OTP - RealtyEngage',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                <h2 style="color: #0B1F33; text-align: center;">Verify Your Identity</h2>
+                <p style="font-size: 16px; color: #555;">Hi ${user.firstName},</p>
+                <p style="font-size: 16px; color: #555;">You requested a password reset. Please use the following 6-digit OTP to proceed:</p>
+                <div style="background-color: #f4f7f6; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
+                  <span style="font-size: 32px; font-weight: bold; letter-spacing: 12px; color: #C9A24D;">${resetToken}</span>
+                </div>
+                <p style="font-size: 14px; color: #888; text-align: center;">This code will expire in 10 minutes.</p>
+                <p style="font-size: 16px; color: #555;">If you didn't request this, you can safely ignore this email.</p>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                <p style="font-size: 12px; color: #aaa; text-align: center;">© 2026 RealtyEngage. All rights reserved.</p>
+              </div>
+            `
+          });
+        } catch (emailError) {
+          console.error('Failed to send OTP email:', emailError);
+        }
+      } else if (phone) {
+        // TODO: Integrate SMS Service (e.g., Twilio)
+        // For now, simulate sending SMS
+        console.log(`[SMS SIMULATION] To: ${phone} | OTP: ${resetToken}`);
+        console.log(`Message: Your RealtyEngage password reset code is ${resetToken}. Valid for 10 mins.`);
+      }
 
       res.json({
         success: true,
-        message: 'Password reset link sent to email',
-        // Remove this in production
-        resetToken: resetToken
+        message: `OTP sent to your ${email ? 'email address' : 'mobile number'}`,
+        resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
       });
     } catch (error) {
       console.error('Forgot password error:', error);
       res.status(500).json({
         error: 'Request failed',
         message: 'Unable to process password reset request'
+      });
+    }
+  }
+);
+
+// @route   POST /api/auth/verify-otp
+// @desc    Verify reset OTP
+// @access  Public
+router.post('/verify-otp',
+  [
+    body('email').optional().isEmail().normalizeEmail(),
+    body('phone').optional().matches(/^[0-9]{10}$/),
+    body('otp').notEmpty()
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { email, phone, otp } = req.body;
+
+      if (!email && !phone) {
+        return res.status(400).json({
+          error: 'Verification failed',
+          message: 'Please provide either email or phone number'
+        });
+      }
+
+      const hashedToken = require('crypto')
+        .createHash('sha256')
+        .update(otp)
+        .digest('hex');
+
+      const query = {
+        resetPasswordToken: hashedToken,
+        resetPasswordExpires: { $gt: Date.now() }
+      };
+
+      if (email) query.email = email;
+      if (phone) query.phone = phone;
+
+      const user = await User.findOne(query);
+
+      if (!user) {
+        return res.status(400).json({
+          error: 'Verification failed',
+          message: 'Invalid or expired OTP'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'OTP verified successfully'
+      });
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      res.status(500).json({
+        error: 'Verification failed',
+        message: 'Unable to verify OTP'
       });
     }
   }

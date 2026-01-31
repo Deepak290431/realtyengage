@@ -88,7 +88,7 @@ const GoogleMap = ({
         return 'text-blue-600 bg-blue-100';
       case 'shopping':
       case 'mall':
-        return 'text-purple-600 bg-purple-100';
+        return 'text-blue-500 bg-blue-50';
       case 'transport':
       case 'railway':
       case 'metro':
@@ -105,58 +105,60 @@ const GoogleMap = ({
     <div className={`${className}`}>
       <Card className="overflow-hidden">
         {/* Map Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white">
-          <div className="flex items-center justify-between mb-2">
+        <div className="bg-[#0B1F33] p-4 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <div className="flex items-center space-x-2">
-              <MapIcon className="h-6 w-6" />
-              <h3 className="text-lg font-semibold">Project Location</h3>
+              <div className="p-1.5 bg-white/10 rounded-lg">
+                <MapIcon className="h-5 w-5 text-[#C9A24D]" />
+              </div>
+              <h3 className="text-lg font-bold">Project Location</h3>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
                 variant="outline"
-                className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+                className="bg-white/10 text-white border-white/20 hover:bg-white/20 h-8 text-[11px]"
                 onClick={() => setIsClassicMode(!isClassicMode)}
               >
-                <Layers className="h-4 w-4 mr-1" />
+                <Layers className="h-3.5 w-3.5 mr-1" />
                 {isClassicMode ? 'Use Pro Map' : 'Use Classic Map'}
               </Button>
               {/* Map Type Toggle */}
-              <div className="flex bg-white/20 rounded-lg p-1">
+              <div className="flex bg-white/20 rounded-lg p-0.5">
                 <button
                   onClick={() => setMapType('roadmap')}
-                  className={`px-3 py-1 rounded text-sm transition-colors ${mapType === 'roadmap' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'
+                  className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${mapType === 'roadmap' ? 'bg-white text-[#0B1F33]' : 'text-white hover:bg-white/10'
                     }`}
                 >
                   Map
                 </button>
                 <button
                   onClick={() => setMapType('satellite')}
-                  className={`px-3 py-1 rounded text-sm transition-colors ${mapType === 'satellite' ? 'bg-white text-blue-600' : 'text-white hover:bg-white/10'
+                  className={`px-2 py-1 rounded text-[11px] font-bold transition-all ${mapType === 'satellite' ? 'bg-white text-[#0B1F33]' : 'text-white hover:bg-white/10'
                     }`}
                 >
-                  Satellite
+                  Sat
                 </button>
               </div>
             </div>
           </div>
 
           {/* Location Info */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h4 className="text-xl font-bold mb-1">{projectName}</h4>
-              <div className="flex items-center space-x-1 text-white/90">
-                <MapPin className="h-4 w-4" />
-                <span className="text-sm">{address}</span>
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h4 className="text-xl font-black mb-1.5 truncate">{projectName}</h4>
+              <div className="flex items-start space-x-1.5 text-white/80">
+                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-[#C9A24D]" />
+                <span className="text-sm line-clamp-2">{address}</span>
               </div>
             </div>
             <Button
               size="sm"
               variant="secondary"
               onClick={() => window.open(getDirectionsUrl(), '_blank')}
-              className="mt-1"
+              className="bg-[#C9A24D] hover:bg-[#B69141] text-[#0B1F33] font-bold border-none shadow-lg w-full sm:w-auto"
             >
-              <Navigation className="h-4 w-4 mr-1" />
+              <Navigation className="h-4 w-4 mr-2" />
               Get Directions
             </Button>
           </div>

@@ -153,9 +153,9 @@ const SupportPage = ({ isAdmin = false }) => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
       {isAdmin ? (
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-primary">
               Support Management
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -164,8 +164,8 @@ const SupportPage = ({ isAdmin = false }) => {
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
-          <div className="container mx-auto px-4 text-center">
+        <div className="hero-gradient text-white py-12">
+          <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -186,7 +186,7 @@ const SupportPage = ({ isAdmin = false }) => {
       )}
 
       {/* Contact Cards */}
-      <div className="container mx-auto px-4 -mt-8">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 -mt-8">
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Card className="p-6 bg-white dark:bg-gray-800 shadow-lg">
             <div className="flex items-center space-x-4">
@@ -227,7 +227,7 @@ const SupportPage = ({ isAdmin = false }) => {
       </div>
 
 
-      <div className="container mx-auto px-4 py-8 space-y-12">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8 space-y-12">
         {/* Tickets Section */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex justify-between items-center mb-6">

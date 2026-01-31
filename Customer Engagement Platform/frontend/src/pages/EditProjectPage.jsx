@@ -223,31 +223,34 @@ const EditProjectPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      <div className="bg-primary text-white">
+        <div className="w-full px-4 md:px-6 py-6 font-bold">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <Button
                 variant="ghost"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 px-2 -ml-2 h-9"
                 onClick={() => navigate(-1)}
               >
-                <ArrowLeft className="h-5 w-5 mr-2" />
+                <ArrowLeft className="h-5 w-5 mr-1" />
                 Back
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold">Edit Project</h1>
-                <p className="text-white/80">Update project information</p>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-1 sm:mt-0">
+                <h1 className="text-2xl md:text-3xl font-black">Edit Project</h1>
+                <Badge className="bg-white/20 text-white border-white/30 text-[10px] md:text-sm font-bold px-3">
+                  Project ID: #{id}
+                </Badge>
               </div>
             </div>
-            <Badge className="bg-white/20 text-white">
-              Project ID: #{id}
-            </Badge>
+            <div className="flex flex-col md:items-end">
+              <p className="text-white/80 text-sm md:text-base font-bold">Update project information</p>
+              <p className="text-white/60 text-[10px] uppercase tracking-widest mt-0.5">Admin Dashboard</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full px-4 md:px-6 py-8">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Main Form */}

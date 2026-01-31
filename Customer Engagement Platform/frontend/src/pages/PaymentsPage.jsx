@@ -447,9 +447,9 @@ const PaymentsPage = ({ isAdmin = false }) => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
       {isAdmin ? (
-        <div className="w-full px-6 md:px-10 lg:px-16 py-8">
+        <div className="w-full px-4 md:px-6 py-8">
           <div className="mb-0">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold text-primary">
               Payment Management
             </h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">
@@ -458,8 +458,8 @@ const PaymentsPage = ({ isAdmin = false }) => {
           </div>
         </div>
       ) : (
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
-          <div className="w-full px-6 md:px-10 lg:px-16">
+        <div className="hero-gradient text-white py-12">
+          <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-16">
             <div className="max-w-4xl mx-auto text-center">
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -482,7 +482,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
       )}
 
 
-      <div className="container mx-auto px-4 py-8 space-y-12">
+      <div className={`${isAdmin ? 'w-full px-4 md:px-6' : 'max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12'} py-8 space-y-12`}>
         {/* Payments Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -1077,8 +1077,8 @@ const PaymentsPage = ({ isAdmin = false }) => {
                         <div className="flex flex-col items-center text-center space-y-4">
                           <div className="bg-[#1C1C1E] p-6 rounded-3xl border border-gray-700 shadow-2xl w-full max-w-[320px] mx-auto text-white">
                             <div className="flex items-center gap-3 mb-6">
-                              <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center p-0.5 shadow-lg">
-                                <img src={`https://ui-avatars.com/api/?name=${selectedEnquiryForPayment?.projectId?.builder || 'Owner'}&background=6366f1&color=fff`} alt="User" className="w-full h-full rounded-full border-2 border-[#1C1C1E]" />
+                              <div className="w-10 h-10 rounded-full overflow-hidden bg-primary flex items-center justify-center p-0.5 shadow-lg">
+                                <img src={`https://ui-avatars.com/api/?name=${selectedEnquiryForPayment?.projectId?.builder || 'Owner'}&background=2563eb&color=fff`} alt="User" className="w-full h-full rounded-full border-2 border-[#1C1C1E]" />
                               </div>
                               <div className="text-left">
                                 <span className="text-white text-xl font-bold tracking-tight block leading-none truncate max-w-[150px]">
@@ -1154,7 +1154,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                               />
                             </div>
                             <Button
-                              className="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold h-9 text-[10px]"
+                              className="w-full bg-primary hover:bg-primary/90 text-white font-bold h-9 text-[10px]"
                               onClick={handleFinalizePayment}
                               disabled={!utrNumber || utrNumber.length !== 12 || paymentStep === 'processing'}
                             >
@@ -1337,7 +1337,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
               animate={{ scale: 1, y: 0 }}
               className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden"
             >
-              <div className="p-6 border-b flex items-center justify-between bg-gradient-to-r from-indigo-50 to-purple-50">
+              <div className="p-6 border-b flex items-center justify-between bg-blue-50">
                 <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   {detailsType === 'totalPaid' && <><Banknote className="h-6 w-6 text-green-600" /> Total Paid Breakdown</>}
                   {detailsType === 'pending' && <><Clock className="h-6 w-6 text-yellow-600" /> Pending Dues List</>}
@@ -1376,7 +1376,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                         </div>
                       </div>
                       <div className="p-4 border rounded-2xl bg-white shadow-sm flex items-start gap-3 h-full">
-                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg shrink-0 mt-1"><FileText className="h-5 w-5" /></div>
+                        <div className="p-2 bg-blue-50 text-primary rounded-lg shrink-0 mt-1"><FileText className="h-5 w-5" /></div>
                         <div className="min-w-0 flex-1">
                           <p className="text-[10px] text-gray-400 font-bold uppercase">Email Address</p>
                           <p className="font-bold text-gray-900 break-all text-sm">{selectedUserDetails?.email}</p>
@@ -1420,7 +1420,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
 
               <div className="p-6 border-t bg-gray-50/50 flex justify-end">
                 <Button
-                  className="bg-indigo-600 hover:bg-indigo-700 font-bold min-w-[120px]"
+                  className="bg-primary hover:bg-primary/90 font-bold min-w-[120px]"
                   onClick={() => setShowDetailsModal(false)}
                 >
                   Close View

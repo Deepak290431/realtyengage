@@ -133,8 +133,8 @@ const CustomerDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Welcome Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white pt-8 pb-20">
-        <div className="container mx-auto px-4">
+      <div className="hero-gradient text-white pt-8 pb-20">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -162,7 +162,7 @@ const CustomerDashboard = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 -mt-12 mb-8">
           {[

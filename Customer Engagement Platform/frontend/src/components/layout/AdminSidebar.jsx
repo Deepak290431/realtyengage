@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
-import { toggleTheme } from '../../store/slices/themeSlice';
 import AIChatbot from '../chatbot/AIChatbot';
 
 const AdminSidebar = ({ onToggleChatbot }) => {
@@ -66,11 +65,6 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             path: '/admin/settings',
             icon: Settings
         },
-        {
-            title: 'Website Home',
-            path: '/',
-            icon: Home
-        }
     ];
 
     const dispatch = useDispatch();
@@ -89,11 +83,11 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             {/* Header ... */}
             <div className="p-6 border-b border-gray-100 dark:border-gray-800">
                 <div className="flex items-center space-x-3">
-                    <div className="p-2 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-xl shadow-lg shadow-purple-200 dark:shadow-none">
-                        <Building2 className="h-6 w-6 text-white" />
+                    <div className="p-2 bg-[#0B1F33] rounded-xl shadow-lg">
+                        <Building2 className="h-6 w-6 text-[#C9A24D]" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                        <h1 className="text-xl font-bold text-[#0B1F33] dark:text-white">
                             RealtyAdmin
                         </h1>
                         <p className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">
@@ -113,7 +107,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
                         {item.isAction ? (
                             <button
                                 onClick={() => item.title === 'AI Assistant' && onToggleChatbot && onToggleChatbot()}
-                                className="w-full group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 hover:text-purple-600"
+                                className="w-full group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0B1F33]"
                             >
                                 <div className="flex items-center space-x-3">
                                     <item.icon className="h-5 w-5 transition-transform duration-200 group-hover:scale-110" />
@@ -126,8 +120,8 @@ const AdminSidebar = ({ onToggleChatbot }) => {
                                 end={item.path === '/admin'}
                                 className={({ isActive }) =>
                                     `group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                        ? 'bg-purple-600 text-white shadow-lg shadow-purple-200 dark:shadow-none'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 hover:text-purple-600'
+                                        ? 'bg-[#0B1F33] text-white shadow-lg'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0B1F33]'
                                     }`
                                 }
                             >
@@ -167,12 +161,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
                             <p className="text-sm font-bold truncate dark:text-white">{user?.firstName} {user?.lastName}</p>
                             <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
                         </div>
-                        <button
-                            onClick={() => dispatch(toggleTheme())}
-                            className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                        >
-                            {theme === 'dark' ? <Sun className="h-4 w-4 text-yellow-500" /> : <Moon className="h-4 w-4 text-gray-500" />}
-                        </button>
+
                     </div>
                     <button
                         onClick={handleLogout}
