@@ -602,8 +602,22 @@ router.get('/:id/invoice',
           ...payment.toObject(),
           customer: payment.customerId,
           project: payment.projectId,
-          receiptNumber: payment.gatewayDetails?.transactionId || payment.gatewayDetails?.orderId || payment._id
+          receiptNumber: payment.gatewayDetails?.transactionId || payment.gatewayDetails?.orderId || payment._id,
+          // Try to find an associated transaction to get GST info
+          gstAmount: 0,
+          gstRate: 18,
+          penaltyAmount: 0
         };
+
+        // Try to fetch transaction for additional details if it's a success
+        if (payment.status === 'success') {
+          const transaction = await Transaction.findOne({ userId: payment.customerId._id, propertyId: payment.projectId._id }).sort({ createdAt: -1 });
+          if (transaction) {
+            invoiceData.gstAmount = transaction.gstAmount;
+            invoiceData.gstRate = transaction.gstRate;
+            invoiceData.penaltyAmount = transaction.penaltyAmount;
+          }
+        }
       } else {
         // 2. Try finding a Transaction record
         const Transaction = require('../models/Transaction');
@@ -629,7 +643,10 @@ router.get('/:id/invoice',
           customer: transaction.userId,
           project: transaction.propertyId,
           receiptNumber: transaction._id.toString(),
-          gatewayDetails: { transactionId: transaction._id }
+          gatewayDetails: { transactionId: transaction._id },
+          gstAmount: transaction.gstAmount,
+          gstRate: transaction.gstRate,
+          penaltyAmount: transaction.penaltyAmount
         };
       }
 

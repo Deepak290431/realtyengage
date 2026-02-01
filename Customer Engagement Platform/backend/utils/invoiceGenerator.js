@@ -21,17 +21,47 @@ class InvoiceGenerator {
         const filePath = path.join(this.invoiceDir, fileName);
 
         // Create PDF document
-        const doc = new PDFDocument({ margin: 50 });
+        const doc = new PDFDocument({
+          margin: 0, // No margin for full-page design
+          size: 'A4',
+          info: {
+            Title: `Official Invoice - ${receiptNumber}`,
+            Author: 'RealtyEngage',
+            Subject: 'Property Payment Receipt'
+          }
+        });
 
         // Pipe to file
         const stream = fs.createWriteStream(filePath);
         doc.pipe(stream);
 
-        // Passing doc to helper methods to avoid race conditions
-        this.generateHeader(doc, paymentData);
-        this.generateCustomerInformation(doc, paymentData);
-        this.generateInvoiceTable(doc, paymentData);
-        this.generateFooter(doc);
+        // Professional Design Tokens
+        const colors = {
+          primary: '#0F172A', // Deep Slate
+          brand: '#4F46E5',    // Indigo-600
+          success: '#059669',  // Emerald-600
+          text: '#334155',     // Slate-700
+          muted: '#64748B',    // Slate-500
+          border: '#F1F5F9',   // Slate-100
+          bg: '#FFFFFF',
+          accent: '#F8FAFC'    // Slate-50
+        };
+
+        // --- BACKGROUND DECORATION ---
+        // Top Brand Strip
+        doc.rect(0, 0, 612, 5).fill(colors.brand);
+
+        // --- HEADER ---
+        this.generateHeader(doc, paymentData, colors);
+
+        // --- ADDRESSES ---
+        this.generateLogistics(doc, paymentData, colors);
+
+        // --- TABLE ---
+        this.generateTable(doc, paymentData, colors);
+
+        // --- FOOTER ---
+        this.generateFooter(doc, paymentData, colors);
 
         // Finalize PDF
         doc.end();
@@ -51,156 +81,189 @@ class InvoiceGenerator {
     });
   }
 
-  generateHeader(doc, paymentData) {
-    doc
-      .fillColor('#444444')
-      .fontSize(20)
-      .text('RealtyEngage', 50, 45)
-      .fontSize(10)
-      .text('Customer Engagement Platform', 50, 70)
-      .text('123 Business Street', 200, 65, { align: 'right' })
-      .text('Bangalore, Karnataka 560001', 200, 80, { align: 'right' })
-      .text('Phone: +91 98765 43210', 200, 95, { align: 'right' })
-      .text('Email: info@realtyengage.com', 200, 110, { align: 'right' })
-      .moveDown();
+  generateHeader(doc, paymentData, colors) {
+    // Right side text
+    doc.fillColor(colors.primary)
+      .fontSize(28)
+      .font('Helvetica-Bold')
+      .text('INVOICE', 50, 40);
 
-    // Add invoice title and number
-    doc
-      .fillColor('#000000')
-      .fontSize(18)
-      .text('PAYMENT INVOICE', 50, 160, { align: 'center' })
-      .fontSize(12)
-      .text(`Invoice #: ${paymentData.invoice?.number || paymentData.receiptNumber || paymentData._id}`, 50, 185, { align: 'center' })
-      .text(`Date: ${new Date(paymentData.paidAt || Date.now()).toLocaleDateString('en-IN')}`, 50, 200, { align: 'center' })
-      .moveDown();
+    doc.fontSize(10)
+      .font('Helvetica')
+      .fillColor(colors.muted)
+      .text(`${new Date(paymentData.paidAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`, 50, 75);
+
+    // Brand Logo
+    doc.fontSize(22)
+      .font('Helvetica-Bold')
+      .fillColor(colors.brand)
+      .text('RealtyEngage', 350, 40, { align: 'right', width: 200 });
+
+    doc.fontSize(9)
+      .font('Helvetica')
+      .fillColor(colors.muted)
+      .text('RE-DEFINING REAL ESTATE', 350, 65, { align: 'right', width: 200 });
+
+    // Header Border
+    doc.strokeColor(colors.border)
+      .lineWidth(1)
+      .moveTo(50, 100)
+      .lineTo(550, 100)
+      .stroke();
   }
 
-  generateCustomerInformation(doc, paymentData) {
+  generateLogistics(doc, paymentData, colors) {
     const { customer, project } = paymentData;
 
-    doc
-      .fontSize(14)
-      .text('BILL TO:', 50, 250)
+    // Billing Details
+    doc.fillColor(colors.brand)
       .fontSize(10)
       .font('Helvetica-Bold')
-      .text(`${customer?.firstName || 'Customer'} ${customer?.lastName || ''}`, 50, 270)
-      .font('Helvetica')
-      .text(customer?.email || 'N/A', 50, 285)
-      .text(customer?.phone || 'N/A', 50, 300)
-      .text(`${customer?.address?.street || ''}, ${customer?.address?.city || ''}`, 50, 315)
-      .text(`${customer?.address?.state || ''} - ${customer?.address?.pincode || ''}`, 50, 330);
+      .text('BILL TO', 50, 130);
 
-    // Project details
-    doc
-      .fontSize(14)
-      .text('PROJECT DETAILS:', 300, 250)
+    doc.fillColor(colors.primary)
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text(`${customer?.firstName || 'Valued'} ${customer?.lastName || 'Customer'}`, 50, 145);
+
+    doc.fillColor(colors.muted)
+      .fontSize(9)
+      .font('Helvetica')
+      .text(`${customer?.email || 'email@example.com'}`, 50, 160)
+      .text(`${customer?.phone || '+91 00000 00000'}`, 50, 172)
+      .text(`${customer?.address?.street || 'N/A'}, ${customer?.address?.city || ''}`, 50, 184, { width: 200 });
+
+    // Property Details
+    doc.fillColor(colors.brand)
       .fontSize(10)
       .font('Helvetica-Bold')
-      .text(project?.name || 'Property Project', 300, 270)
+      .text('PROPERTY DETAILS', 350, 130);
+
+    doc.fillColor(colors.primary)
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text(`${project?.name || 'Dream Property'}`, 350, 145);
+
+    doc.fillColor(colors.muted)
+      .fontSize(9)
       .font('Helvetica')
-      .text(`Location: ${project?.area || 'N/A'}`, 300, 285)
-      .text(`Unit Type: ${project?.specifications?.[0]?.value || 'N/A'}`, 300, 300)
-      .text(`Status: ${project?.status?.replace('_', ' ').toUpperCase() || 'N/A'}`, 300, 315);
+      .text(`Location: ${project?.area || 'Prime Location'}`, 350, 160)
+      .text(`Category: ${project?.category || 'Residential'}`, 350, 172)
+      .text(`Ref Number: ${paymentData.receiptNumber || paymentData._id}`, 350, 184);
   }
 
-  generateInvoiceTable(doc, paymentData) {
-    const tableTop = 380;
-    const itemX = 50;
-    const descriptionX = 150;
-    const amountX = 450;
+  generateTable(doc, paymentData, colors) {
+    const tableTop = 230;
 
-    // Table headers
-    doc
-      .fontSize(10)
+    // Header Bar
+    doc.rect(50, tableTop, 500, 30).fill(colors.primary);
+
+    doc.fillColor('#FFFFFF')
+      .fontSize(9)
       .font('Helvetica-Bold')
-      .text('Item', itemX, tableTop)
-      .text('Description', descriptionX, tableTop)
-      .text('Amount', amountX, tableTop);
+      .text('DESCRIPTION', 60, tableTop + 10)
+      .text('TYPE', 250, tableTop + 10)
+      .text('STATUS', 380, tableTop + 10)
+      .text('AMOUNT', 480, tableTop + 10, { align: 'right', width: 60 });
 
-    this.generateHr(doc, tableTop + 15);
-
-    // Table content
     const items = this.getPaymentItems(paymentData);
-    let position = tableTop + 30;
+    let currentY = tableTop + 45;
 
-    items.forEach(item => {
-      doc
+    items.forEach((item, index) => {
+      doc.fillColor(colors.primary)
+        .fontSize(10)
+        .font('Helvetica-Bold')
+        .text(item.name, 60, currentY);
+
+      doc.fontSize(8)
         .font('Helvetica')
-        .text(item.name, itemX, position)
-        .text(item.description, descriptionX, position, { width: 250 })
-        .text(this.formatCurrency(item.amount), amountX, position);
+        .fillColor(colors.muted)
+        .text(item.description, 60, currentY + 12);
 
-      position += 30;
+      doc.fontSize(9)
+        .fillColor(colors.text)
+        .text((paymentData.paymentType || 'GENERAL').toUpperCase().replace('_', ' '), 250, currentY + 5);
+
+      // Status Badge
+      const isSuccess = ['success', 'completed'].includes(paymentData.status);
+      doc.fillColor(isSuccess ? colors.success : colors.brand)
+        .font('Helvetica-Bold')
+        .text((paymentData.status || 'PAID').toUpperCase(), 380, currentY + 5);
+
+      doc.fillColor(colors.primary)
+        .text(this.formatCurrency(paymentData.amount), 480, currentY + 5, { align: 'right', width: 60 });
+
+      currentY += 40;
     });
 
-    this.generateHr(doc, position + 10);
+    // Separator
+    doc.strokeColor(colors.border)
+      .moveTo(50, currentY)
+      .lineTo(550, currentY)
+      .stroke();
 
-    // Totals
-    const subtotal = paymentData.amount;
-    const tax = 0; // GST can be calculated here
-    const total = subtotal + tax;
+    // Summary Box
+    currentY += 20;
+    const summaryX = 350;
 
-    position += 25;
-    doc
-      .font('Helvetica-Bold')
-      .text('Subtotal:', 380, position)
-      .text(this.formatCurrency(subtotal), amountX, position);
+    const gstAmount = paymentData.gstAmount || 0;
+    const penaltyAmount = paymentData.penaltyAmount || 0;
+    const baseAmount = paymentData.amount - gstAmount - penaltyAmount;
 
-    if (tax > 0) {
-      position += 20;
-      doc
-        .text('GST (18%):', 380, position)
-        .text(this.formatCurrency(tax), amountX, position);
+    // Subtotal Row
+    doc.fillColor(colors.muted).fontSize(9).font('Helvetica').text('Subtotal:', summaryX, currentY);
+    doc.fillColor(colors.primary).font('Helvetica-Bold').text(this.formatCurrency(baseAmount), 480, currentY, { align: 'right', width: 60 });
+
+    if (penaltyAmount > 0) {
+      currentY += 20;
+      doc.fillColor(colors.muted).font('Helvetica').text('Late Penalty:', summaryX, currentY);
+      doc.fillColor('#E11D48').font('Helvetica-Bold').text(this.formatCurrency(penaltyAmount), 480, currentY, { align: 'right', width: 60 });
     }
 
-    position += 20;
-    this.generateHr(doc, position - 5);
-    position += 10;
+    if (gstAmount > 0) {
+      currentY += 20;
+      doc.fillColor(colors.muted).font('Helvetica').text(`GST (${paymentData.gstRate || 18}%):`, summaryX, currentY);
+      doc.fillColor(colors.primary).font('Helvetica-Bold').text(this.formatCurrency(gstAmount), 480, currentY, { align: 'right', width: 60 });
+    }
 
-    doc
-      .fontSize(12)
-      .text('Total:', 380, position)
-      .text(this.formatCurrency(total), amountX, position);
-
-    // Payment details
-    position += 40;
-    doc
-      .fontSize(10)
-      .font('Helvetica')
-      .text('Payment Details:', 50, position)
-      .text(`Payment Method: ${paymentData.method?.toUpperCase() || 'N/A'}`, 50, position + 15)
-      .text(`Transaction ID: ${paymentData.gatewayDetails?.transactionId || paymentData.gatewayDetails?.orderId || 'N/A'}`, 50, position + 30)
-      .text(`Status: ${paymentData.status?.toUpperCase() || 'SUCCESS'}`, 50, position + 45);
+    currentY += 30;
+    doc.rect(summaryX - 10, currentY - 10, 210, 40).fill(colors.brand);
+    doc.fillColor('#FFFFFF').fontSize(14).text('TOTAL PAID', summaryX, currentY);
+    doc.fontSize(14).text(this.formatCurrency(paymentData.amount), 450, currentY, { align: 'right', width: 90 });
   }
 
-  generateFooter(doc) {
-    doc
-      .fontSize(10)
-      .text(
-        'Terms & Conditions:\n' +
-        '1. This is a computer-generated invoice and does not require a signature.\n' +
-        '2. Please retain this invoice for future reference.\n' +
-        '3. For any queries, contact our support team.',
-        50,
-        650,
-        { align: 'left', width: 500 }
-      )
+  generateFooter(doc, paymentData, colors) {
+    const footerTop = 720;
+
+    // Payment Info
+    doc.fillColor(colors.muted)
       .fontSize(8)
-      .text(
-        'Thank you for choosing RealtyEngage!',
-        50,
-        720,
-        { align: 'center', width: 500 }
-      );
-  }
+      .font('Helvetica')
+      .text('PAYMENT DETAILS:', 50, footerTop - 60);
 
-  generateHr(doc, y) {
-    doc
-      .strokeColor('#aaaaaa')
-      .lineWidth(1)
-      .moveTo(50, y)
-      .lineTo(550, y)
+    doc.fillColor(colors.text)
+      .fontSize(8)
+      .text(`Method: ${paymentData.method?.toUpperCase() || 'OFFLINE'}`, 50, footerTop - 45)
+      .text(`Transaction: ${paymentData.gatewayDetails?.transactionId || paymentData.receiptNumber}`, 50, footerTop - 35);
+
+    // Signature Area
+    doc.strokeColor(colors.border)
+      .dash(2, { space: 2 })
+      .moveTo(400, footerTop - 10)
+      .lineTo(550, footerTop - 10)
       .stroke();
+
+    doc.undash()
+      .fillColor(colors.muted)
+      .fontSize(8)
+      .text('Authorized Signature', 400, footerTop, { align: 'center', width: 150 });
+
+    // Official Badge Bottom
+    doc.rect(0, 810, 612, 32).fill(colors.primary);
+    doc.fillColor('#FFFFFF')
+      .fontSize(8)
+      .font('Helvetica')
+      .text('This is an electronically generated document. No physical signature is required.', 0, 822, { align: 'center', width: 612 });
   }
 
   formatCurrency(amount) {
@@ -209,47 +272,18 @@ class InvoiceGenerator {
 
   getPaymentItems(paymentData) {
     const items = [];
+    const typeMap = {
+      'booking': 'Property Booking Amount',
+      'down_payment': 'Down Payment for Purchase',
+      'emi': `Installment Payment`,
+      'full_payment': 'Complete Property Payment'
+    };
 
-    switch (paymentData.paymentType) {
-      case 'booking':
-        items.push({
-          name: 'Booking Amount',
-          description: `Initial booking amount for ${paymentData.project.name}`,
-          amount: paymentData.amount
-        });
-        break;
-
-      case 'down_payment':
-        items.push({
-          name: 'Down Payment',
-          description: `Down payment for property purchase`,
-          amount: paymentData.amount
-        });
-        break;
-
-      case 'emi':
-        items.push({
-          name: 'EMI Payment',
-          description: `Monthly installment ${paymentData.metadata?.installmentNumber || ''}/${paymentData.metadata?.totalInstallments || ''}`,
-          amount: paymentData.amount
-        });
-        break;
-
-      case 'full_payment':
-        items.push({
-          name: 'Full Payment',
-          description: `Complete payment for property`,
-          amount: paymentData.amount
-        });
-        break;
-
-      default:
-        items.push({
-          name: 'Payment',
-          description: paymentData.metadata?.description || 'Property payment',
-          amount: paymentData.amount
-        });
-    }
+    items.push({
+      name: typeMap[paymentData.paymentType] || 'Property Transaction',
+      description: `Payment for unit in ${paymentData.project?.name || 'RealtyEngage Project'}`,
+      amount: paymentData.amount
+    });
 
     return items;
   }
@@ -257,93 +291,104 @@ class InvoiceGenerator {
   // Generate simple HTML invoice (alternative to PDF)
   generateHTMLInvoice(paymentData) {
     const { customer, project } = paymentData;
-    const date = new Date(paymentData.paidAt || Date.now()).toLocaleDateString('en-IN');
+    const date = new Date(paymentData.paidAt || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
     return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="utf-8">
       <title>Invoice - ${paymentData.receiptNumber}</title>
       <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .company-name { font-size: 24px; font-weight: bold; }
-        .invoice-title { font-size: 20px; margin: 20px 0; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .col { flex: 1; }
-        .table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .table th, .table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        .table th { background-color: #f4f4f4; }
-        .total-row { font-weight: bold; font-size: 16px; }
-        .footer { margin-top: 50px; text-align: center; font-size: 12px; color: #666; }
-        @media print { body { margin: 0; } }
+        :root { --primary: #0F172A; --brand: #4F46E5; --bg: #F8FAFC; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #334155; margin: 0; padding: 40px; line-height: 1.6; }
+        .invoice-card { background: #fff; max-width: 850px; margin: 0 auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); border-radius: 12px; overflow: hidden; position: relative; }
+        .top-bar { height: 6px; background: var(--brand); }
+        .header { padding: 40px; display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #F1F5F9; }
+        .brand { font-size: 24px; font-weight: 800; color: var(--brand); }
+        .invoice-title { font-size: 32px; font-weight: 900; color: var(--primary); margin: 0; }
+        .logistics { padding: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .section-label { font-size: 11px; font-weight: 800; text-transform: uppercase; color: var(--brand); letter-spacing: 1px; margin-bottom: 12px; }
+        .info-box h4 { margin: 0; font-size: 18px; color: var(--primary); }
+        .info-box p { margin: 4px 0; font-size: 14px; color: #64748B; }
+        .table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .table thead { background: var(--primary); color: #fff; }
+        .table th { padding: 15px 20px; text-align: left; font-size: 12px; font-weight: 600; }
+        .table td { padding: 20px; border-bottom: 1px solid #F1F5F9; font-size: 14px; }
+        .amount-col { text-align: right; font-weight: 700; color: var(--primary); }
+        .summary { padding: 20px 40px; background: #fff; display: flex; justify-content: flex-end; }
+        .summary-table { width: 300px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .total-row { background: var(--brand); color: #fff; padding: 15px 20px; border-radius: 8px; margin-top: 20px; font-weight: 800; font-size: 18px; }
+        .footer { padding: 40px; text-align: center; font-size: 12px; color: #94A3B8; border-top: 1px solid #F1F5F9; }
+        @media print { body { background: #fff; padding: 0; } .invoice-card { box-shadow: none; border-radius: 0; } }
       </style>
     </head>
     <body>
-      <div class="header">
-        <div class="company-name">RealtyEngage</div>
-        <div>Customer Engagement Platform</div>
-        <div class="invoice-title">PAYMENT INVOICE</div>
-        <div>Invoice #: ${paymentData.invoice?.number || paymentData.receiptNumber}</div>
-        <div>Date: ${date}</div>
-      </div>
-      
-      <div class="row">
-        <div class="col">
-          <h3>Bill To:</h3>
-          <p>
-            <strong>${customer.firstName} ${customer.lastName}</strong><br>
-            ${customer.email}<br>
-            ${customer.phone}<br>
-            ${customer.address?.city || ''}, ${customer.address?.state || ''}
-          </p>
+      <div class="invoice-card">
+        <div class="top-bar"></div>
+        <div class="header">
+          <div>
+            <h1 class="invoice-title">INVOICE</h1>
+            <p style="color: #64748B; font-size: 14px;">Number: ${paymentData.receiptNumber || 'N/A'}</p>
+            <p style="color: #64748B; font-size: 14px;">Date: ${date}</p>
+          </div>
+          <div style="text-align: right;">
+            <div class="brand">RealtyEngage</div>
+            <p style="margin: 0; font-size: 12px; font-weight: 600;">PREMIUM PROPERTY SOLUTIONS</p>
+          </div>
         </div>
-        <div class="col">
-          <h3>Project Details:</h3>
-          <p>
-            <strong>${project.name}</strong><br>
-            Location: ${project.area}<br>
-            Status: ${project.status.replace('_', ' ').toUpperCase()}
-          </p>
+
+        <div class="logistics">
+          <div class="info-box">
+            <div class="section-label">Bill To</div>
+            <h4>${customer.firstName} ${customer.lastName}</h4>
+            <p>${customer.email}</p>
+            <p>${customer.phone}</p>
+            <p>${customer.address?.city || ''}</p>
+          </div>
+          <div class="info-box">
+            <div class="section-label">Property</div>
+            <h4>${project.name}</h4>
+            <p>${project.area}</p>
+            <p>Status: ${project.status.toUpperCase()}</p>
+          </div>
         </div>
-      </div>
-      
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Payment Type</th>
-            <th>Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>${this.getPaymentDescription(paymentData)}</td>
-            <td>${paymentData.paymentType.replace('_', ' ').toUpperCase()}</td>
-            <td>${this.formatCurrency(paymentData.amount)}</td>
-          </tr>
-        </tbody>
-        <tfoot>
-          <tr class="total-row">
-            <td colspan="2" style="text-align: right;">Total:</td>
-            <td>${this.formatCurrency(paymentData.amount)}</td>
-          </tr>
-        </tfoot>
-      </table>
-      
-      <div>
-        <h3>Payment Information:</h3>
-        <p>
-          Payment Method: ${paymentData.method.toUpperCase()}<br>
-          Transaction ID: ${paymentData.gatewayDetails?.transactionId || paymentData.receiptNumber}<br>
-          Status: ${paymentData.status.toUpperCase()}
-        </p>
-      </div>
-      
-      <div class="footer">
-        <p>This is a computer-generated invoice and does not require a signature.</p>
-        <p>Thank you for choosing RealtyEngage!</p>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Type</th>
+              <th style="text-align: right;">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: 600;">${this.getPaymentDescription(paymentData)}</td>
+              <td>${paymentData.paymentType.toUpperCase()}</td>
+              <td class="amount-col">${this.formatCurrency(paymentData.amount)}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="summary">
+          <div class="summary-table">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span style="font-weight: 600;">${this.formatCurrency(paymentData.amount)}</span>
+            </div>
+            <div class="total-row">
+              <span>TOTAL PAID</span>
+              <span>${this.formatCurrency(paymentData.amount)}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p>This is an official document from RealtyEngage Solutions Pvt Ltd.</p>
+          <p>Thank you for choosing us for your property journey.</p>
+        </div>
       </div>
     </body>
     </html>
@@ -354,7 +399,7 @@ class InvoiceGenerator {
     const descriptions = {
       'booking': 'Initial booking amount',
       'down_payment': 'Down payment for property',
-      'emi': `EMI Payment ${paymentData.metadata?.installmentNumber || ''}`,
+      'emi': `EMI Payment installment`,
       'full_payment': 'Full payment for property',
       'other': 'Property payment'
     };
