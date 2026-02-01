@@ -228,7 +228,7 @@ const HomePage = () => {
                   Explore Properties
                 </Button>
                 <Button
-                  className="h-14 px-8 text-lg"
+                  className="h-14 px-8 text-lg text-gray-900 border-gray-300 hover:bg-gray-50 dark:text-white dark:border-gray-700 dark:hover:bg-gray-800"
                   variant="outline"
                   onClick={() => navigate('/register')}
                 >
@@ -273,7 +273,7 @@ const HomePage = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">ROI</p>
-                    <p className="font-semibold">15% Annually</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">15% Annually</p>
                   </div>
                 </div>
               </motion.div>
@@ -288,7 +288,7 @@ const HomePage = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Happy Customers</p>
-                    <p className="font-semibold">500+ Families</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">500+ Families</p>
                   </div>
                 </div>
               </motion.div>

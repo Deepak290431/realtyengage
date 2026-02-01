@@ -360,7 +360,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                     <Button
                       variant="ghost"
                       onClick={() => navigate('/login')}
-                      className="text-sm px-4 h-9"
+                      className="text-sm px-4 h-9 text-gray-700 dark:text-gray-200 hover:text-primary hover:bg-primary/10 transition-colors"
                     >
                       Login
                     </Button>
