@@ -1,4 +1,5 @@
-# Render.com Blueprint Configuration for RealtyEngage Backend
+# Render.com Blueprint Configuration for RealtyEngage
+# All paths are relative to the repository root
 
 databases:
   - name: realtyengage-db
@@ -15,8 +16,8 @@ services:
     env: node
     plan: starter
     region: oregon
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && node server.js
+    buildCommand: cd "Customer Engagement Platform/backend" && npm install
+    startCommand: cd "Customer Engagement Platform/backend" && node server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -44,28 +45,6 @@ services:
           type: redis
           name: realtyengage-cache
           property: connectionString
-      - key: EMAIL_HOST
-        sync: false # Set manually
-      - key: EMAIL_PORT
-        value: 587
-      - key: EMAIL_USER
-        sync: false # Set manually
-      - key: EMAIL_PASS
-        sync: false # Set manually
-      - key: RAZORPAY_KEY_ID
-        sync: false # Set manually
-      - key: RAZORPAY_KEY_SECRET
-        sync: false # Set manually
-      - key: GOOGLE_MAPS_API_KEY
-        sync: false # Set manually
-      - key: AWS_S3_BUCKET
-        sync: false # Set manually
-      - key: AWS_ACCESS_KEY_ID
-        sync: false # Set manually
-      - key: AWS_SECRET_ACCESS_KEY
-        sync: false # Set manually
-      - key: SENTRY_DSN
-        sync: false # Set manually
     autoDeploy: true
 
   # Background Worker Service
@@ -74,8 +53,8 @@ services:
     env: node
     plan: starter
     region: oregon
-    buildCommand: cd backend && npm install
-    startCommand: cd backend && npm run worker
+    buildCommand: cd "Customer Engagement Platform/backend" && npm install
+    startCommand: cd "Customer Engagement Platform/backend" && npm run worker
     envVars:
       - key: NODE_ENV
         value: production
@@ -88,14 +67,6 @@ services:
           type: redis
           name: realtyengage-cache
           property: connectionString
-      - key: EMAIL_HOST
-        sync: false
-      - key: EMAIL_PORT
-        value: 587
-      - key: EMAIL_USER
-        sync: false
-      - key: EMAIL_PASS
-        sync: false
 
   # Redis Cache Service
   - type: redis
@@ -111,8 +82,8 @@ services:
     plan: starter
     region: oregon
     schedule: "0 0 * * *" # Daily at midnight
-    buildCommand: cd backend && npm install
-    command: cd backend && npm run cron:daily
+    buildCommand: cd "Customer Engagement Platform/backend" && npm install
+    command: cd "Customer Engagement Platform/backend" && npm run cron:daily
     envVars:
       - key: NODE_ENV
         value: production
@@ -125,8 +96,8 @@ services:
   - type: static
     name: realtyengage-frontend
     env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
+    staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
       - key: VITE_API_URL
         value: https://realtyengage-api.onrender.com/api
