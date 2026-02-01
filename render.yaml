@@ -9,18 +9,18 @@ databases:
     region: oregon
     ipAllowList: [] 
 
-# Redis Cache Service (Top-level)
-redis:
-  - name: realtyengage-cache
+services:
+  # Redis Cache Service
+  - type: redis
+    name: realtyengage-cache
     plan: starter
     region: oregon
     maxmemoryPolicy: allkeys-lru
 
-services:
   # Main API Service
   - type: web
     name: realtyengage-api
-    runtime: node
+    env: node
     plan: starter
     region: oregon
     buildCommand: cd "Customer Engagement Platform/backend" && npm install
@@ -48,7 +48,8 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: redis
           name: realtyengage-cache
           property: connectionString
     autoDeploy: true
@@ -56,7 +57,7 @@ services:
   # Background Worker Service
   - type: worker
     name: realtyengage-worker
-    runtime: node
+    env: node
     plan: starter
     region: oregon
     buildCommand: cd "Customer Engagement Platform/backend" && npm install
@@ -69,14 +70,15 @@ services:
           name: realtyengage-db
           property: connectionString
       - key: REDIS_URL
-        fromRedis:
+        fromService:
+          type: redis
           name: realtyengage-cache
           property: connectionString
 
   # Cron Job Service
   - type: cron
     name: realtyengage-scheduler
-    runtime: node
+    env: node
     plan: starter
     region: oregon
     schedule: "0 0 * * *" 
@@ -93,7 +95,7 @@ services:
   # Frontend Static Service
   - type: web
     name: realtyengage-frontend
-    runtime: static
+    env: static
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
