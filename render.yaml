@@ -83,7 +83,7 @@ services:
     region: oregon
     schedule: "0 0 * * *" # Daily at midnight
     buildCommand: cd "Customer Engagement Platform/backend" && npm install
-    command: cd "Customer Engagement Platform/backend" && npm run cron:daily
+    startCommand: cd "Customer Engagement Platform/backend" && npm run cron:daily
     envVars:
       - key: NODE_ENV
         value: production
@@ -93,9 +93,8 @@ services:
           property: connectionString
 
   # Frontend Static Service
-  - type: web
+  - type: static
     name: realtyengage-frontend
-    env: static
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
