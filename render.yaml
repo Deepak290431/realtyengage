@@ -9,11 +9,18 @@ databases:
     region: oregon
     ipAllowList: [] 
 
+# Redis Cache Service (Top-level)
+redis:
+  - name: realtyengage-cache
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+
 services:
   # Main API Service
   - type: web
     name: realtyengage-api
-    env: node
+    runtime: node
     plan: starter
     region: oregon
     buildCommand: cd "Customer Engagement Platform/backend" && npm install
@@ -41,8 +48,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: REDIS_URL
-        fromService:
-          type: redis
+        fromRedis:
           name: realtyengage-cache
           property: connectionString
     autoDeploy: true
@@ -50,7 +56,7 @@ services:
   # Background Worker Service
   - type: worker
     name: realtyengage-worker
-    env: node
+    runtime: node
     plan: starter
     region: oregon
     buildCommand: cd "Customer Engagement Platform/backend" && npm install
@@ -63,26 +69,19 @@ services:
           name: realtyengage-db
           property: connectionString
       - key: REDIS_URL
-        fromService:
-          type: redis
+        fromRedis:
           name: realtyengage-cache
           property: connectionString
-
-  # Redis Cache Service
-  - type: redis
-    name: realtyengage-cache
-    plan: starter
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
 
   # Cron Job Service
   - type: cron
     name: realtyengage-scheduler
-    env: node
+    runtime: node
     plan: starter
     region: oregon
     schedule: "0 0 * * *" 
-    command: cd "Customer Engagement Platform/backend" && npm install && npm run cron:daily
+    buildCommand: cd "Customer Engagement Platform/backend" && npm install
+    startCommand: cd "Customer Engagement Platform/backend" && npm run cron:daily
     envVars:
       - key: NODE_ENV
         value: production
@@ -94,7 +93,7 @@ services:
   # Frontend Static Service
   - type: web
     name: realtyengage-frontend
-    env: static
+    runtime: static
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
