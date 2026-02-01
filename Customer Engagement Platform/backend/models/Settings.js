@@ -7,6 +7,10 @@ const settingsSchema = new mongoose.Schema({
             default: 'Customer Engagement Platform'
         },
         logo: String,
+        darkModeEnabled: {
+            type: Boolean,
+            default: false
+        },
         brandColors: {
             primary: { type: String, default: '#4f46e5' }, // Indigo-600
             secondary: { type: String, default: '#64748b' } // Slate-500
