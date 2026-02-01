@@ -35,7 +35,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const { theme } = useSelector((state) => state.theme);
+  const theme = useSelector((state) => state.theme); // Get the whole theme object
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -75,9 +75,10 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
   }, []);
 
   useEffect(() => {
-    // Apply theme class to HTML element
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
+    // Force light mode for now since the toggle was removed
+    document.documentElement.classList.remove('dark');
+    document.documentElement.setAttribute('data-theme', 'light');
+  }, []);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -149,7 +150,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                     to={item.path}
                     className={`group relative px-4 py-2.5 rounded-lg transition-all duration-200 text-base ${isActivePath(item.path)
                       ? 'text-primary font-bold'
-                      : 'text-gray-600 dark:text-gray-300 hover:text-primary font-medium'
+                      : 'text-gray-900 dark:text-gray-300 hover:text-primary font-semibold'
                       }`}
                   >
                     <div className="flex items-center space-x-2">

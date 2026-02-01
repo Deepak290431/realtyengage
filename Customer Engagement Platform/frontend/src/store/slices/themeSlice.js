@@ -7,17 +7,15 @@ const getInitialTheme = () => {
   const savedAutoMode = localStorage.getItem('themeAutoMode');
   const savedHighContrast = localStorage.getItem('themeHighContrast');
   const savedFontSize = localStorage.getItem('themeFontSize');
-  
+
   let mode = 'light';
-  
-  if (savedMode) {
-    mode = savedMode;
-  } else if (savedAutoMode === 'true' || !savedMode) {
-    // Check system preference
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    mode = prefersDark ? 'dark' : 'light';
-  }
-  
+
+  // Force light mode as requested since toggle was removed
+  localStorage.setItem('themeMode', 'light');
+  document.documentElement.setAttribute('data-theme', 'light');
+  document.documentElement.classList.remove('dark');
+  mode = 'light';
+
   return {
     mode,
     primaryColor: savedColor || '#1976d2',
@@ -40,7 +38,7 @@ const themeSlice = createSlice({
       localStorage.setItem('themeMode', state.mode);
       localStorage.setItem('themeAutoMode', 'false');
       document.documentElement.setAttribute('data-theme', state.mode);
-      
+
       // Apply theme to MUI
       if (window.updateMuiTheme) {
         window.updateMuiTheme(state.mode);
@@ -49,11 +47,11 @@ const themeSlice = createSlice({
     setThemeMode: (state, action) => {
       const newMode = action.payload;
       state.mode = newMode;
-      
+
       if (newMode === 'auto') {
         state.autoMode = true;
         localStorage.setItem('themeAutoMode', 'true');
-        
+
         // Set based on system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         state.mode = prefersDark ? 'dark' : 'light';
@@ -62,9 +60,9 @@ const themeSlice = createSlice({
         localStorage.setItem('themeMode', newMode);
         localStorage.setItem('themeAutoMode', 'false');
       }
-      
+
       document.documentElement.setAttribute('data-theme', state.mode);
-      
+
       // Apply theme to MUI
       if (window.updateMuiTheme) {
         window.updateMuiTheme(state.mode);
@@ -76,18 +74,18 @@ const themeSlice = createSlice({
       if (secondary) {
         state.secondaryColor = secondary;
       }
-      
+
       localStorage.setItem('themePrimaryColor', primary);
       if (secondary) {
         localStorage.setItem('themeSecondaryColor', secondary);
       }
-      
+
       // Update CSS variables
       document.documentElement.style.setProperty('--primary-color', primary);
       if (secondary) {
         document.documentElement.style.setProperty('--secondary-color', secondary);
       }
-      
+
       // Apply to MUI theme
       if (window.updateMuiColors) {
         window.updateMuiColors({ primary, secondary });
@@ -101,7 +99,7 @@ const themeSlice = createSlice({
     setFontSize: (state, action) => {
       state.fontSize = action.payload;
       localStorage.setItem('themeFontSize', action.payload);
-      
+
       // Update root font size
       const sizes = {
         small: '14px',
@@ -115,11 +113,11 @@ const themeSlice = createSlice({
       document.documentElement.setAttribute('data-theme', state.mode);
       document.documentElement.style.setProperty('--primary-color', state.primaryColor);
       document.documentElement.style.setProperty('--secondary-color', state.secondaryColor);
-      
+
       if (state.highContrast) {
         document.documentElement.setAttribute('data-high-contrast', 'true');
       }
-      
+
       const sizes = {
         small: '14px',
         medium: '16px',
@@ -130,13 +128,13 @@ const themeSlice = createSlice({
   }
 });
 
-export const { 
-  toggleTheme, 
-  setThemeMode, 
-  setThemeColor, 
-  setHighContrast, 
+export const {
+  toggleTheme,
+  setThemeMode,
+  setThemeColor,
+  setHighContrast,
   setFontSize,
-  initializeTheme 
+  initializeTheme
 } = themeSlice.actions;
 
 export default themeSlice.reducer;

@@ -67,8 +67,8 @@ const AboutPage = () => {
                             viewport={{ once: true }}
                         >
                             <Badge className="mb-4" variant="secondary">Who We Are</Badge>
-                            <h2 className="text-4xl font-bold mb-6">Redefining Real Estate Engagement</h2>
-                            <p className="text-lg text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                            <h2 className="text-4xl font-bold mb-6 text-gray-900">Redefining Real Estate Engagement</h2>
+                            <p className="text-lg text-gray-700 dark:text-gray-400 mb-6 leading-relaxed font-medium">
                                 RealtyEngage is more than just a property developer. We are a team of architects,
                                 engineers, and visionaries dedicated to creating sustainable and premium living spaces.
                                 With over a decade of experience, we have mastered the art of balancing luxury with
@@ -118,8 +118,8 @@ const AboutPage = () => {
                                     <div className="h-16 w-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-6 text-blue-600">
                                         <Icon className="h-8 w-8" />
                                     </div>
-                                    <h3 className="text-4xl font-bold mb-2">{stat.value}</h3>
-                                    <p className="text-gray-500 font-medium">{stat.label}</p>
+                                    <h3 className="text-4xl font-bold mb-2 text-gray-900">{stat.value}</h3>
+                                    <p className="text-gray-700 font-bold uppercase tracking-tight">{stat.label}</p>
                                 </motion.div>
                             );
                         })}
@@ -131,16 +131,16 @@ const AboutPage = () => {
             <section className="py-20">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold mb-4">The Journey So Far</h2>
-                        <p className="text-gray-500 max-w-2xl mx-auto">From a small startup to a leading real estate firm, our growth has been fueled by your trust.</p>
+                        <h2 className="text-4xl font-bold mb-4 text-gray-900">The Journey So Far</h2>
+                        <p className="text-gray-700 dark:text-gray-400 max-w-2xl mx-auto font-medium">From a small startup to a leading real estate firm, our growth has been fueled by your trust.</p>
                     </div>
                     <div className="grid md:grid-cols-4 gap-6">
                         {milestones.map((item, index) => (
                             <Card key={index} className="p-6 relative overflow-hidden border-t-4 border-t-blue-600">
                                 <span className="text-5xl font-bold text-gray-100 absolute -bottom-2 -right-2 z-0">{item.year}</span>
                                 <div className="relative z-10">
-                                    <h4 className="text-xl font-bold mb-3">{item.title}</h4>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.desc}</p>
+                                    <h4 className="text-xl font-bold mb-3 text-gray-900">{item.title}</h4>
+                                    <p className="text-sm text-gray-700 dark:text-gray-400 font-medium">{item.desc}</p>
                                 </div>
                             </Card>
                         ))}

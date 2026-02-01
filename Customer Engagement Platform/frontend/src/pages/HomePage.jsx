@@ -314,8 +314,8 @@ const HomePage = () => {
                   <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-primary text-white mb-4">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
-                  <p className="text-gray-600 dark:text-gray-400">{stat.label}</p>
+                  <h3 className="text-3xl font-bold mb-1 text-gray-900">{stat.value}</h3>
+                  <p className="text-gray-700 dark:text-gray-400 font-medium">{stat.label}</p>
                 </motion.div>
               );
             })}
@@ -334,8 +334,8 @@ const HomePage = () => {
             <Badge className="mb-4" variant="secondary">
               Why Choose Us
             </Badge>
-            <h2 className="text-4xl font-bold mb-4">Experience Excellence in Real Estate</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4 text-gray-900">Experience Excellence in Real Estate</h2>
+            <p className="text-xl text-gray-700 dark:text-gray-400 max-w-3xl mx-auto font-medium">
               We provide comprehensive solutions for all your real estate needs with
               unmatched quality and service.
             </p>
@@ -357,10 +357,10 @@ const HomePage = () => {
                       <div className={`h-12 w-12 rounded-lg bg-gradient-to-r ${feature.color} flex items-center justify-center text-white mb-4`}>
                         <Icon className="h-6 w-6" />
                       </div>
-                      <CardTitle>{feature.title}</CardTitle>
+                      <CardTitle className="text-gray-900">{feature.title}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-gray-600 dark:text-gray-400">{feature.description}</p>
+                      <p className="text-gray-700 dark:text-gray-400 font-medium">{feature.description}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -381,8 +381,8 @@ const HomePage = () => {
             <Badge className="mb-4" variant="secondary">
               Featured Properties
             </Badge>
-            <h2 className="text-4xl font-bold mb-4">Discover Our Premium Projects</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4 text-gray-900">Discover Our Premium Projects</h2>
+            <p className="text-xl text-gray-700 dark:text-gray-400 max-w-3xl mx-auto font-medium">
               Explore our handpicked selection of luxury properties in prime locations
             </p>
           </motion.div>
@@ -422,12 +422,12 @@ const HomePage = () => {
                     </div>
                   </div>
                   <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">{project.name}</h3>
-                    <div className="flex items-center text-gray-600 dark:text-gray-400 mb-2">
+                    <h3 className="text-xl font-semibold mb-2 text-gray-900">{project.name}</h3>
+                    <div className="flex items-center text-gray-700 dark:text-gray-400 mb-2 font-medium">
                       <MapPin className="h-4 w-4 mr-1" />
                       <span className="text-sm">{project.location}</span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-3">{project.type}</p>
+                    <p className="text-gray-700 dark:text-gray-400 mb-3 font-semibold">{project.type}</p>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-2xl font-bold text-primary">{project.price}</p>
@@ -467,8 +467,8 @@ const HomePage = () => {
             <Badge className="mb-4" variant="secondary">
               Testimonials
             </Badge>
-            <h2 className="text-4xl font-bold mb-4">What Our Customers Say</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            <h2 className="text-4xl font-bold mb-4 text-gray-900">What Our Customers Say</h2>
+            <p className="text-xl text-gray-700 dark:text-gray-400 max-w-3xl mx-auto font-medium">
               Join hundreds of satisfied families who found their dream homes with us
             </p>
           </motion.div>

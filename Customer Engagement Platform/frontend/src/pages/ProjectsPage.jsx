@@ -529,6 +529,7 @@ const ProjectsPage = ({ isAdmin = false }) => {
                           variant={currentPage === index + 1 ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setCurrentPage(index + 1)}
+                          className={currentPage === index + 1 ? '' : 'text-gray-900 dark:text-gray-200 border-gray-300'}
                         >
                           {index + 1}
                         </Button>

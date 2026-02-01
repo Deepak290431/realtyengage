@@ -1,14 +1,7 @@
 # Render.com Blueprint Configuration for RealtyEngage (FREE TIER)
 # All paths are relative to the repository root
 
-databases:
-  - name: realtyengage-db
-    plan: free # Free for 90 days
-    databaseName: realtyengage
-    user: realtyengage_user
-    region: oregon
-    ipAllowList: [] 
-
+# Note: Render does not provide hosted MongoDB. Using external MongoDB Atlas.
 services:
   # Main API Service
   - type: web
@@ -23,9 +16,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        fromDatabase:
-          name: realtyengage-db
-          property: connectionString
+        value: mongodb+srv://Deepak:UG74BN9lAe0vWYhP@cluster0.p53ob.mongodb.net/realtyengage?retryWrites=true&w=majority&appName=Cluster0
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
@@ -40,6 +31,7 @@ services:
         value: 100
       - key: SESSION_SECRET
         generateValue: true
+      # Add other required API keys here in the Render Dashboard securely
     autoDeploy: true
 
   # Frontend Static Service
@@ -56,7 +48,6 @@ services:
         source: /*
         destination: /index.html
 
-# Note: Redis, Workers, and Cron Jobs are NOT available on Render's Free tier.
 # Environment Groups for shared secrets
 envVarGroups:
   - name: realtyengage-secrets

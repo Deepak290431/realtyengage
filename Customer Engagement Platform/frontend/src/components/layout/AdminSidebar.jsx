@@ -109,7 +109,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             </div>
 
             <nav className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
-                <p className="px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                <p className="px-4 text-[11px] font-bold text-gray-700 dark:text-gray-400 uppercase tracking-widest mb-4">
                     Management
                 </p>
 
@@ -132,7 +132,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
                                 className={({ isActive }) =>
                                     `group flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 ${isActive
                                         ? 'bg-[#0B1F33] text-white shadow-lg'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#0B1F33]'
+                                        : 'text-gray-900 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-primary transition-colors'
                                     }`
                                 }
                             >
@@ -149,7 +149,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
                 ))}
 
                 <div className="pt-8">
-                    <p className="px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-4">
+                    <p className="px-4 text-[11px] font-bold text-gray-700 dark:text-gray-400 uppercase tracking-widest mb-4">
                         Quick Actions
                     </p>
                     <NavLink
@@ -169,8 +169,8 @@ const AdminSidebar = ({ onToggleChatbot }) => {
                             {user?.firstName?.charAt(0) || 'A'}
                         </div>
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-bold truncate dark:text-white">{user?.firstName} {user?.lastName}</p>
-                            <p className="text-[10px] text-gray-500 truncate">{user?.email}</p>
+                            <p className="text-sm font-bold truncate text-gray-900 dark:text-white">{user?.firstName} {user?.lastName}</p>
+                            <p className="text-[10px] text-gray-600 dark:text-gray-400 font-medium truncate">{user?.email}</p>
                         </div>
 
                     </div>
