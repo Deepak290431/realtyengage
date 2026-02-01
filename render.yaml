@@ -1,28 +1,20 @@
-# Render.com Blueprint Configuration for RealtyEngage
+# Render.com Blueprint Configuration for RealtyEngage (FREE TIER)
 # All paths are relative to the repository root
 
 databases:
   - name: realtyengage-db
-    plan: starter
+    plan: free # Free for 90 days
     databaseName: realtyengage
     user: realtyengage_user
     region: oregon
     ipAllowList: [] 
 
 services:
-  # Redis Cache Service
-  - type: redis
-    name: realtyengage-cache
-    plan: starter
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
-    ipAllowList: []
-
   # Main API Service
   - type: web
     name: realtyengage-api
     env: node
-    plan: starter
+    plan: free # Free Tier
     region: oregon
     buildCommand: cd "Customer Engagement Platform/backend" && npm install
     startCommand: cd "Customer Engagement Platform/backend" && node server.js
@@ -48,55 +40,16 @@ services:
         value: 100
       - key: SESSION_SECRET
         generateValue: true
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: realtyengage-cache
-          property: connectionString
+      # Redis is not available on Free tier. Commented out or removed.
+      # - key: REDIS_URL
+      #   value: "" 
     autoDeploy: true
-
-  # Background Worker Service
-  - type: worker
-    name: realtyengage-worker
-    env: node
-    plan: starter
-    region: oregon
-    buildCommand: cd "Customer Engagement Platform/backend" && npm install
-    startCommand: cd "Customer Engagement Platform/backend" && npm run worker
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MONGODB_URI
-        fromDatabase:
-          name: realtyengage-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: realtyengage-cache
-          property: connectionString
-
-  # Cron Job Service
-  - type: cron
-    name: realtyengage-scheduler
-    env: node
-    plan: starter
-    region: oregon
-    schedule: "0 0 * * *" 
-    buildCommand: cd "Customer Engagement Platform/backend" && npm install
-    startCommand: cd "Customer Engagement Platform/backend" && npm run cron:daily
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: MONGODB_URI
-        fromDatabase:
-          name: realtyengage-db
-          property: connectionString
 
   # Frontend Static Service
   - type: web
     name: realtyengage-frontend
     env: static
+    plan: free # Free Tier
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
@@ -106,6 +59,9 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
+
+# Note: Redis, Workers, and Cron Jobs are NOT available on Render's Free tier.
+# They have been removed to allow free deployment.
 
 # Environment Groups for shared secrets
 envVarGroups:
