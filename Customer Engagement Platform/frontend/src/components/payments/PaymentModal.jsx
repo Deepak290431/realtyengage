@@ -45,11 +45,10 @@ const PaymentModal = ({ open, onClose, project, onSuccess }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState({});
-  const [showEMICalculator, setShowEMICalculator] = useState(false);
-  
+
   const { user } = useSelector((state) => state.auth);
   const { register, handleSubmit, watch, formState: { errors }, reset } = useForm();
-  
+
   const paymentType = watch('paymentType');
   const amount = watch('amount');
 
@@ -176,7 +175,7 @@ const PaymentModal = ({ open, onClose, project, onSuccess }) => {
             fullWidth
             type="number"
             label="Amount"
-            {...register('amount', { 
+            {...register('amount', {
               required: 'Amount is required',
               min: { value: 1, message: 'Amount must be greater than 0' }
             })}
@@ -186,13 +185,6 @@ const PaymentModal = ({ open, onClose, project, onSuccess }) => {
               startAdornment: (
                 <InputAdornment position="start">
                   <CurrencyRupee />
-                </InputAdornment>
-              ),
-              endAdornment: paymentType === 'emi' && (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowEMICalculator(!showEMICalculator)}>
-                    <Calculate />
-                  </IconButton>
                 </InputAdornment>
               ),
             }}
@@ -287,7 +279,7 @@ const PaymentModal = ({ open, onClose, project, onSuccess }) => {
       <Typography variant="h6" gutterBottom>
         Confirm Payment Details
       </Typography>
-      
+
       <Card sx={{ mb: 2 }}>
         <CardContent>
           <Grid container spacing={2}>
@@ -320,9 +312,9 @@ const PaymentModal = ({ open, onClose, project, onSuccess }) => {
               </Typography>
             </Grid>
           </Grid>
-          
+
           <Divider sx={{ my: 2 }} />
-          
+
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Typography variant="h6">Total Amount</Typography>
             <Typography variant="h5" color="primary" sx={{ fontWeight: 600 }}>
@@ -334,7 +326,7 @@ const PaymentModal = ({ open, onClose, project, onSuccess }) => {
 
       {['bank_transfer', 'cheque'].includes(paymentData.method) && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          For {paymentData.method === 'bank_transfer' ? 'bank transfer' : 'cheque'} payments, 
+          For {paymentData.method === 'bank_transfer' ? 'bank transfer' : 'cheque'} payments,
           you will receive payment instructions via email. The payment will be confirmed after verification.
         </Alert>
       )}

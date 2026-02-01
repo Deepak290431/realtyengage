@@ -21,7 +21,8 @@ import {
   MoreVertical,
   X,
   Users,
-  UserCircle
+  UserCircle,
+  Calculator
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -29,7 +30,7 @@ import { logout } from '../../store/slices/authSlice';
 import AIChatbot from '../chatbot/AIChatbot';
 import VoiceSearch from '../voice/VoiceSearch';
 
-const Header = () => {
+const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -39,9 +40,31 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [isChatbotOpenLocal, setIsChatbotOpenLocal] = useState(false);
   const [isVoiceSearchOpen, setIsVoiceSearchOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [notifications] = useState(3); // Example notification count
+
+  const isChatbotOpen = isChatbotOpenProp !== undefined ? isChatbotOpenProp : isChatbotOpenLocal;
+
+  const handleToggleChatbot = () => {
+    if (onToggleChatbot) {
+      onToggleChatbot();
+    } else {
+      setIsChatbotOpenLocal(!isChatbotOpenLocal);
+    }
+  };
+
+  const handleSearch = (e) => {
+    if (e) e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate('/projects', { state: { searchQuery } });
+      setIsSearchExpanded(false);
+      setSearchQuery('');
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -72,10 +95,12 @@ const Header = () => {
       { label: 'Enquiries', path: '/admin/enquiries', icon: FileQuestion },
       { label: 'Transactions', path: '/admin/payments', icon: CreditCard },
       { label: 'Customers', path: '/admin/customers', icon: Users },
+      { label: 'EMI Calculator', path: '/admin/emi', icon: Calculator },
       { label: 'Settings', path: '/admin/settings', icon: Settings },
     ] : isAuthenticated && user?.role !== 'admin' ? [
       { label: 'My Enquiries', path: '/dashboard/enquiries', icon: FileQuestion },
       { label: 'My Payments', path: '/dashboard/payments', icon: CreditCard },
+      { label: 'EMI Calculator', path: '/dashboard/emi', icon: Calculator },
       { label: 'Support', path: '/dashboard/support', icon: MessageSquare }
     ] : [
       { label: 'About', path: '/about', icon: Home },
@@ -143,144 +168,217 @@ const Header = () => {
             </nav>
 
             {/* Actions Section - Right Aligned */}
-            <div className="flex items-center space-x-3">
-              {/* Search */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden lg:flex"
-                onClick={() => setIsVoiceSearchOpen(!isVoiceSearchOpen)}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
+            <div className="flex items-center space-x-1 md:space-x-3">
+              {/* Desktop Actions (lg and up) */}
+              <div className="hidden lg:flex items-center space-x-3">
+                <div className="flex items-center">
+                  {/* Expandable Search */}
+                  <motion.div
+                    initial={false}
+                    animate={{ width: isSearchExpanded ? 240 : 40 }}
+                    className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden"
+                  >
+                    {isSearchExpanded ? (
+                      <form onSubmit={handleSearch} className="flex items-center w-full px-3">
+                        <input
+                          autoFocus
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search projects..."
+                          className="bg-transparent border-none outline-none text-sm w-full py-1.5 dark:text-white"
+                        />
+                        <Button
+                          type="submit"
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-full"
+                        >
+                          <Search className="h-4 w-4" />
+                        </Button>
+                      </form>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full hover:bg-white dark:hover:bg-gray-700 h-9 w-9"
+                        onClick={() => setIsSearchExpanded(true)}
+                      >
+                        <Search className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </motion.div>
 
-              {/* Voice Search */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsVoiceSearchOpen(!isVoiceSearchOpen)}
-                className="hidden lg:flex"
-              >
-                <Mic className="h-5 w-5" />
-              </Button>
+                  {/* Voice Search Icon */}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 h-9 w-9 ml-1"
+                    onClick={() => setIsVoiceSearchOpen(true)}
+                  >
+                    <Mic className="h-4 w-4 text-purple-600" />
+                  </Button>
+                </div>
 
-              {/* AI Chatbot */}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsChatbotOpen(!isChatbotOpen)}
-                className="relative hidden lg:flex"
-              >
-                <MessageSquare className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-              </Button>
+                {/* AI Assistant - Desktop Customer Only */}
+                {isAuthenticated && user?.role !== 'admin' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleToggleChatbot}
+                    className="relative rounded-full h-10 w-10 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  >
+                    <MessageSquare className="h-5 w-5 text-green-600" />
+                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse" />
+                  </Button>
+                )}
 
-
-
-              {isAuthenticated ? (
-                <>
-                  {/* Notifications */}
-                  <Button variant="ghost" size="icon" className="relative hidden lg:flex">
-                    <Bell className="h-5 w-5" />
+                {/* Notifications - Desktop Customer Only */}
+                {isAuthenticated && user?.role !== 'admin' && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="relative rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                  >
+                    <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                     {notifications > 0 && (
                       <Badge
                         variant="destructive"
-                        className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center"
+                        className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center border-2 border-white dark:border-gray-900"
                       >
                         {notifications}
                       </Badge>
                     )}
                   </Button>
+                )}
 
-                  {/* Profile Menu */}
-                  <div className="relative hidden lg:block">
+                {isAuthenticated ? (
+                  <div className="relative">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                      className="flex items-center space-x-2"
+                      className={`relative rounded-full h-10 w-10 transition-all ${isProfileMenuOpen ? 'bg-primary/10' : ''}`}
                     >
-                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold">
+                      <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold shadow-sm">
                         {user?.firstName?.charAt(0) || user?.name?.charAt(0) || 'U'}
                       </div>
+                      {(user?.role === 'admin' && notifications > 0) && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center border-2 border-white dark:border-gray-900"
+                        >
+                          {notifications}
+                        </Badge>
+                      )}
                     </Button>
 
                     <AnimatePresence>
                       {isProfileMenuOpen && (
                         <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 mt-3 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[110] overflow-hidden"
                         >
-                          <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                            <p className="font-semibold truncate">{user?.name}</p>
-                            <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-                            <Badge variant={user?.role === 'admin' ? 'destructive' : 'secondary'} className="mt-1 bg-primary/10 text-primary border-none">
-                              {user?.role}
+                          <div className="p-4 bg-gray-50/50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                            <p className="font-bold text-gray-900 dark:text-white truncate">{user?.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                            <Badge variant="outline" className="mt-2 text-[10px] bg-primary/5 text-primary border-primary/20">
+                              {user?.role?.toUpperCase()}
                             </Badge>
                           </div>
-                          <div className="p-2">
+
+                          <div className="p-2 space-y-1">
+                            <button
+                              onClick={() => { handleToggleChatbot(); setIsProfileMenuOpen(false); }}
+                              className="w-full flex items-center space-x-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all group"
+                            >
+                              <div className="h-8 w-8 rounded-lg bg-green-50 dark:bg-green-900/20 flex items-center justify-center">
+                                <MessageSquare className="h-4 w-4 text-green-600" />
+                              </div>
+                              <span className="text-sm font-semibold flex-1 text-left">AI Assistant</span>
+                              <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+                            </button>
+
+                            <button
+                              onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsProfileMenuOpen(false); }}
+                              className="w-full flex items-center space-x-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all group"
+                            >
+                              <div className="h-8 w-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                                <Bell className="h-4 w-4 text-red-600" />
+                              </div>
+                              <span className="text-sm font-semibold flex-1 text-left">Notifications</span>
+                              {notifications > 0 && (
+                                <Badge variant="destructive" className="h-5 min-w-[20px] px-1">{notifications}</Badge>
+                              )}
+                            </button>
+
+                            <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
+
                             <Link
                               to={user?.role === 'admin' ? '/admin' : '/dashboard'}
-                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                              className="flex items-center space-x-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all"
                               onClick={() => setIsProfileMenuOpen(false)}
                             >
-                              <LayoutDashboard className="h-4 w-4" />
-                              <span>Dashboard</span>
+                              <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                <LayoutDashboard className="h-4 w-4 text-blue-600" />
+                              </div>
+                              <span className="text-sm font-semibold">Dashboard</span>
                             </Link>
+
                             <Link
                               to={user?.role === 'admin' ? '/admin/profile' : '/dashboard/profile'}
-                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+                              className="flex items-center space-x-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all"
                               onClick={() => setIsProfileMenuOpen(false)}
                             >
-                              <User className="h-4 w-4" />
-                              <span>Profile</span>
+                              <div className="h-8 w-8 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center">
+                                <User className="h-4 w-4 text-orange-600" />
+                              </div>
+                              <span className="text-sm font-semibold">My Profile</span>
                             </Link>
-                            <Link
-                              to={user?.role === 'admin' ? '/admin/settings' : '/dashboard/settings'}
-                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
-                              onClick={() => setIsProfileMenuOpen(false)}
-                            >
-                              <Settings className="h-4 w-4" />
-                              <span>Settings</span>
-                            </Link>
+
+                            <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
+
                             <button
                               onClick={handleLogout}
-                              className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors w-full text-left text-red-600"
+                              className="w-full flex items-center space-x-3 px-3 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-all text-red-600"
                             >
-                              <LogOut className="h-4 w-4" />
-                              <span>Logout</span>
+                              <div className="h-8 w-8 rounded-lg bg-red-50 dark:bg-red-900/10 flex items-center justify-center">
+                                <LogOut className="h-4 w-4" />
+                              </div>
+                              <span className="text-sm font-bold">Logout</span>
                             </button>
                           </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
                   </div>
-                </>
-              ) : (
-                <div className="hidden lg:flex items-center space-x-3">
-                  <Button
-                    variant="ghost"
-                    onClick={() => navigate('/login')}
-                    className="text-base px-5 py-2.5 h-auto"
-                  >
-                    Login
-                  </Button>
-                  <Button
-                    onClick={() => navigate('/register')}
-                    className="bg-[#0B1F33] hover:bg-[#06121f] text-white text-base px-6 py-3 h-auto shadow-md"
-                  >
-                    Get Started
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      variant="ghost"
+                      onClick={() => navigate('/login')}
+                      className="text-sm px-4 h-9"
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      onClick={() => navigate('/register')}
+                      className="bg-[#0B1F33] hover:bg-[#06121f] text-white text-sm px-5 h-9 shadow-md"
+                    >
+                      Get Started
+                    </Button>
+                  </div>
+                )}
+              </div>
 
-              {/* Mobile Menu Toggle (Three Dots) */}
+              {/* Mobile Menu Toggle (Three Dots) - Always show on mobile, hide on lg */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full h-10 w-10"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? (
@@ -341,32 +439,52 @@ const Header = () => {
                   );
                 })}
 
-                {/* Quick Tools (hidden for admins, except logout) */}
-                {!(isAuthenticated && user?.role === 'admin') && (
-                  <>
-                    <div className="px-3 py-1 mt-3 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
-                      Quick Tools
+                {/* Quick Tools */}
+                <div className="px-3 py-1 mt-3 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                  Quick Tools
+                </div>
+
+                <div className="space-y-1">
+                  <button
+                    onClick={() => { setIsSearchExpanded(true); setIsMobileMenuOpen(false); }}
+                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                  >
+                    <Search className="h-4 w-4 text-primary" />
+                    <span className="text-xs md:text-sm">Search Projects</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setIsVoiceSearchOpen(true); setIsMobileMenuOpen(false); }}
+                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                  >
+                    <Mic className="h-4 w-4 text-purple-600" />
+                    <span className="text-xs md:text-sm">Voice Search</span>
+                  </button>
+
+                  <button
+                    onClick={() => { handleToggleChatbot(); setIsMobileMenuOpen(false); }}
+                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                  >
+                    <MessageSquare className="h-4 w-4 text-green-600" />
+                    <span className="text-xs md:text-sm">AI Assistant</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setIsNotificationOpen(true); setIsMobileMenuOpen(false); }}
+                    className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                  >
+                    <div className="relative">
+                      <Bell className="h-4 w-4 text-red-600" />
+                      {notifications > 0 && (
+                        <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full border border-white dark:border-gray-800" />
+                      )}
                     </div>
-
-                    <button
-                      onClick={() => { setIsVoiceSearchOpen(true); setIsMobileMenuOpen(false); }}
-                      className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                    >
-                      <Mic className="h-4 w-4 text-purple-600" />
-                      <span className="text-xs md:text-sm">Voice Search</span>
-                    </button>
-
-                    <button
-                      onClick={() => { setIsChatbotOpen(true); setIsMobileMenuOpen(false); }}
-                      className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                    >
-                      <MessageSquare className="h-4 w-4 text-green-600" />
-                      <span className="text-xs md:text-sm">AI Assistant</span>
-                    </button>
-
-
-                  </>
-                )}
+                    <span className="text-xs md:text-sm">Notifications</span>
+                    {notifications > 0 && (
+                      <Badge variant="destructive" className="ml-auto h-4 min-w-[16px] px-1 text-[9px]">{notifications}</Badge>
+                    )}
+                  </button>
+                </div>
 
                 {isAuthenticated ? (
                   <>
@@ -401,17 +519,19 @@ const Header = () => {
       </motion.header>
 
       {/* Chatbot */}
-      {isChatbotOpen && (
-        <AIChatbot isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
+      {isChatbotOpen && !onToggleChatbot && (
+        <AIChatbot isOpen={isChatbotOpen} onClose={handleToggleChatbot} />
       )}
 
       {/* Voice Search */}
-      {isVoiceSearchOpen && (
-        <VoiceSearch onSearch={(query, results) => {
+      <VoiceSearch
+        isOpen={isVoiceSearchOpen}
+        onClose={() => setIsVoiceSearchOpen(false)}
+        onSearch={(query, results) => {
           navigate('/projects', { state: { searchQuery: query, results } });
           setIsVoiceSearchOpen(false);
-        }} />
-      )}
+        }}
+      />
     </>
   );
 };

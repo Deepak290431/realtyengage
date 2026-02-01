@@ -601,7 +601,14 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                         <label className="text-sm text-gray-500">Tenure (Years)</label>
                                         <Input type="number" placeholder="20" />
                                     </div>
-                                    <Button className="w-full" onClick={() => navigate('/dashboard/payments?tab=calculator')}>
+                                    <Button
+                                        className="w-full"
+                                        onClick={() => {
+                                            const amount = project.pricing?.basePrice || 5000000;
+                                            const path = isAdmin ? `/admin/emi` : `/dashboard/emi`;
+                                            navigate(`${path}?amount=${amount}`);
+                                        }}
+                                    >
                                         Calculate EMI
                                     </Button>
                                 </div>

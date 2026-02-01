@@ -21,7 +21,7 @@ import {
   TrendingUp,
   Plus
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { Button } from '../components/ui/button';
@@ -33,13 +33,14 @@ import projectService from '../services/projectService';
 
 const ProjectsPage = ({ isAdmin = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useSelector((state) => state.auth);
 
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('grid');
   const [showFilters, setShowFilters] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(location.state?.searchQuery || '');
   const [savedProjects, setSavedProjects] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredProjects, setFilteredProjects] = useState([]);
@@ -57,6 +58,14 @@ const ProjectsPage = ({ isAdmin = false }) => {
     const fetchProjects = async () => {
       try {
         setLoading(true);
+        // If we have results in state, use them instead of fetching all
+        if (location.state?.results) {
+          setProjects(location.state.results);
+          setFilteredProjects(location.state.results);
+          setLoading(false);
+          return;
+        }
+
         const data = await projectService.getProjects();
         // Handle both standardized response { success, data } and direct array
         const projectsList = Array.isArray(data) ? data : (data.data?.data || data.data || []);
@@ -72,7 +81,14 @@ const ProjectsPage = ({ isAdmin = false }) => {
     };
 
     fetchProjects();
-  }, []);
+  }, [location.state?.results]); // Re-run if voice search results are injected
+
+  // Update searchQuery if navigation state changes (e.g. from header search)
+  useEffect(() => {
+    if (location.state?.searchQuery) {
+      setSearchQuery(location.state.searchQuery);
+    }
+  }, [location.state?.searchQuery]);
 
   // Filter functionality
   useEffect(() => {

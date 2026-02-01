@@ -139,11 +139,11 @@ const ReportCard = ({ report, onGenerate, onSchedule, onEdit }) => {
             color={getColorByStatus(report.status)}
           />
         </Box>
-        
+
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {report.description}
         </Typography>
-        
+
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
           <Chip
             icon={<DateRange />}
@@ -166,14 +166,14 @@ const ReportCard = ({ report, onGenerate, onSchedule, onEdit }) => {
             />
           )}
         </Box>
-        
+
         {report.schedule && (
           <Alert severity="info" icon={<Schedule />} sx={{ py: 0.5 }}>
             Scheduled: {report.schedule}
           </Alert>
         )}
       </CardContent>
-      
+
       <CardActions>
         <Button
           size="small"
@@ -252,7 +252,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
               onChange={(e) => setReportConfig({ ...reportConfig, name: e.target.value })}
               sx={{ mb: 2 }}
             />
-            
+
             <FormControl fullWidth sx={{ mb: 2 }}>
               <InputLabel>Report Type</InputLabel>
               <Select
@@ -269,7 +269,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
                 <MenuItem value="custom">Custom Report</MenuItem>
               </Select>
             </FormControl>
-            
+
             <TextField
               fullWidth
               label="Description"
@@ -280,7 +280,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
             />
           </Box>
         );
-        
+
       case 1:
         return (
           <Box>
@@ -301,7 +301,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
                 <MenuItem value="custom">Custom Range</MenuItem>
               </Select>
             </FormControl>
-            
+
             {reportConfig.dateRange === 'custom' && (
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
@@ -320,7 +320,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
                 </Box>
               </LocalizationProvider>
             )}
-            
+
             <Typography variant="subtitle2" gutterBottom>
               Select Metrics to Include:
             </Typography>
@@ -352,7 +352,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
             </List>
           </Box>
         );
-        
+
       case 2:
         return (
           <Box>
@@ -369,7 +369,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
                 <MenuItem value="JSON">JSON</MenuItem>
               </Select>
             </FormControl>
-            
+
             <FormControlLabel
               control={
                 <Switch
@@ -380,7 +380,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
               label="Include Charts & Visualizations"
               sx={{ mb: 2 }}
             />
-            
+
             <FormControlLabel
               control={
                 <Switch
@@ -393,7 +393,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
             />
           </Box>
         );
-        
+
       case 3:
         return (
           <Box>
@@ -411,7 +411,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
                 <MenuItem value="quarterly">Quarterly</MenuItem>
               </Select>
             </FormControl>
-            
+
             <TextField
               fullWidth
               label="Email Recipients"
@@ -425,7 +425,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
             />
           </Box>
         );
-        
+
       default:
         return null;
     }
@@ -436,7 +436,7 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
       <DialogTitle>
         {report ? 'Edit Report' : 'Create New Report'}
       </DialogTitle>
-      
+
       <DialogContent>
         <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
           {steps.map((label) => (
@@ -445,10 +445,10 @@ const ReportBuilder = ({ open, onClose, onSave, report = null }) => {
             </Step>
           ))}
         </Stepper>
-        
+
         {renderStepContent(activeStep)}
       </DialogContent>
-      
+
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button
@@ -578,30 +578,30 @@ const Reports = () => {
 
   const generatePDF = async (report) => {
     setGeneratingReport(report.id);
-    
+
     try {
       const pdf = new jsPDF();
-      
+
       // Add title
       pdf.setFontSize(20);
       pdf.text(report.name, 20, 20);
-      
+
       // Add metadata
       pdf.setFontSize(12);
       pdf.text(`Generated: ${format(new Date(), 'PPP')}`, 20, 35);
       pdf.text(`Period: Last 30 days`, 20, 45);
-      
+
       // Add content based on report type
       pdf.setFontSize(14);
       pdf.text('Executive Summary', 20, 60);
-      
+
       pdf.setFontSize(10);
       const summaryText = `This ${report.type} report provides comprehensive insights into platform performance.
       Key metrics show positive trends with overall growth of 15% compared to the previous period.`;
-      
+
       const lines = pdf.splitTextToSize(summaryText, 170);
       pdf.text(lines, 20, 70);
-      
+
       // Add table data
       if (report.type === 'revenue') {
         pdf.autoTable({
@@ -616,10 +616,10 @@ const Reports = () => {
           ]
         });
       }
-      
+
       // Save the PDF
       pdf.save(`${report.name.replace(/ /g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
-      
+
       toast.success('Report generated successfully!');
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -631,11 +631,11 @@ const Reports = () => {
 
   const generateExcel = async (report) => {
     setGeneratingReport(report.id);
-    
+
     try {
       // Create workbook
       const wb = XLSX.utils.book_new();
-      
+
       // Create worksheet data
       const wsData = [
         [report.name],
@@ -643,7 +643,7 @@ const Reports = () => {
         [],
         ['Metric', 'Value', 'Change', 'Status']
       ];
-      
+
       // Add sample data based on report type
       if (report.type === 'revenue') {
         wsData.push(
@@ -660,16 +660,16 @@ const Reports = () => {
           ['Retention Rate', '78.5%', '-2.1%', 'Warning']
         );
       }
-      
+
       // Create worksheet
       const ws = XLSX.utils.aoa_to_sheet(wsData);
-      
+
       // Add worksheet to workbook
       XLSX.utils.book_append_sheet(wb, ws, 'Report');
-      
+
       // Save the file
       XLSX.writeFile(wb, `${report.name.replace(/ /g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`);
-      
+
       toast.success('Excel report generated successfully!');
     } catch (error) {
       console.error('Error generating Excel:', error);
@@ -685,7 +685,7 @@ const Reports = () => {
     } else if (report.format === 'Excel') {
       generateExcel(report);
     } else {
-      toast.info(`Generating ${report.format} report...`);
+      toast(`Generating ${report.format} report...`);
     }
   };
 
@@ -715,7 +715,7 @@ const Reports = () => {
             Generate, schedule, and export comprehensive reports
           </Typography>
         </Box>
-        
+
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             variant="contained"

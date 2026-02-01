@@ -23,7 +23,8 @@ import {
   Calendar,
   X,
   Info,
-  ChevronRight
+  ChevronRight,
+  Calculator
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -478,6 +479,10 @@ const AdminDashboard = () => {
                 <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/admin/customers')}>
                   <Users className="h-4 w-4 mr-2" />
                   Manage Customers
+                </Button>
+                <Button variant="outline" className="w-full justify-start text-indigo-600 bg-indigo-50 border-indigo-100 hover:bg-indigo-100" onClick={() => navigate('/admin/emi')}>
+                  <Calculator className="h-4 w-4 mr-2" />
+                  EMI Calculator
                 </Button>
                 <Button variant="outline" className="w-full justify-start" onClick={() => {
                   toast.loading('Generating report...');

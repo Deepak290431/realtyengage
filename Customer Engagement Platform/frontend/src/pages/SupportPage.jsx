@@ -186,7 +186,7 @@ const SupportPage = ({ isAdmin = false }) => {
       )}
 
       {/* Contact Cards */}
-      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 -mt-8">
+      <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 mt-8">
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Card className="p-6 bg-white dark:bg-gray-800 shadow-lg">
             <div className="flex items-center space-x-4">

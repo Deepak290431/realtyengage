@@ -139,8 +139,8 @@ fs.appendFileSync('server_startup.log', 'Routes mounted.\n');
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'OK' }));
 app.get('/', (req, res) => res.json({ message: 'Welcome to RealtyEngage API' }));
 
-const PORT = 5005; // Force 5005 for reliability
+const PORT = process.env.PORT || 5005;
 app.listen(PORT, () => {
   fs.appendFileSync('server_startup.log', 'Server listening on ' + PORT + '\n');
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });

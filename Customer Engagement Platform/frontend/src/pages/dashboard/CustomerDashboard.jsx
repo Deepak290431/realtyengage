@@ -164,7 +164,7 @@ const CustomerDashboard = () => {
 
       <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 -mt-12 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8 mb-8">
           {[
             { label: 'Total Invested', value: formatCurrency(stats.totalInvested), icon: IndianRupee, color: 'green' },
             { label: 'Pending Payments', value: formatCurrency(stats.pendingPayments), icon: Clock, color: 'yellow' },

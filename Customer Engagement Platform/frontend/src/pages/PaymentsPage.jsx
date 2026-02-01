@@ -22,7 +22,8 @@ import {
   Building2,
   Banknote,
   User,
-  X
+  X,
+  QrCode
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -54,12 +55,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
   const [detailsType, setDetailsType] = useState(''); // 'totalPaid', 'pending', 'nextPayment', 'userDetails'
   const [detailsData, setDetailsData] = useState([]);
   const [selectedUserDetails, setSelectedUserDetails] = useState(null);
-
-  // EMI Calculator states
-  const [loanAmount, setLoanAmount] = useState(5000000);
-  const [interestRate, setInterestRate] = useState(8.5);
-  const [loanTenure, setLoanTenure] = useState(20);
-  const [emiResult, setEmiResult] = useState(null);
+  const [currentPaymentId, setCurrentPaymentId] = useState(null);
 
   // Payment form states
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -119,23 +115,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
     }
   };
 
-  // Calculate EMI
-  const calculateEMI = () => {
-    const principal = parseFloat(loanAmount);
-    const rate = parseFloat(interestRate) / 100 / 12;
-    const time = parseFloat(loanTenure) * 12;
 
-    const emi = principal * rate * Math.pow(1 + rate, time) / (Math.pow(1 + rate, time) - 1);
-    const totalAmount = emi * time;
-    const totalInterest = totalAmount - principal;
-
-    setEmiResult({
-      emi: Math.round(emi),
-      totalAmount: Math.round(totalAmount),
-      totalInterest: Math.round(totalInterest),
-      principal: principal
-    });
-  };
 
   const handleOpenPayment = (enquiry, installment = null) => {
     if (!enquiry.isOk) {
@@ -220,6 +200,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
 
       // Backend returns structure like: { data: { payment: { gatewayDetails: { orderId: ... } }, razorpayOrderId: ... } }
       const paymentRecord = initiateRes.data?.payment || initiateRes.payment;
+      setCurrentPaymentId(paymentRecord?._id);
 
       // Try to get order ID from multiple possible locations
       let orderId = paymentRecord?.gatewayDetails?.orderId || initiateRes.data?.razorpayOrderId || initiateRes.razorpayOrderId;
@@ -283,6 +264,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
         setUtrNumber('');
         setSelectedInstallment(null);
         setCardDetails({ number: '', expiry: '', cvv: '', name: '' });
+        setCurrentPaymentId(null);
         fetchData();
       }, 3000);
     } catch (error) {
@@ -466,7 +448,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                 animate={{ opacity: 1, y: 0 }}
                 className="text-4xl md:text-5xl font-bold mb-4"
               >
-                Payments & EMI Calculator
+                My Payments
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -474,7 +456,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                 transition={{ delay: 0.1 }}
                 className="text-xl text-white/90"
               >
-                Make secure payments and calculate your EMI
+                Make secure payments and track your transaction history
               </motion.p>
             </div>
           </div>
@@ -770,156 +752,6 @@ const PaymentsPage = ({ isAdmin = false }) => {
           </div>
         </motion.div>
 
-        {/* EMI Calculator Section */}
-        {!isAdmin && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="grid lg:grid-cols-2 gap-8 pt-8 border-t border-gray-200 dark:border-gray-700"
-          >
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-6">EMI Calculator</h2>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Loan Amount
-                  </label>
-                  <div className="relative">
-                    <IndianRupee className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      type="number"
-                      value={loanAmount}
-                      onChange={(e) => setLoanAmount(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <input
-                    type="range"
-                    min="100000"
-                    max="50000000"
-                    value={loanAmount}
-                    onChange={(e) => setLoanAmount(e.target.value)}
-                    className="w-full mt-2"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Interest Rate (% per annum)
-                  </label>
-                  <div className="relative">
-                    <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={interestRate}
-                      onChange={(e) => setInterestRate(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <input
-                    type="range"
-                    min="5"
-                    max="20"
-                    step="0.1"
-                    value={interestRate}
-                    onChange={(e) => setInterestRate(e.target.value)}
-                    className="w-full mt-2"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Loan Tenure (years)
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      type="number"
-                      value={loanTenure}
-                      onChange={(e) => setLoanTenure(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                  <input
-                    type="range"
-                    min="1"
-                    max="30"
-                    value={loanTenure}
-                    onChange={(e) => setLoanTenure(e.target.value)}
-                    className="w-full mt-2"
-                  />
-                </div>
-
-                <Button onClick={calculateEMI} className="w-full">
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Calculate EMI
-                </Button>
-              </div>
-            </Card>
-
-            {emiResult && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <Card className="p-6 relative">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">EMI Details</h2>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setEmiResult(null)}
-                      className="h-8 w-8 text-gray-400 hover:text-gray-600 rounded-full"
-                    >
-                      <X className="h-5 w-5" />
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-6">
-                      <p className="text-sm mb-2">Monthly EMI</p>
-                      <p className="text-4xl font-bold">{formatCurrency(emiResult.emi)}</p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                        <p className="text-sm text-gray-500 mb-1">Principal Amount</p>
-                        <p className="text-lg font-semibold">{formatCurrency(emiResult.principal)}</p>
-                      </div>
-                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                        <p className="text-sm text-gray-500 mb-1">Total Interest</p>
-                        <p className="text-lg font-semibold">{formatCurrency(emiResult.totalInterest)}</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                      <p className="text-sm text-gray-500 mb-1">Total Amount Payable</p>
-                      <p className="text-2xl font-bold">{formatCurrency(emiResult.totalAmount)}</p>
-                    </div>
-
-                    <div className="pt-4 border-t">
-                      <h3 className="font-medium mb-3">EMI Breakdown</h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Number of EMIs</span>
-                          <span className="font-medium">{loanTenure * 12} months</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Interest Rate</span>
-                          <span className="font-medium">{interestRate}% p.a.</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Processing Fee (est.)</span>
-                          <span className="font-medium">{formatCurrency(loanAmount * 0.01)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
       </div>
 
       {/* Payment Modal */}
@@ -1284,7 +1116,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                         </p>
                       </div>
                       <div className="flex flex-col w-full gap-2">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 font-bold" onClick={handleDownloadInvoice}>
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 font-bold" onClick={() => handleDownloadInvoice(currentPaymentId, selectedEnquiryForPayment?.projectId?.name)}>
                           <Download className="h-4 w-4 mr-2" />
                           Download Invoice
                         </Button>

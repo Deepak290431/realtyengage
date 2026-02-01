@@ -10,7 +10,7 @@ const DashboardLayout = ({ isAdmin = false }) => {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', pt: isAdmin ? { xs: '96px', lg: 0 } : '64px' }}>
-      {(!isAdmin) ? <Header /> : <div className="lg:hidden"><Header /></div>}
+      {(!isAdmin) ? <Header isChatbotOpen={isChatbotOpen} onToggleChatbot={() => setIsChatbotOpen(!isChatbotOpen)} /> : <div className="lg:hidden"><Header isChatbotOpen={isChatbotOpen} onToggleChatbot={() => setIsChatbotOpen(!isChatbotOpen)} /></div>}
       {isAdmin && <AdminSidebar onToggleChatbot={() => setIsChatbotOpen(true)} />}
       <Box
         component="main"
@@ -29,8 +29,8 @@ const DashboardLayout = ({ isAdmin = false }) => {
           <Outlet />
         </div>
       </Box>
-      {/* AI Chatbot - Rendered at root level */}
-      {isAdmin && <AIChatbot isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />}
+      {/* AI Chatbot - Global level for dashboard */}
+      <AIChatbot isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
     </Box>
   );
 };

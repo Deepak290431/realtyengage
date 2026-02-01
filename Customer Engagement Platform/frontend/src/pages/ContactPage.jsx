@@ -89,7 +89,7 @@ const ContactPage = () => {
                 </div>
             </section>
 
-            <div className="container mx-auto px-4 -mt-10 pb-20">
+            <div className="container mx-auto px-4 mt-10 pb-20">
                 <div className="grid lg:grid-cols-3 gap-8">
                     {/* Contact Information */}
                     <div className="space-y-6">

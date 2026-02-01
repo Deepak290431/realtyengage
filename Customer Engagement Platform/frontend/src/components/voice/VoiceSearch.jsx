@@ -132,7 +132,7 @@ const VoiceSearch = ({ onSearch, isOpen, onClose }) => {
         stopVisualizer();
 
         if (event.error === 'no-speech') {
-          toast.info('No speech detected. Please try again.');
+          toast('No speech detected. Please try again.');
         } else if (event.error === 'audio-capture') {
           toast.error('No microphone found. Please check your settings.');
         }
@@ -229,8 +229,17 @@ const VoiceSearch = ({ onSearch, isOpen, onClose }) => {
       }
 
       // If no specific command matched, treat as general search
-      if (command.length > 3) {
-        await performSearch(command);
+      if (command.length > 2) {
+        // Clean the command from filler search words
+        let cleanQuery = command.toLowerCase().trim();
+        const searchKeywords = VOICE_COMMANDS.search.keywords;
+        searchKeywords.forEach(keyword => {
+          const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+          cleanQuery = cleanQuery.replace(regex, '').trim();
+        });
+        // Remove "for me" or "for a" or "for" at the start
+        cleanQuery = cleanQuery.replace(/^\b(for me|for a|for|me|the|show|find)\b/i, '').trim();
+        await performSearch(cleanQuery || command);
       }
 
     } catch (error) {
@@ -257,12 +266,12 @@ const VoiceSearch = ({ onSearch, isOpen, onClose }) => {
         toast.success('Opening support');
         break;
       case 'emi':
-        navigate('/payments?tab=emi');
+        navigate('/dashboard/emi');
         toast.success('Opening EMI calculator');
         break;
       case 'logout':
         // Trigger logout action
-        toast.info('Logging out...');
+        toast('Logging out...');
         break;
       default:
         break;
@@ -306,7 +315,20 @@ const VoiceSearch = ({ onSearch, isOpen, onClose }) => {
     if (command.includes('completed') || command.includes('ready')) filters.status = 'completed';
     if (command.includes('ongoing') || command.includes('progress')) filters.status = 'in_progress';
 
-    await performSearch(command, filters);
+    // Clean command for name search
+    let searchQuery = command.toLowerCase();
+    VOICE_COMMANDS.search.keywords.forEach(k => {
+      searchQuery = searchQuery.replace(new RegExp(`\\b${k}\\b`, 'gi'), '');
+    });
+    VOICE_COMMANDS.search.locationKeywords.forEach(k => {
+      searchQuery = searchQuery.replace(new RegExp(`\\b${k}\\b.*`, 'i'), '');
+    });
+    // Remove "at", "in", "near" + filler words
+    searchQuery = searchQuery.replace(/\b(for|at|in|near|near to|around|me|projects|properties|show|find|search)\b/gi, '');
+    searchQuery = searchQuery.replace(/under \d+|below \d+|above \d+|less than \d+|more than \d+/gi, '');
+    searchQuery = searchQuery.replace(/(\d+)\s*bhk|(\d+)\s*bedroom|villa|apartment|flat/gi, '');
+
+    await performSearch(searchQuery.trim() || command, filters);
   };
 
   // Perform search
@@ -326,7 +348,7 @@ const VoiceSearch = ({ onSearch, isOpen, onClose }) => {
           navigate('/projects', { state: { searchQuery: query, filters } });
         }
       } else {
-        toast.info('No results found. Try different keywords.');
+        toast('No results found. Try different keywords.');
       }
     } catch (error) {
       console.error('Search error:', error);

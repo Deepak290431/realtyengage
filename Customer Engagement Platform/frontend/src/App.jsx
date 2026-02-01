@@ -35,6 +35,7 @@ import UserManagementPage from './pages/dashboard/UserManagementPage';
 import CustomersPage from './pages/dashboard/CustomersPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import CustomerSettingsPage from './pages/dashboard/CustomerSettingsPage';
+import EMICalculatorPage from './pages/EMICalculatorPage';
 
 // Components
 import PrivateRoute from './components/auth/PrivateRoute';
@@ -123,6 +124,7 @@ function App() {
           <Route path="support" element={<SupportPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="settings" element={<CustomerSettingsPage />} />
+          <Route path="emi" element={<EMICalculatorPage />} />
         </Route>
 
         {/* Admin Dashboard Routes - No standard header/footer */}
@@ -146,6 +148,7 @@ function App() {
           <Route path="customers" element={<CustomersPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="profile" element={<ProfilePage isAdmin={true} />} />
+          <Route path="emi" element={<EMICalculatorPage isAdmin={true} />} />
         </Route>
       </Routes>
     </>

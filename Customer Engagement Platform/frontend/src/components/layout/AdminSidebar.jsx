@@ -17,7 +17,8 @@ import {
     Sparkles,
     Sun,
     Moon,
-    Home
+    Home,
+    Calculator
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
@@ -56,6 +57,11 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             icon: Users
         },
         {
+            title: 'EMI Calculator',
+            path: '/admin/emi',
+            icon: Calculator
+        },
+        {
             title: 'My Profile',
             path: '/admin/profile',
             icon: UserCircle
@@ -65,6 +71,11 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             path: '/admin/settings',
             icon: Settings
         },
+        // {
+        //     title: 'AI Assistant',
+        //     icon: Sparkles,
+        //     isAction: true
+        // }
     ];
 
     const dispatch = useDispatch();

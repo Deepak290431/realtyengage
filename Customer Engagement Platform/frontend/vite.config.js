@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
       // PWA Support
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+        includeAssets: ['favicon.ico', 'favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
         manifest: {
           name: 'RealtyEngage Platform',
           short_name: 'RealtyEngage',
