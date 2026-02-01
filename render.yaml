@@ -7,7 +7,7 @@ databases:
     databaseName: realtyengage
     user: realtyengage_user
     region: oregon
-    ipAllowList: [] # Allow connections from anywhere
+    ipAllowList: [] 
 
 services:
   # Main API Service
@@ -81,9 +81,8 @@ services:
     env: node
     plan: starter
     region: oregon
-    schedule: "0 0 * * *" # Daily at midnight
-    buildCommand: cd "Customer Engagement Platform/backend" && npm install
-    startCommand: cd "Customer Engagement Platform/backend" && npm run cron:daily
+    schedule: "0 0 * * *" 
+    command: cd "Customer Engagement Platform/backend" && npm install && npm run cron:daily
     envVars:
       - key: NODE_ENV
         value: production
@@ -93,8 +92,9 @@ services:
           property: connectionString
 
   # Frontend Static Service
-  - type: static
+  - type: web
     name: realtyengage-frontend
+    env: static
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
