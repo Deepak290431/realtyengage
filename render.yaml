@@ -46,7 +46,6 @@ services:
   - type: web
     name: realtyengage-frontend
     env: static # Static sites are free by default
-    region: oregon
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
