@@ -40,16 +40,13 @@ services:
         value: 100
       - key: SESSION_SECRET
         generateValue: true
-      # Redis is not available on Free tier. Commented out or removed.
-      # - key: REDIS_URL
-      #   value: "" 
     autoDeploy: true
 
   # Frontend Static Service
   - type: web
     name: realtyengage-frontend
-    env: static
-    plan: free # Free Tier
+    env: static # Static sites are free by default
+    region: oregon
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
     staticPublishPath: "Customer Engagement Platform/frontend/dist"
     envVars:
@@ -61,8 +58,6 @@ services:
         destination: /index.html
 
 # Note: Redis, Workers, and Cron Jobs are NOT available on Render's Free tier.
-# They have been removed to allow free deployment.
-
 # Environment Groups for shared secrets
 envVarGroups:
   - name: realtyengage-secrets
