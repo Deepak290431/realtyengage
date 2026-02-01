@@ -93,7 +93,7 @@ services:
           property: connectionString
 
   # Frontend Static Service
-  - type: static
+  - type: web
     name: realtyengage-frontend
     env: static
     buildCommand: cd "Customer Engagement Platform/frontend" && npm install && npm run build
