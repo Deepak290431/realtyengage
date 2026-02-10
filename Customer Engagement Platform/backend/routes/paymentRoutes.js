@@ -778,10 +778,12 @@ router.get('/transactions/history',
         filter.userId = req.userId;
       }
 
+      const limit = parseInt(req.query.limit) || 10;
       const transactions = await Transaction.find(filter)
         .populate('propertyId', 'name area')
         .populate('userId', 'firstName lastName email phone')
-        .sort({ paymentDate: -1 });
+        .sort({ paymentDate: -1 })
+        .limit(limit);
 
       res.json({
         success: true,
