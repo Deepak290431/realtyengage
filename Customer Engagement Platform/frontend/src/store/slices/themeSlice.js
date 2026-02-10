@@ -8,13 +8,12 @@ const getInitialTheme = () => {
   const savedHighContrast = localStorage.getItem('themeHighContrast');
   const savedFontSize = localStorage.getItem('themeFontSize');
 
-  let mode = 'light';
+  let mode = savedMode || 'light';
 
-  // Force light mode as requested since toggle was removed
-  localStorage.setItem('themeMode', 'light');
-  document.documentElement.setAttribute('data-theme', 'light');
-  document.documentElement.classList.remove('dark');
-  mode = 'light';
+  if (savedAutoMode === 'true' && !savedMode) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    mode = prefersDark ? 'dark' : 'light';
+  }
 
   return {
     mode,

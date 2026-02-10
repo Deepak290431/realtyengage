@@ -54,12 +54,21 @@ const ThemeApplicator = () => {
                 const response = await settingsAPI.getSettings();
                 const settings = response.data.data;
                 const primaryColor = settings?.general?.brandColors?.primary || '#4f46e5';
+                const darkModeEnabled = settings?.general?.darkModeEnabled || false;
+
+                // Toggle Dark Mode globally based on Admin Setting
+                if (darkModeEnabled) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                }
 
                 if (primaryColor) {
                     const hsl = hexToHSL(primaryColor);
                     document.documentElement.style.setProperty('--primary', hsl);
                     document.documentElement.style.setProperty('--ring', hsl);
-                    // We might want to adjust other derived colors here too if needed
                 }
             } catch (error) {
                 console.error('Failed to apply theme settings:', error);

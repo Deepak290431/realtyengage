@@ -74,11 +74,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    // Force light mode for now since the toggle was removed
-    document.documentElement.classList.remove('dark');
-    document.documentElement.setAttribute('data-theme', 'light');
-  }, []);
+
 
   const handleLogout = () => {
     dispatch(logout());

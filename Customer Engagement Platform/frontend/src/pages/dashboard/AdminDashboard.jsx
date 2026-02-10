@@ -79,7 +79,7 @@ const AdminDashboard = () => {
       setLoading(true);
       const [statsRes, transRes, propsRes] = await Promise.all([
         api.get('/dashboard/admin/stats'),
-        api.get('/payments/transactions/history?limit=10'),
+        api.get('/payments/transactions/history?limit=5'),
         api.get('/projects?limit=5')
       ]);
 
@@ -529,36 +529,36 @@ const AdminDashboard = () => {
                   <ChevronRight className="h-3 w-3 animate-pulse" /> Swipe to see more details
                 </div>
               </div>
-              <div className="scrollable-container max-h-[60vh] overflow-y-auto">
-                <table className="w-full text-sm" style={{ minWidth: '800px' }}>
+              <div className="max-h-[60vh] overflow-auto">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-gray-500 border-b">
-                      <th className="pb-3 font-semibold">Property</th>
+                      <th className="px-6 pb-3 font-semibold text-left">Property</th>
                       {breakdownType === 'earnings' && (
                         <>
-                          <th className="pb-3 font-semibold text-right">Comm %</th>
-                          <th className="pb-3 font-semibold text-right">Comm Amt</th>
-                          <th className="pb-3 font-semibold text-right">GST (18%)</th>
-                          <th className="pb-3 font-semibold text-right text-indigo-600">Total Revenue</th>
+                          <th className="px-4 pb-3 font-semibold text-right">Comm %</th>
+                          <th className="px-4 pb-3 font-semibold text-right">Comm Amt</th>
+                          <th className="px-4 pb-3 font-semibold text-right">GST (18%)</th>
+                          <th className="px-6 pb-3 font-semibold text-right text-indigo-600">Total Revenue</th>
                         </>
                       )}
                       {breakdownType === 'sales' && (
                         <>
-                          <th className="pb-3 font-semibold text-right">Transactions</th>
-                          <th className="pb-3 font-semibold text-right text-green-600">Total Sales (GMV)</th>
+                          <th className="px-6 pb-3 font-semibold text-right">Transactions</th>
+                          <th className="px-6 pb-3 font-semibold text-right text-green-600">Total Sales (GMV)</th>
                         </>
                       )}
                       {breakdownType === 'payout' && (
                         <>
-                          <th className="pb-3 font-semibold text-right">Total GMV</th>
-                          <th className="pb-3 font-semibold text-right">Plat Charges</th>
-                          <th className="pb-3 font-semibold text-right text-indigo-600">Owner Payout</th>
+                          <th className="px-4 pb-3 font-semibold text-right">Total GMV</th>
+                          <th className="px-4 pb-3 font-semibold text-right">Plat Charges</th>
+                          <th className="px-6 pb-3 font-semibold text-right text-indigo-600">Owner Payout</th>
                         </>
                       )}
                       {breakdownType === 'penalties' && (
                         <>
-                          <th className="pb-3 font-semibold text-right">Late Count</th>
-                          <th className="pb-3 font-semibold text-right text-orange-600">Penalties Earned</th>
+                          <th className="px-6 pb-3 font-semibold text-right">Late Count</th>
+                          <th className="px-6 pb-3 font-semibold text-right text-orange-600">Penalties Earned</th>
                         </>
                       )}
                     </tr>
@@ -566,32 +566,32 @@ const AdminDashboard = () => {
                   <tbody>
                     {getBreakdownData().map((item) => (
                       <tr key={item._id} className="border-b hover:bg-gray-50 transition-colors">
-                        <td className="py-4 font-medium text-gray-900">{item.propertyName}</td>
+                        <td className="py-3 px-6 font-medium text-gray-900">{item.propertyName}</td>
                         {breakdownType === 'earnings' && (
                           <>
-                            <td className="py-4 text-right">{item.commPerc}%</td>
-                            <td className="py-4 text-right font-medium">{formatCurrency(item.totalCommission)}</td>
-                            <td className="py-4 text-right text-gray-500">{formatCurrency(item.totalGST)}</td>
-                            <td className="py-4 text-right text-indigo-600 font-bold">{formatCurrency(item.totalCommission + item.totalGST)}</td>
+                            <td className="py-3 px-4 text-right">{item.commPerc}%</td>
+                            <td className="py-3 px-4 text-right font-medium">{formatCurrency(item.totalCommission)}</td>
+                            <td className="py-3 px-4 text-right text-gray-500">{formatCurrency(item.totalGST)}</td>
+                            <td className="py-3 px-6 text-right text-indigo-600 font-bold">{formatCurrency(item.totalCommission + item.totalGST)}</td>
                           </>
                         )}
                         {breakdownType === 'sales' && (
                           <>
-                            <td className="py-4 text-right">{item.transactionCount}</td>
-                            <td className="py-4 text-right font-bold text-green-600">{formatCurrency(item.totalSales)}</td>
+                            <td className="py-3 px-6 text-right">{item.transactionCount}</td>
+                            <td className="py-3 px-6 text-right font-bold text-green-600">{formatCurrency(item.totalSales)}</td>
                           </>
                         )}
                         {breakdownType === 'payout' && (
                           <>
-                            <td className="py-4 text-right">{formatCurrency(item.totalSales)}</td>
-                            <td className="py-4 text-right text-gray-500">{formatCurrency(item.totalSales - (item.totalOwnerPayout || 0))}</td>
-                            <td className="py-4 text-right text-indigo-600 font-bold">{formatCurrency(item.totalOwnerPayout || item.totalSales * 0.98)}</td>
+                            <td className="py-3 px-4 text-right">{formatCurrency(item.totalSales)}</td>
+                            <td className="py-3 px-4 text-right text-gray-500">{formatCurrency(item.totalSales - (item.totalOwnerPayout || 0))}</td>
+                            <td className="py-3 px-6 text-right text-indigo-600 font-bold">{formatCurrency(item.totalOwnerPayout || item.totalSales * 0.98)}</td>
                           </>
                         )}
                         {breakdownType === 'penalties' && (
                           <>
-                            <td className="py-4 text-right">{item.totalLate || 0}</td>
-                            <td className="py-4 text-right font-bold text-orange-600">{formatCurrency(item.totalPenalties || 0)}</td>
+                            <td className="py-3 px-6 text-right">{item.totalLate || 0}</td>
+                            <td className="py-3 px-6 text-right font-bold text-orange-600">{formatCurrency(item.totalPenalties || 0)}</td>
                           </>
                         )}
                       </tr>

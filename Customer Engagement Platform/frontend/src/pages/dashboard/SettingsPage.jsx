@@ -242,7 +242,7 @@ const SettingsPage = () => {
                                                     <span className="text-sm text-gray-500 uppercase">{settings.general?.brandColors?.primary}</span>
                                                 </div>
                                             </div>
-                                            <div className="space-y-2">
+                                            <div className="space-y-4">
                                                 <label className="text-sm font-medium block">Logo URL</label>
                                                 <Input
                                                     value={settings.general?.logo || ''}
@@ -250,6 +250,16 @@ const SettingsPage = () => {
                                                     placeholder="https://example.com/logo.png"
                                                     className="w-full md:w-80"
                                                 />
+                                                <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl mt-4">
+                                                    <div>
+                                                        <p className="font-bold text-gray-900 dark:text-white">Enable Dark Mode</p>
+                                                        <p className="text-xs text-gray-500">When enabled, the application will use the dark theme (white text, dark background).</p>
+                                                    </div>
+                                                    <Toggle
+                                                        checked={settings.general?.darkModeEnabled || false}
+                                                        onChange={(val) => updateSetting('general', 'darkModeEnabled', val)}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </Card>
