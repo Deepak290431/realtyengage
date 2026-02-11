@@ -163,6 +163,81 @@ router.post('/login',
   }
 );
 
+// @route   POST /api/auth/google
+// @desc    Google Login
+// @access  Public
+router.post('/google',
+  authRateLimiter,
+  async (req, res) => {
+    try {
+      const { credential } = req.body;
+      const { OAuth2Client } = require('google-auth-library');
+      const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+      const ticket = await client.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID
+      });
+
+      const payload = ticket.getPayload();
+      const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profilePicture } = payload;
+
+      let user = await User.findOne({ $or: [{ googleId }, { email }] });
+
+      if (user) {
+        // If user exists but doesn't have googleId (linked by email)
+        if (!user.googleId) {
+          user.googleId = googleId;
+          if (!user.profilePicture) user.profilePicture = profilePicture;
+          await user.save();
+        }
+      } else {
+        // Create new user
+        user = new User({
+          email,
+          googleId,
+          firstName: firstName || 'Google',
+          lastName: lastName || 'User',
+          profilePicture,
+          isVerified: true
+        });
+        await user.save();
+      }
+
+      // Generate tokens
+      const token = generateToken(user._id);
+      const refreshToken = generateRefreshToken(user._id);
+
+      // Save refresh token
+      user.refreshToken = refreshToken;
+      user.lastLogin = new Date();
+      await user.save();
+
+      res.json({
+        success: true,
+        message: 'Google login successful',
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          statusType: user.statusType,
+          profilePicture: user.profilePicture
+        },
+        token,
+        refreshToken
+      });
+    } catch (error) {
+      console.error('Google login error:', error);
+      res.status(500).json({
+        error: 'Google login failed',
+        message: 'Unable to authenticate with Google'
+      });
+    }
+  }
+);
+
 // @route   POST /api/auth/refresh
 // @desc    Refresh access token
 // @access  Public

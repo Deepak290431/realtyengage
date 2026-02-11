@@ -7,6 +7,7 @@ import { LogIn, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import authService from '../../services/authService';
 import { setUser } from '../../store/slices/authSlice';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -205,6 +206,45 @@ const LoginPage = () => {
               )}
             </Button>
           </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                setLoading(true);
+                try {
+                  const response = await authService.googleLogin(credentialResponse.credential);
+                  const { user, token } = response.data;
+                  dispatch(setUser({ user, token }));
+                  localStorage.setItem('token', token);
+                  localStorage.setItem('user', JSON.stringify(user));
+                  toast.success('Google login successful!');
+                  navigate(user.role === 'admin' ? '/admin' : '/');
+                } catch (err) {
+                  const errorMessage = err.response?.data?.message || 'Google login failed';
+                  setError(errorMessage);
+                  toast.error(errorMessage);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              onError={() => {
+                toast.error('Google Login Failed');
+              }}
+              useOneTap
+              theme="outline"
+              shape="pill"
+              width="100%"
+            />
+          </div>
 
           <div className="text-center">
             <p className="text-gray-500">

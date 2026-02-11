@@ -68,6 +68,14 @@ const authService = {
     return response;
   },
 
+  // Google Login
+  googleLogin: async (credential) => {
+    const response = await axios.post(`${API_URL}/auth/google`, {
+      credential,
+    });
+    return response;
+  },
+
   // Register
   register: async (userData) => {
     const response = await axios.post(`${API_URL}/auth/register`, userData);
