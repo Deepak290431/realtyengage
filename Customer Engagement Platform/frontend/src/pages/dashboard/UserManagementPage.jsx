@@ -34,6 +34,28 @@ const UserManagementPage = () => {
     const [roleFilter, setRoleFilter] = useState('all');
     const [selectedUser, setSelectedUser] = useState(null);
 
+    // Add Staff Modal State
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [addFormData, setAddFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        password: '',
+        role: 'admin'
+    });
+
+    // Edit User Modal State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editFormData, setEditFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        role: ''
+    });
+
     useEffect(() => {
         fetchUsers();
     }, []);
@@ -51,12 +73,83 @@ const UserManagementPage = () => {
         }
     };
 
-    const handleToggleStatus = async (user) => {
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setAddFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleAddStaff = async (e) => {
+        e.preventDefault();
         try {
-            // In real implement: await userAPI.updateUser(user._id, { isActive: !user.isActive });
-            toast.success(`${user.firstName}'s account status updated.`);
+            setIsSubmitting(true);
+            const response = await userAPI.createUser(addFormData);
+            toast.success(response.data.message || 'Staff member added successfully');
+            setIsAddModalOpen(false);
+            setAddFormData({
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: '',
+                password: '',
+                role: 'admin'
+            });
             fetchUsers();
         } catch (error) {
+            console.error('Failed to add staff:', error);
+            const message = error.response?.data?.message || 'Failed to add staff member';
+            toast.error(message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleEditClick = (user) => {
+        setSelectedUser(user);
+        setEditFormData({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phone: user.phone || '',
+            role: user.role
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        try {
+            setIsSubmitting(true);
+            await userAPI.updateUser(selectedUser._id, editFormData);
+            toast.success('User updated successfully');
+            setIsEditModalOpen(false);
+            fetchUsers();
+        } catch (error) {
+            console.error('Failed to update user:', error);
+            toast.error(error.response?.data?.message || 'Failed to update user');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleToggleStatus = async (user) => {
+        try {
+            const newStatus = user.isActive === false;
+            await userAPI.updateUser(user._id, { isActive: newStatus });
+            toast.success(`${user.firstName}'s account ${newStatus ? 'activated' : 'suspended'}.`);
+            fetchUsers();
+        } catch (error) {
+            console.error('Failed to update user status:', error);
             toast.error('Failed to update user status');
         }
     };
@@ -64,7 +157,8 @@ const UserManagementPage = () => {
     const filteredUsers = users.filter(user => {
         const matchesSearch =
             `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.phone?.includes(searchTerm);
 
         const matchesRole = roleFilter === 'all' || user.role === roleFilter;
 
@@ -73,21 +167,21 @@ const UserManagementPage = () => {
 
     const getRoleBadge = (role) => {
         switch (role) {
-            case 'admin': return 'bg-blue-100 text-primary border-blue-200';
-            case 'editor': return 'bg-blue-100 text-blue-700 border-blue-200';
-            default: return 'bg-green-100 text-green-700 border-green-200';
+            case 'admin': return 'bg-[#C9A24D]/10 text-[#C9A24D] border-[#C9A24D]/20';
+            case 'customer': return 'bg-indigo-50 text-[#0B1F33] border-indigo-100';
+            default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12 text-left">
             {/* Header */}
             <div className="w-full px-4 md:px-6 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
-                            <Users className="h-8 w-8 text-primary" />
-                            Customer Management
+                        <h1 className="text-3xl font-bold text-[#0B1F33] dark:text-white flex items-center gap-3">
+                            <Users className="h-8 w-8 text-[#0B1F33] dark:text-indigo-400" />
+                            User Management
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">
                             Manage user roles, monitor activity, and handle account statuses.
@@ -97,7 +191,10 @@ const UserManagementPage = () => {
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                     >
-                        <Button className="font-bold shadow-lg">
+                        <Button
+                            className="bg-[#0B1F33] hover:bg-[#0B1F33]/90 text-white font-bold shadow-lg h-12 px-6"
+                            onClick={() => setIsAddModalOpen(true)}
+                        >
                             <UserPlus className="mr-2 h-5 w-5" />
                             Add New Staff
                         </Button>
@@ -121,7 +218,7 @@ const UserManagementPage = () => {
                             </div>
                             <div className="flex gap-2">
                                 <select
-                                    className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
+                                    className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#0B1F33] min-w-[150px]"
                                     value={roleFilter}
                                     onChange={(e) => setRoleFilter(e.target.value)}
                                 >
@@ -129,7 +226,7 @@ const UserManagementPage = () => {
                                     <option value="admin">Admins</option>
                                     <option value="customer">Customers</option>
                                 </select>
-                                <Button variant="outline" className="h-12">
+                                <Button variant="outline" className="h-12 border-gray-200">
                                     <Download className="h-4 w-4 mr-2" />
                                     Export
                                 </Button>
@@ -163,16 +260,16 @@ const UserManagementPage = () => {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                 >
-                                    <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-none group">
-                                        <div className={`h-2 w-full ${user.role === 'admin' ? 'bg-primary' : 'bg-blue-500'}`} />
+                                    <Card className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-none group relative">
+                                        <div className={`h-2 w-full ${user.role === 'admin' ? 'bg-[#C9A24D]' : 'bg-[#0B1F33]'}`} />
                                         <div className="p-6">
                                             <div className="flex justify-between items-start mb-4">
                                                 <div className="flex items-center gap-4">
-                                                    <div className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${user.role === 'admin' ? 'bg-primary' : 'bg-blue-600'}`}>
+                                                    <div className={`h-12 w-12 rounded-full flex items-center justify-center text-white font-bold text-xl ${user.role === 'admin' ? 'bg-[#C9A24D]' : 'bg-[#0B1F33]'}`}>
                                                         {user.firstName?.[0]}{user.lastName?.[0]}
                                                     </div>
                                                     <div>
-                                                        <h3 className="font-bold text-lg group-hover:text-blue-600 transition-colors uppercase">
+                                                        <h3 className="font-bold text-lg group-hover:text-[#0B1F33] transition-colors uppercase">
                                                             {user.firstName} {user.lastName}
                                                         </h3>
                                                         <Badge className={`${getRoleBadge(user.role)} pointer-events-none`}>
@@ -187,15 +284,15 @@ const UserManagementPage = () => {
 
                                             <div className="space-y-3 text-sm text-gray-500 dark:text-gray-400 mb-6">
                                                 <div className="flex items-center gap-2">
-                                                    <Mail className="h-4 w-4 shrink-0" />
+                                                    <Mail className="h-4 w-4 shrink-0 text-[#0B1F33]" />
                                                     <span className="truncate">{user.email}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Phone className="h-4 w-4 shrink-0" />
+                                                    <Phone className="h-4 w-4 shrink-0 text-[#0B1F33]" />
                                                     <span>{user.phone || 'No phone'}</span>
                                                 </div>
                                                 <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 shrink-0" />
+                                                    <Calendar className="h-4 w-4 shrink-0 text-[#0B1F33]" />
                                                     <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
@@ -204,8 +301,8 @@ const UserManagementPage = () => {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="flex-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                                    onClick={() => navigate(`/admin/users/${user._id}`)}
+                                                    className="flex-1 text-[#0B1F33] hover:text-[#0B1F33]/80 hover:bg-[#0B1F33]/5"
+                                                    onClick={() => handleEditClick(user)}
                                                 >
                                                     <Edit className="h-4 w-4 mr-2" />
                                                     Edit
@@ -224,6 +321,11 @@ const UserManagementPage = () => {
                                                 </Button>
                                             </div>
                                         </div>
+                                        {user.isActive === false && (
+                                            <div className="absolute top-0 right-0 p-2">
+                                                <Badge variant="destructive" className="text-[10px]">Suspended</Badge>
+                                            </div>
+                                        )}
                                     </Card>
                                 </motion.div>
                             ))
@@ -232,13 +334,238 @@ const UserManagementPage = () => {
                                 <div className="bg-gray-100 dark:bg-gray-800 rounded-full h-16 w-16 flex items-center justify-center mx-auto mb-4">
                                     <AlertCircle className="h-8 w-8 text-gray-400" />
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">No customers found</h3>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">No users found</h3>
                                 <p className="text-gray-500">Try adjusting your filters or search terms.</p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Add Staff Modal */}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden text-left"
+                        >
+                            <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center bg-[#0B1F33] text-white">
+                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                    <UserPlus className="h-6 w-6" />
+                                    Add New Staff Member
+                                </h3>
+                                <button
+                                    onClick={() => setIsAddModalOpen(false)}
+                                    className="hover:bg-white/20 p-1 rounded-full transition-colors"
+                                >
+                                    <UserX className="h-6 w-6" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAddStaff} className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">First Name</label>
+                                        <Input
+                                            name="firstName"
+                                            value={addFormData.firstName}
+                                            onChange={handleInputChange}
+                                            placeholder="John"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Last Name</label>
+                                        <Input
+                                            name="lastName"
+                                            value={addFormData.lastName}
+                                            onChange={handleInputChange}
+                                            placeholder="Doe"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Email Address</label>
+                                    <Input
+                                        type="email"
+                                        name="email"
+                                        value={addFormData.email}
+                                        onChange={handleInputChange}
+                                        placeholder="john.doe@realtyengage.com"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Phone Number</label>
+                                        <Input
+                                            name="phone"
+                                            value={addFormData.phone}
+                                            onChange={handleInputChange}
+                                            placeholder="10-digit mobile"
+                                            pattern="[0-9]{10}"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Role</label>
+                                        <select
+                                            name="role"
+                                            className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                            value={addFormData.role}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="admin">Administrator</option>
+                                            <option value="customer">Customer</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Initial Password</label>
+                                    <Input
+                                        type="password"
+                                        name="password"
+                                        value={addFormData.password}
+                                        onChange={handleInputChange}
+                                        placeholder="Min 6 characters"
+                                        required
+                                        minLength={6}
+                                    />
+                                    <p className="text-xs text-gray-400">Please share this password securely with the new staff member.</p>
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => setIsAddModalOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="flex-1 bg-[#0B1F33] hover:bg-[#0B1F33]/90 text-white font-bold shadow-lg"
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'Adding...' : 'Add Staff Member'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Edit User Modal */}
+            <AnimatePresence>
+                {isEditModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="w-full max-w-lg bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden text-left"
+                        >
+                            <div className="p-6 border-b dark:border-gray-700 flex justify-between items-center bg-[#0B1F33] text-white">
+                                <h3 className="text-xl font-bold flex items-center gap-2">
+                                    <Edit className="h-6 w-6" />
+                                    Edit User Details
+                                </h3>
+                                <button
+                                    onClick={() => setIsEditModalOpen(false)}
+                                    className="hover:bg-white/20 p-1 rounded-full transition-colors"
+                                >
+                                    <UserX className="h-6 w-6" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleUpdateUser} className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">First Name</label>
+                                        <Input
+                                            name="firstName"
+                                            value={editFormData.firstName}
+                                            onChange={handleEditInputChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Last Name</label>
+                                        <Input
+                                            name="lastName"
+                                            value={editFormData.lastName}
+                                            onChange={handleEditInputChange}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Email Address (Read Only)</label>
+                                    <Input
+                                        type="email"
+                                        name="email"
+                                        value={editFormData.email}
+                                        disabled
+                                        className="bg-gray-50 opacity-70"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Phone Number</label>
+                                        <Input
+                                            name="phone"
+                                            value={editFormData.phone}
+                                            onChange={handleEditInputChange}
+                                            placeholder="10-digit mobile"
+                                            pattern="[0-9]{10}"
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Role</label>
+                                        <select
+                                            name="role"
+                                            className="w-full h-10 px-3 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                                            value={editFormData.role}
+                                            onChange={handleEditInputChange}
+                                        >
+                                            <option value="admin">Administrator</option>
+                                            <option value="customer">Customer</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() => setIsEditModalOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className="flex-1 bg-[#0B1F33] hover:bg-[#0B1F33]/90 text-white font-bold shadow-lg"
+                                        disabled={isSubmitting}
+                                    >
+                                        {isSubmitting ? 'Saving...' : 'Save Changes'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

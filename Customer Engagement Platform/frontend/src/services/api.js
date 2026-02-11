@@ -83,6 +83,7 @@ export const userAPI = {
   deleteAccount: () => api.delete('/users/profile'),
   getUsers: (params) => api.get('/users', { params }), // Admin only
   getUserById: (id) => api.get(`/users/${id}`), // Admin only
+  createUser: (userData) => api.post('/users', userData), // Admin only
   updateUser: (id, userData) => api.put(`/users/${id}`, userData), // Admin only
   deleteUser: (id) => api.delete(`/users/${id}`), // Admin only
 };

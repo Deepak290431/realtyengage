@@ -25,7 +25,7 @@ router.get('/',
   async (req, res) => {
     try {
       const { role, statusType, page = 1, limit = 10, sort = '-createdAt' } = req.query;
-      
+
       // Build filter
       let filter = {};
       if (role) filter.role = role;
@@ -105,6 +105,120 @@ router.get('/:id',
   }
 );
 
+// @route   POST /api/users
+// @desc    Create a new user (Admin only)
+// @access  Private (Admin)
+router.post('/',
+  authenticateToken,
+  authorizeRoles('admin'),
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    body('firstName').notEmpty().trim().escape().withMessage('First name is required'),
+    body('lastName').notEmpty().trim().escape().withMessage('Last name is required'),
+    body('role').isIn(['admin', 'customer']).withMessage('Invalid role'),
+    body('phone').optional({ checkFalsy: true }).matches(/^[0-9]{10}$/).withMessage('Phone number must be 10 digits')
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const { email, password, firstName, lastName, phone, role } = req.body;
+
+      // Check if user exists
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({
+          error: 'Creation failed',
+          message: 'Email already registered'
+        });
+      }
+
+      // Create new user
+      const user = new User({
+        email,
+        password,
+        firstName,
+        lastName,
+        phone,
+        role,
+        isVerified: true // Staff created by admin are auto-verified
+      });
+
+      await user.save();
+
+      res.status(201).json({
+        success: true,
+        message: 'User created successfully',
+        data: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error('Create user error:', error);
+      res.status(500).json({
+        error: 'Failed to create user',
+        message: error.message
+      });
+    }
+  }
+);
+
+// @route   PUT /api/users/:id
+// @desc    Update user details (Admin only)
+// @access  Private (Admin)
+router.put('/:id',
+  authenticateToken,
+  authorizeRoles('admin'),
+  [
+    param('id').isMongoId(),
+    body('firstName').optional().trim().escape(),
+    body('lastName').optional().trim().escape(),
+    body('phone').optional({ checkFalsy: true }).matches(/^[0-9]{10}$/),
+    body('role').optional().isIn(['admin', 'customer']),
+    body('isActive').optional().isBoolean()
+  ],
+  handleValidationErrors,
+  async (req, res) => {
+    try {
+      const updates = {};
+      const allowedUpdates = ['firstName', 'lastName', 'phone', 'role', 'isActive'];
+      
+      allowedUpdates.forEach(update => {
+        if (req.body[update] !== undefined) {
+          updates[update] = req.body[update];
+        }
+      });
+
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        updates,
+        { new: true, runValidators: true }
+      ).select('-password -refreshToken');
+
+      if (!user) {
+        return res.status(404).json({
+          error: 'User not found'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'User updated successfully',
+        data: user
+      });
+    } catch (error) {
+      console.error('Update user error:', error);
+      res.status(500).json({
+        error: 'Failed to update user'
+      });
+    }
+  }
+);
+
 // @route   PUT /api/users/:id/status
 // @desc    Update user status (Admin only)
 // @access  Private (Admin)
@@ -155,7 +269,7 @@ router.get('/stats/overview',
       const totalUsers = await User.countDocuments();
       const totalCustomers = await User.countDocuments({ role: 'customer' });
       const totalAdmins = await User.countDocuments({ role: 'admin' });
-      
+
       const usersByStatus = await User.aggregate([
         { $match: { role: 'customer' } },
         {

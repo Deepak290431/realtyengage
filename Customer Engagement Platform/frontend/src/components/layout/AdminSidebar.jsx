@@ -8,16 +8,14 @@ import {
     CreditCard,
     Users,
     Settings,
-    HelpCircle,
+    MoreVertical,
+    Shield,
     ChevronRight,
     PlusCircle,
-    MessageSquare,
     LogOut,
     UserCircle,
     Sparkles,
     Sun,
-    Moon,
-    Home,
     Calculator
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -55,6 +53,11 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             title: 'Customers',
             path: '/admin/customers',
             icon: Users
+        },
+        {
+            title: 'Staff Management',
+            path: '/admin/users',
+            icon: Shield
         },
         {
             title: 'EMI Calculator',
