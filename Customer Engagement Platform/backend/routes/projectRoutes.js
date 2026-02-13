@@ -206,6 +206,24 @@ router.post('/',
         createdBy: req.userId
       };
 
+      // Check for restricted fields if not super_admin
+      if (req.user.role !== 'super_admin') {
+        const hasRestrictedFields =
+          (req.body.pricing && (
+            req.body.pricing.commissionPercentage !== undefined ||
+            req.body.pricing.gstRate !== undefined ||
+            req.body.pricing.gstType !== undefined ||
+            req.body.pricing.penaltyConfig !== undefined
+          ));
+
+        if (hasRestrictedFields) {
+          return res.status(403).json({
+            error: 'Access denied',
+            message: 'Only Super Admin can set system-level settings like commission, GST, or EMI rules'
+          });
+        }
+      }
+
       const project = new Project(projectData);
       await project.save();
 
@@ -260,6 +278,24 @@ router.put('/:id',
       delete updates.createdAt;
       delete updates.views;
       delete updates.enquiryCount;
+
+      // Check for restricted fields if not super_admin
+      if (req.user.role !== 'super_admin') {
+        const hasRestrictedUpdates =
+          (updates.pricing && (
+            updates.pricing.commissionPercentage !== undefined ||
+            updates.pricing.gstRate !== undefined ||
+            updates.pricing.gstType !== undefined ||
+            updates.pricing.penaltyConfig !== undefined
+          ));
+
+        if (hasRestrictedUpdates) {
+          return res.status(403).json({
+            error: 'Access denied',
+            message: 'Only Super Admin can modify system-level settings like commission, GST, or EMI rules'
+          });
+        }
+      }
 
       const project = await Project.findByIdAndUpdate(
         req.params.id,

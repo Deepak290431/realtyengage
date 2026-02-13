@@ -59,6 +59,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const projectParam = queryParams.get('project');
+    const typeParam = queryParams.get('type');
 
     useEffect(() => {
         fetchEnquiries();
@@ -68,11 +69,15 @@ const EnquiriesPage = ({ isAdmin = false }) => {
     }, [isAdmin]);
 
     useEffect(() => {
-        if (projectParam && !isAdmin) {
+        if ((projectParam || typeParam) && !isAdmin) {
             setShowAddModal(true);
-            setNewEnquiry(prev => ({ ...prev, projectId: projectParam }));
+            setNewEnquiry(prev => ({
+                ...prev,
+                projectId: projectParam || prev.projectId,
+                enquiryType: typeParam || prev.enquiryType
+            }));
         }
-    }, [projectParam, isAdmin]);
+    }, [projectParam, typeParam, isAdmin]);
 
     const fetchProjects = async () => {
         try {
@@ -196,10 +201,10 @@ const EnquiriesPage = ({ isAdmin = false }) => {
     const cardVariants = [
         { bar: 'bg-blue-600', bg: 'bg-blue-50/15', darkBg: 'dark:bg-blue-900/5', ring: 'ring-blue-100', darkRing: 'dark:ring-blue-900/20' },
         { bar: 'bg-emerald-600', bg: 'bg-emerald-50/15', darkBg: 'dark:bg-emerald-900/5', ring: 'ring-emerald-100', darkRing: 'dark:ring-emerald-900/20' },
-        { bar: 'bg-purple-600', bg: 'bg-purple-50/15', darkBg: 'dark:bg-purple-900/5', ring: 'ring-purple-100', darkRing: 'dark:ring-purple-900/20' },
+        { bar: 'bg-[#0B1F33]', bg: 'bg-blue-50/20', darkBg: 'dark:bg-blue-900/10', ring: 'ring-blue-200', darkRing: 'dark:ring-blue-900/30' },
         { bar: 'bg-amber-600', bg: 'bg-amber-50/15', darkBg: 'dark:bg-amber-900/5', ring: 'ring-amber-100', darkRing: 'dark:ring-amber-900/20' },
         { bar: 'bg-rose-600', bg: 'bg-rose-50/15', darkBg: 'dark:bg-rose-900/5', ring: 'ring-rose-100', darkRing: 'dark:ring-rose-900/20' },
-        { bar: 'bg-indigo-600', bg: 'bg-indigo-50/15', darkBg: 'dark:bg-indigo-900/5', ring: 'ring-indigo-100', darkRing: 'dark:ring-indigo-900/20' },
+        { bar: 'bg-blue-600', bg: 'bg-blue-50/15', darkBg: 'dark:bg-blue-900/5', ring: 'ring-blue-100', darkRing: 'dark:ring-blue-900/20' },
         { bar: 'bg-cyan-600', bg: 'bg-cyan-50/15', darkBg: 'dark:bg-cyan-900/5', ring: 'ring-cyan-100', darkRing: 'dark:ring-cyan-900/20' },
     ];
 
@@ -319,7 +324,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                                 {enquiry.projectId?.name || 'Project Enquiry'}
                                                             </h3>
                                                             <Badge className={`${getStatusColor(enquiry.status)} border px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider`}>
-                                                                {enquiry.status.replace('_', ' ')}
+                                                                {enquiry.status?.replace('_', ' ')}
                                                             </Badge>
                                                             <Badge variant="outline" className={`${getPriorityColor(enquiry.priority)} px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm`}>
                                                                 {enquiry.priority}
@@ -346,29 +351,33 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                             <select
                                                                 onChange={(e) => handleUpdateStatus(enquiry._id, e.target.value)}
                                                                 value={enquiry.status}
-                                                                className="text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700"
+                                                                disabled={enquiry.status === 'rejected' || enquiry.isOk}
+                                                                className={`text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 ${enquiry.status === 'rejected' || enquiry.isOk ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             >
                                                                 <option value="new">Set New</option>
                                                                 <option value="in_progress">Set In Progress</option>
                                                                 <option value="follow_up">Set Follow Up</option>
                                                                 <option value="converted">Set Converted</option>
                                                                 <option value="closed">Set Closed</option>
+                                                                <option value="rejected">Rejected</option>
                                                             </select>
                                                             <Button
                                                                 size="sm"
                                                                 variant={enquiry.isOk ? "default" : "outline"}
                                                                 className={enquiry.isOk ? "bg-green-600 hover:bg-green-700 h-8" : "h-8"}
                                                                 onClick={() => handleToggleOk(enquiry._id, enquiry.isOk)}
+                                                                disabled={enquiry.status === 'rejected' || enquiry.isOk}
                                                             >
-                                                                {enquiry.isOk ? 'OK' : 'Give OK'}
+                                                                {enquiry.isOk ? 'OK Given' : 'Give OK'}
                                                             </Button>
                                                             <Button
                                                                 size="sm"
                                                                 variant="destructive"
-                                                                className="h-8 bg-red-600 hover:bg-red-700 text-white"
+                                                                className={`h-8 text-white ${enquiry.status === 'rejected' || enquiry.isOk ? 'opacity-50' : 'bg-red-600 hover:bg-red-700'}`}
                                                                 onClick={() => handleUpdateStatus(enquiry._id, 'rejected')}
+                                                                disabled={enquiry.status === 'rejected' || enquiry.isOk}
                                                             >
-                                                                Reject
+                                                                {enquiry.status === 'rejected' ? 'Rejected' : 'Reject'}
                                                             </Button>
                                                             <Button
                                                                 variant="ghost"
@@ -383,7 +392,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2">
-                                                            {enquiry.isOk && (
+                                                            {enquiry.isOk && enquiry.status !== 'rejected' && (
                                                                 <Button
                                                                     size="sm"
                                                                     className="bg-green-600 hover:bg-green-700 text-white font-bold h-9 px-4"
@@ -437,11 +446,11 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                     {enquiry.notes && enquiry.notes.length > 0 && (
                                                         <div className="space-y-2">
                                                             <h4 className="text-xs font-bold uppercase text-gray-400 tracking-wider">Latest Note</h4>
-                                                            <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded p-2 text-xs border border-indigo-100 dark:border-indigo-900/30">
-                                                                <p className="text-indigo-800 dark:text-indigo-300 line-clamp-2">
+                                                            <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-2 text-xs border border-blue-100 dark:border-blue-900/30">
+                                                                <p className="text-blue-800 dark:text-blue-300 line-clamp-2">
                                                                     {enquiry.notes[enquiry.notes.length - 1].text}
                                                                 </p>
-                                                                <p className="text-[10px] text-indigo-500 mt-1">
+                                                                <p className="text-[10px] text-blue-500 mt-1">
                                                                     {new Date(enquiry.notes[enquiry.notes.length - 1].addedAt).toLocaleDateString()}
                                                                 </p>
                                                             </div>

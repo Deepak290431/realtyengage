@@ -40,8 +40,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'customer'],
-    default: 'customer'
+    enum: ['admin', 'customer', 'user', 'super_admin'],
+    default: 'user'
+  },
+  authProvider: {
+    type: String,
+    enum: ['local', 'google', 'phone'],
+    default: 'local'
   },
   statusType: {
     type: String,
@@ -91,7 +96,11 @@ const userSchema = new mongoose.Schema({
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   lastLogin: Date,
-  refreshToken: String
+  refreshToken: String,
+  tokenVersion: {
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true
 });

@@ -54,6 +54,29 @@ function App() {
     dispatch(checkAuthStatus());
   }, [dispatch]);
 
+  // Requirement: Port-Based Redirection for authenticated users
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const adminAppURL = 'http://127.0.0.1:4000';
+      const userAppURL = 'http://127.0.0.1:3000';
+      const isAdmin = ['admin', 'super_admin'].includes(user.role);
+      const isPort4000 = window.location.port === '4000';
+      const isPort3000 = window.location.port === '3000';
+
+      // Don't redirect if we are on login/register pages or the home page
+      // This prevents loops and allows users with the "wrong" role to still reach the logout option on the login page
+      const isBypassPage = ['/', '/login', '/admin/login', '/register'].includes(window.location.pathname);
+      if (isBypassPage) return;
+
+      /* Redirect logic disabled for stability in local environment
+      if (isAdmin && !isPort4000) {
+        window.location.href = `${adminAppURL}${window.location.pathname}${window.location.search}`;
+      } else if (!isAdmin && !isPort3000) {
+        window.location.href = `${userAppURL}${window.location.pathname}${window.location.search}`;
+      } */
+    }
+  }, [isAuthenticated, user]);
+
   if (isLoading) {
     return (
       <Box
@@ -73,13 +96,7 @@ function App() {
       <Routes>
         {/* Public Pages with Header/Footer */}
         <Route element={<MainLayout />}>
-          <Route index element={
-            isAuthenticated && user?.role === 'admin' ? (
-              <Navigate to="/admin" replace />
-            ) : (
-              <HomePage />
-            )
-          } />
+          <Route index element={<HomePage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/:id" element={<ProjectDetailPage />} />
           <Route path="about" element={<AboutPage />} />
@@ -97,10 +114,21 @@ function App() {
           {/* Auth Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={
-              isAuthenticated ? <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace /> : <LoginPage />
+              isAuthenticated ? (
+                <Navigate to={['admin', 'super_admin'].includes(user?.role) ? '/admin' : '/'} replace />
+              ) : (
+                <LoginPage />
+              )
+            } />
+            <Route path="/admin/login" element={
+              isAuthenticated && ['admin', 'super_admin'].includes(user?.role) ? (
+                <Navigate to="/admin" replace />
+              ) : (
+                <LoginPage isAdmin={true} />
+              )
             } />
             <Route path="/register" element={
-              isAuthenticated ? <Navigate to={user?.role === 'admin' ? '/admin' : '/'} replace /> : <RegisterPage />
+              isAuthenticated ? <Navigate to={['admin', 'super_admin'].includes(user?.role) ? '/admin' : '/'} replace /> : <RegisterPage />
             } />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
@@ -131,7 +159,7 @@ function App() {
         <Route
           path="/admin"
           element={
-            <PrivateRoute allowedRoles={['admin']}>
+            <PrivateRoute allowedRoles={['admin', 'super_admin']}>
               <DashboardLayout isAdmin={true} />
             </PrivateRoute>
           }

@@ -53,7 +53,7 @@ const ThemeApplicator = () => {
             try {
                 const response = await settingsAPI.getSettings();
                 const settings = response.data.data;
-                const primaryColor = settings?.general?.brandColors?.primary || '#4f46e5';
+                const primaryColor = settings?.general?.brandColors?.primary || '#0B1F33';
                 const darkModeEnabled = settings?.general?.darkModeEnabled || false;
 
                 // Toggle Dark Mode globally based on Admin Setting

@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer';
 
 const MainLayout = () => {
   const location = useLocation();
-  const hideHeaderFooterOn = ['/login', '/register', '/forgot-password'];
+  const hideHeaderFooterOn = ['/login', '/register', '/forgot-password', '/admin/login'];
   const shouldHideHeaderFooter = hideHeaderFooterOn.includes(location.pathname);
 
   return (

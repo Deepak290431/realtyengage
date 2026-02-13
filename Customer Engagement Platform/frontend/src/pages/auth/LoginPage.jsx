@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, Alert, CircularProgress } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
-import { LogIn, Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { LogIn, Mail, Lock, ArrowRight, Eye, EyeOff, LogOut } from 'lucide-react';
 import authService from '../../services/authService';
-import { setUser } from '../../store/slices/authSlice';
+import { setUser, logout } from '../../store/slices/authSlice';
 import toast from 'react-hot-toast';
 import { GoogleLogin } from '@react-oauth/google';
 
-const LoginPage = () => {
+const LoginPage = ({ isAdmin = false }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -21,12 +22,20 @@ const LoginPage = () => {
     password: ''
   });
 
-  // Load remembered email on mount
+  // Load remembered email on mount and check for transient messages (like logout all)
   useEffect(() => {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       setFormData(prev => ({ ...prev, email: savedEmail }));
       setRememberMe(true);
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get('message');
+    if (message) {
+      toast.success(message, { duration: 5000 });
+      // Optionally also set as warning alert
+      setError(message);
     }
   }, []);
 
@@ -42,6 +51,14 @@ const LoginPage = () => {
     setRememberMe(e.target.checked);
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    toast.success('Logged out successfully');
+  };
+
+  // If user is already logged in but as a non-admin, show logout option on admin login page
+  const isWrongRole = isAdmin && isAuthenticated && !['admin', 'super_admin'].includes(user?.role);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,6 +67,11 @@ const LoginPage = () => {
     try {
       const response = await authService.login(formData.email, formData.password);
       const { user, token } = response.data;
+
+      // Requirement: Admin login page logic
+      if (isAdmin && !['admin', 'super_admin'].includes(user.role)) {
+        throw new Error('This account does not have administrator privileges.');
+      }
 
       // Handle Remember Me
       if (rememberMe) {
@@ -68,11 +90,25 @@ const LoginPage = () => {
 
       toast.success('Login successful!');
 
-      if (user.role === 'admin') {
+      // Requirement: Role-Based Redirect to specific application ports
+      const adminAppURL = 'http://127.0.0.1:4000';
+      const userAppURL = 'http://127.0.0.1:3000';
+
+      /* Redirect logic disabled for stability in local environment
+      if (['admin', 'super_admin'].includes(user.role)) {
+        if (window.location.port !== '4000') {
+          window.location.href = `${adminAppURL}/admin`;
+          return;
+        }
         navigate('/admin');
       } else {
+        if (window.location.port !== '3000') {
+          window.location.href = `${userAppURL}/`;
+          return;
+        }
         navigate('/');
-      }
+      } */
+      navigate(['admin', 'super_admin'].includes(user.role) ? '/admin' : '/');
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'Login failed. Please try again.';
       setError(errorMessage);
@@ -92,37 +128,48 @@ const LoginPage = () => {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-tr from-[#0B1F33]/90 via-[#0B1F33]/40 to-transparent flex flex-col justify-end p-12 text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
+          <div>
             <h2 className="text-4xl font-bold mb-4">Elevate Your Lifestyle</h2>
             <p className="text-xl text-white/80 max-w-md">
               Discover the most exclusive properties and investment opportunities with our premium platform.
             </p>
-          </motion.div>
+          </div>
         </div>
       </div>
 
       {/* Right Side: Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="w-full max-w-md space-y-8"
-        >
+        <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center justify-center p-3 bg-gray-100 dark:bg-gray-800 rounded-2xl mb-4">
               <LogIn className="w-8 h-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-            <p className="text-gray-500 mt-2">Please enter your details to sign in</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {isAdmin ? 'Admin Portal' : 'Welcome Back'}
+            </h1>
+            <p className="text-gray-500 mt-2">
+              {isAdmin ? 'Sign in to your administrative account' : 'Please enter your details to sign in'}
+            </p>
           </div>
 
           {error && (
             <Alert severity="error" className="rounded-xl">
               {error}
+            </Alert>
+          )}
+
+          {isWrongRole && (
+            <Alert
+              severity="warning"
+              className="rounded-xl border border-yellow-200"
+              icon={<LogOut className="h-5 w-5" />}
+              action={
+                <Button color="inherit" size="small" onClick={handleLogout} className="font-bold underline">
+                  Logout Now
+                </Button>
+              }
+            >
+              You are logged in as <strong>{user?.firstName}</strong> (User). To access the Admin Portal, please logout first.
             </Alert>
           )}
 
@@ -149,9 +196,6 @@ const LoginPage = () => {
                   placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
-                  onFocus={(e) => e.target.removeAttribute('readOnly')}
-                  onBlur={(e) => e.target.setAttribute('readOnly', 'true')}
-                  readOnly
                   required
                   autoComplete="new-password"
                   className="w-full pl-10 pr-12 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-medium"
@@ -207,54 +251,85 @@ const LoginPage = () => {
             </Button>
           </form>
 
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
-            </div>
-          </div>
+          {!isAdmin && (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
+                </div>
+              </div>
 
-          <div className="flex justify-center">
-            <GoogleLogin
-              onSuccess={async (credentialResponse) => {
-                setLoading(true);
-                try {
-                  const response = await authService.googleLogin(credentialResponse.credential);
-                  const { user, token } = response.data;
-                  dispatch(setUser({ user, token }));
-                  localStorage.setItem('token', token);
-                  localStorage.setItem('user', JSON.stringify(user));
-                  toast.success('Google login successful!');
-                  navigate(user.role === 'admin' ? '/admin' : '/');
-                } catch (err) {
-                  const errorMessage = err.response?.data?.message || 'Google login failed';
-                  setError(errorMessage);
-                  toast.error(errorMessage);
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              onError={() => {
-                toast.error('Google Login Failed');
-              }}
-              useOneTap
-              theme="outline"
-              shape="pill"
-              width="100%"
-            />
-          </div>
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+                    setLoading(true);
+                    try {
+                      const response = await authService.googleLogin(credentialResponse.credential);
+                      const { user, token } = response.data;
+                      dispatch(setUser({ user, token }));
+                      localStorage.setItem('token', token);
+                      localStorage.setItem('user', JSON.stringify(user));
+                      toast.success('Google login successful!');
+
+                      // Requirement: Role-Based Redirect to specific application ports
+                      const adminAppURL = 'http://127.0.0.1:4000';
+                      const userAppURL = 'http://127.0.0.1:3000';
+
+                      /* Redirect logic disabled for stability
+                      if (['admin', 'super_admin'].includes(user.role)) {
+                        if (window.location.port !== '4000') {
+                          window.location.href = `${adminAppURL}/admin`;
+                          return;
+                        }
+                        navigate('/admin');
+                      } else {
+                        if (window.location.port !== '3000') {
+                          window.location.href = `${userAppURL}/`;
+                          return;
+                        }
+                        navigate('/');
+                      } */
+                      navigate(['admin', 'super_admin'].includes(user.role) ? '/admin' : '/');
+                    } catch (err) {
+                      const errorMessage = err.response?.data?.message || 'Google login failed';
+                      setError(errorMessage);
+                      toast.error(errorMessage);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  onError={() => {
+                    toast.error('Google Login Failed');
+                  }}
+                  useOneTap
+                  theme="outline"
+                  shape="pill"
+                  width="100%"
+                />
+              </div>
+            </>
+          )}
 
           <div className="text-center">
             <p className="text-gray-500">
-              Don't have an account?{' '}
-              <RouterLink to="/register" className="text-primary font-bold hover:underline">
-                Create Account
-              </RouterLink>
+              {isAdmin ? (
+                <RouterLink to="/login" className="text-primary font-bold hover:underline">
+                  Back to User Login
+                </RouterLink>
+              ) : (
+                <>
+                  Don't have an account?{' '}
+                  <RouterLink to="/register" className="text-primary font-bold hover:underline">
+                    Create Account
+                  </RouterLink>
+                </>
+              )}
             </p>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

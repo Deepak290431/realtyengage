@@ -169,7 +169,7 @@ const CustomerDashboard = () => {
             { label: 'Total Invested', value: formatCurrency(stats.totalInvested), icon: IndianRupee, color: 'green' },
             { label: 'Pending Payments', value: formatCurrency(stats.pendingPayments), icon: Clock, color: 'yellow' },
             { label: 'Properties', value: stats.totalProperties, icon: Building2, color: 'blue' },
-            { label: 'Active Enquiries', value: stats.activeEnquiries, icon: FileText, color: 'purple' }
+            { label: 'Active Enquiries', value: stats.activeEnquiries, icon: FileText, color: 'blue' }
           ].map((item, i) => (
             <motion.div
               key={i}
@@ -253,7 +253,7 @@ const CustomerDashboard = () => {
                           <div className="mt-3">
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 h-2 rounded-full"
+                                className="bg-gradient-to-r from-blue-700 to-blue-900 h-2 rounded-full"
                                 style={{ width: project.status === 'completed' ? '100%' : '65%' }}
                               />
                             </div>
@@ -368,6 +368,10 @@ const CustomerDashboard = () => {
                 <Button variant="outline" onClick={() => navigate('/dashboard/enquiries')}>
                   <FileText className="h-4 w-4 mr-1" />
                   Enquiries
+                </Button>
+                <Button variant="outline" className="border-blue-200 hover:bg-blue-50" onClick={() => navigate('/dashboard/enquiries?type=site_visit')}>
+                  <Calendar className="h-4 w-4 mr-1 text-blue-600" />
+                  Schedule Visit
                 </Button>
                 <Button variant="outline" onClick={() => navigate('/dashboard/support')}>
                   <HelpCircle className="h-4 w-4 mr-1" />

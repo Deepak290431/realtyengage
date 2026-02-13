@@ -30,23 +30,32 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     // Handle token expiration / 401
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          // Attempting to refresh token
-          const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
-          const { token } = res.data;
-          localStorage.setItem('token', token);
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh failed, logout
+    if (error.response?.status === 401) {
+      // If token was invalidated (logout all) or role changed, don't retry refresh
+      if (error.response?.data?.tokenInvalidated || error.response?.data?.roleChanged) {
         localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
+        window.location.href = '/login?message=' + encodeURIComponent(error.response.data.message);
+        return Promise.reject(error);
+      }
+
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+        try {
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            // Attempting to refresh token
+            const res = await axios.post(`${API_BASE_URL}/auth/refresh`, { refreshToken });
+            const { token } = res.data;
+            localStorage.setItem('token', token);
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          }
+        } catch (refreshError) {
+          // Refresh failed, logout
+          localStorage.clear();
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        }
       }
     }
 
@@ -65,6 +74,7 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (credentials) => api.post('/auth/login', credentials),
   logout: () => api.post('/auth/logout'),
+  logoutAll: () => api.post('/auth/logout-all'),
   forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
   resetPassword: (token, newPassword) => api.post('/auth/reset-password', { token, newPassword }),
   verifyEmail: (token) => api.get(`/auth/verify/${token}`),
@@ -181,6 +191,28 @@ export const settingsAPI = {
 // Contact API
 export const contactAPI = {
   submitForm: (data) => api.post('/contact', data),
+};
+
+// Admin Management API (Super Admin only)
+export const adminAPI = {
+  getAdmins: () => api.get('/admin/users'),
+  createAdmin: (adminData) => api.post('/admin/create', adminData),
+  updateAdmin: (id, adminData) => api.put(`/admin/${id}`, adminData),
+  blockAdmin: (id, isActive) => api.put(`/admin/${id}/block`, { isActive }),
+  deleteAdmin: (id) => api.delete(`/admin/${id}`),
+  getAuditLogs: () => api.get('/admin/audit-logs'),
+};
+
+// Virtual Tour API
+export const virtualTourAPI = {
+  getVirtualTour: (projectId) => api.get(`/virtual-tour/${projectId}`),
+  upload360Images: (projectId, images) => api.post(`/virtual-tour/${projectId}/360-images`, { images }),
+  upload360Video: (projectId, videoData) => api.post(`/virtual-tour/${projectId}/360-video`, videoData),
+  toggleVirtualTour: (projectId, enabled) => api.put(`/virtual-tour/${projectId}/toggle`, { enabled }),
+  delete360Image: (projectId, imageId) => api.delete(`/virtual-tour/${projectId}/360-images/${imageId}`),
+  delete360Video: (projectId) => api.delete(`/virtual-tour/${projectId}/360-video`),
+  update360Image: (projectId, imageId, data) => api.put(`/virtual-tour/${projectId}/360-images/${imageId}`, data),
+  update360Video: (projectId, data) => api.put(`/virtual-tour/${projectId}/360-video`, data),
 };
 
 // Chatbot API

@@ -84,7 +84,7 @@ const AdminDashboard = () => {
       ]);
 
       if (statsRes.data.success) {
-        setStats(statsRes.data.data);
+        setStats(prev => ({ ...prev, ...statsRes.data.data }));
       }
       if (transRes.data.success) {
         setRecentTransactions(transRes.data.data);
@@ -172,8 +172,8 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card
-              className="p-6 bg-white dark:bg-gray-800 shadow-lg cursor-pointer hover:shadow-xl transition-all border-l-4 border-l-primary hover:scale-[1.02]"
-              onClick={() => handleStatClick('earnings')}>
+              className="p-6 bg-white dark:bg-gray-800 shadow-lg cursor-pointer hover:shadow-xl transition-all border-l-4 border-l-primary hover:scale-[1.02] overflow-hidden"
+              onClick={() => user?.role === 'super_admin' && handleStatClick('earnings')}>
               <div className="flex items-center justify-between mb-2">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   <TrendingUp className="h-5 w-5 text-primary" />
@@ -181,13 +181,22 @@ const AdminDashboard = () => {
                 <Info className="h-4 w-4 text-gray-400" />
               </div>
               <p className="text-sm text-gray-500">Net Platform Earnings</p>
-              <p className="text-2xl font-bold text-primary">
-                {loading ? '...' : formatCurrency(stats.totalPlatformRevenue + stats.totalGST)}
-              </p>
-              <div className="flex flex-col mt-1">
-                <span className="text-[10px] text-primary/70 font-medium">Net Comm: {formatCurrency(stats.netEarnings)}</span>
-                <span className="text-[10px] text-indigo-400 font-medium">Total GST: {formatCurrency(stats.totalGST)}</span>
-              </div>
+              {user?.role === 'super_admin' ? (
+                <>
+                  <p className="text-2xl font-bold text-primary">
+                    {loading ? '...' : formatCurrency(stats.totalPlatformRevenue + stats.totalGST)}
+                  </p>
+                  <div className="flex flex-col mt-1">
+                    <span className="text-[10px] text-primary/70 font-medium">Net Comm: {formatCurrency(stats.netEarnings)}</span>
+                    <span className="text-[10px] text-blue-400 font-medium">Total GST: {formatCurrency(stats.totalGST)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="mt-2 py-1 px-3 bg-gray-100 dark:bg-gray-700 rounded-md inline-flex items-center gap-2 text-gray-400">
+                  <Calculator className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-widest whitespace-nowrap">Restricted Access</span>
+                </div>
+              )}
             </Card>
           </motion.div>
 
@@ -208,16 +217,23 @@ const AdminDashboard = () => {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
             <Card
-              className="p-6 bg-white dark:bg-gray-800 shadow-lg cursor-pointer hover:shadow-xl transition-all border-l-4 border-l-indigo-600 hover:scale-[1.02]"
-              onClick={() => handleStatClick('payout')}>
+              className="p-6 bg-white dark:bg-gray-800 shadow-lg cursor-pointer hover:shadow-xl transition-all border-l-4 border-l-blue-600 hover:scale-[1.02] overflow-hidden"
+              onClick={() => user?.role === 'super_admin' && handleStatClick('payout')}>
               <div className="flex items-center justify-between mb-2">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Building2 className="h-5 w-5 text-indigo-600" />
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Building2 className="h-5 w-5 text-blue-600" />
                 </div>
                 <Info className="h-4 w-4 text-gray-400" />
               </div>
               <p className="text-sm text-gray-500">Total Payouts to Owners</p>
-              <p className="text-2xl font-bold text-indigo-600">{loading ? '...' : formatCurrency(stats.totalSalesValue * 0.95)}</p>
+              {user?.role === 'super_admin' ? (
+                <p className="text-2xl font-bold text-blue-600">{loading ? '...' : formatCurrency(stats.totalSalesValue * 0.95)}</p>
+              ) : (
+                <div className="mt-2 py-1 px-3 bg-gray-100 dark:bg-gray-700 rounded-md inline-flex items-center gap-2 text-gray-400">
+                  <Calculator className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-widest whitespace-nowrap">Restricted Access</span>
+                </div>
+              )}
             </Card>
           </motion.div>
 
@@ -300,8 +316,8 @@ const AdminDashboard = () => {
               <div className="p-6 pb-0">
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex items-center gap-2">
-                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                      <BarChart3 className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                      <BarChart3 className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h2 className="text-xl font-semibold dark:text-white">Property Performance Breakdown</h2>
                   </div>
@@ -324,7 +340,7 @@ const AdminDashboard = () => {
                       <th className="pb-3 px-6 font-semibold text-right">Transactions</th>
                       <th className="pb-3 px-6 font-semibold text-right">Sales (GMV)</th>
                       <th className="pb-3 px-6 font-semibold text-right text-primary">Commission</th>
-                      <th className="pb-3 px-6 font-semibold text-right text-indigo-600">GST</th>
+                      <th className="pb-3 px-6 font-semibold text-right text-blue-600">GST</th>
                       <th className="pb-3 px-6 font-semibold text-right text-orange-600">Penalties</th>
                       <th className="pb-3 px-6 font-semibold text-right text-red-600">Refunds</th>
                     </tr>
@@ -332,14 +348,14 @@ const AdminDashboard = () => {
                   <tbody>
                     {loading ? (
                       <tr><td colSpan="7" className="py-4 text-center">Loading breakdown...</td></tr>
-                    ) : stats.propertyBreakdown.length > 0 ? (
+                    ) : stats.propertyBreakdown?.length > 0 ? (
                       stats.propertyBreakdown.map((item) => (
                         <tr key={item._id} className="border-b hover:bg-gray-50 transition-colors">
                           <td className="py-3 px-6 font-medium text-gray-900">{item.propertyName}</td>
                           <td className="py-3 px-6 text-right">{item.transactionCount}</td>
                           <td className="py-3 px-6 text-right font-semibold">{formatCurrency(item.totalSales)}</td>
                           <td className="py-3 px-6 text-right text-primary font-bold">{formatCurrency(item.totalCommission)}</td>
-                          <td className="py-3 px-6 text-right text-indigo-600">{formatCurrency(item.totalGST)}</td>
+                          <td className="py-3 px-6 text-right text-blue-600">{formatCurrency(item.totalGST)}</td>
                           <td className="py-3 px-6 text-right text-orange-600 font-bold">{formatCurrency(item.totalPenalties || 0)}</td>
                           <td className="py-3 px-6 text-right text-red-600 font-medium">-{formatCurrency(item.totalRefunds || 0)}</td>
                         </tr>
@@ -353,7 +369,7 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Recent Transactions */}
-            <Card className="mt-6 w-full max-w-full shadow-lg border-none bg-white dark:bg-gray-800 shadow-indigo-500/5 overflow-hidden">
+            <Card className="mt-6 w-full max-w-full shadow-lg border-none bg-white dark:bg-gray-800 shadow-blue-500/5 overflow-hidden">
               <div className="p-6 pb-0">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-semibold dark:text-white">Recent Transactions</h2>
@@ -402,7 +418,7 @@ const AdminDashboard = () => {
                             <span className="text-sm font-semibold text-primary">+{formatCurrency(tx.commissionAmount || tx.commissionEarned || 0)}</span>
                           </td>
                           <td className="py-4 px-6 text-right">
-                            <span className="text-sm font-semibold text-indigo-600">+{formatCurrency(tx.gstAmount || 0)}</span>
+                            <span className="text-sm font-semibold text-blue-600">+{formatCurrency(tx.gstAmount || 0)}</span>
                           </td>
                           <td className="py-4 px-6 text-right">
                             <span className="text-sm font-semibold text-green-600">{formatCurrency(tx.ownerPayout || 0)}</span>
@@ -480,7 +496,7 @@ const AdminDashboard = () => {
                   <Users className="h-4 w-4 mr-2" />
                   Manage Customers
                 </Button>
-                <Button variant="outline" className="w-full justify-start text-indigo-600 bg-indigo-50 border-indigo-100 hover:bg-indigo-100" onClick={() => navigate('/admin/emi')}>
+                <Button variant="outline" className="w-full justify-start text-blue-600 bg-blue-50 border-blue-100 hover:bg-blue-100" onClick={() => navigate('/admin/emi')}>
                   <Calculator className="h-4 w-4 mr-2" />
                   EMI Calculator
                 </Button>
@@ -511,7 +527,7 @@ const AdminDashboard = () => {
             >
               <div className="p-6 border-b flex items-center justify-between bg-gray-50/50">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-indigo-600" />
+                  <Activity className="h-5 w-5 text-blue-600" />
                   {getModalTitle()}
                 </h3>
                 <Button
@@ -539,7 +555,7 @@ const AdminDashboard = () => {
                           <th className="px-4 pb-3 font-semibold text-right">Comm %</th>
                           <th className="px-4 pb-3 font-semibold text-right">Comm Amt</th>
                           <th className="px-4 pb-3 font-semibold text-right">GST (18%)</th>
-                          <th className="px-6 pb-3 font-semibold text-right text-indigo-600">Total Revenue</th>
+                          <th className="px-6 pb-3 font-semibold text-right text-blue-600">Total Revenue</th>
                         </>
                       )}
                       {breakdownType === 'sales' && (
@@ -552,7 +568,7 @@ const AdminDashboard = () => {
                         <>
                           <th className="px-4 pb-3 font-semibold text-right">Total GMV</th>
                           <th className="px-4 pb-3 font-semibold text-right">Plat Charges</th>
-                          <th className="px-6 pb-3 font-semibold text-right text-indigo-600">Owner Payout</th>
+                          <th className="px-6 pb-3 font-semibold text-right text-blue-600">Owner Payout</th>
                         </>
                       )}
                       {breakdownType === 'penalties' && (
@@ -564,7 +580,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {getBreakdownData().map((item) => (
+                    {getBreakdownData()?.map((item) => (
                       <tr key={item._id} className="border-b hover:bg-gray-50 transition-colors">
                         <td className="py-3 px-6 font-medium text-gray-900">{item.propertyName}</td>
                         {breakdownType === 'earnings' && (
@@ -572,7 +588,7 @@ const AdminDashboard = () => {
                             <td className="py-3 px-4 text-right">{item.commPerc}%</td>
                             <td className="py-3 px-4 text-right font-medium">{formatCurrency(item.totalCommission)}</td>
                             <td className="py-3 px-4 text-right text-gray-500">{formatCurrency(item.totalGST)}</td>
-                            <td className="py-3 px-6 text-right text-indigo-600 font-bold">{formatCurrency(item.totalCommission + item.totalGST)}</td>
+                            <td className="py-3 px-6 text-right text-blue-600 font-bold">{formatCurrency(item.totalCommission + item.totalGST)}</td>
                           </>
                         )}
                         {breakdownType === 'sales' && (
@@ -585,7 +601,7 @@ const AdminDashboard = () => {
                           <>
                             <td className="py-3 px-4 text-right">{formatCurrency(item.totalSales)}</td>
                             <td className="py-3 px-4 text-right text-gray-500">{formatCurrency(item.totalSales - (item.totalOwnerPayout || 0))}</td>
-                            <td className="py-3 px-6 text-right text-indigo-600 font-bold">{formatCurrency(item.totalOwnerPayout || item.totalSales * 0.98)}</td>
+                            <td className="py-3 px-6 text-right text-blue-600 font-bold">{formatCurrency(item.totalOwnerPayout || item.totalSales * 0.98)}</td>
                           </>
                         )}
                         {breakdownType === 'penalties' && (

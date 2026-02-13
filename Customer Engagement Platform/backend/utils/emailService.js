@@ -11,11 +11,15 @@ const sendEmail = async (options) => {
     console.log(`Email Service Auth -> User: ${authUser}, Pass defined: ${!!authPass}`);
 
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // use TLS
         auth: {
             user: authUser,
             pass: authPass
-        }
+        },
+        debug: true, // show debug output
+        logger: true // log to console
     });
 
     // Define email options
@@ -45,6 +49,17 @@ const sendEmail = async (options) => {
         console.error('Error Name:', error.name);
         console.error('Error Message:', error.message);
         console.error('Error Code:', error.code);
+
+        if (error.code === 'EAUTH') {
+            console.error('---------------------------------------------------------');
+            console.error('AUTHENTICATION FAILED: Invalid Gmail Credentials.');
+            console.error('1. Ensure 2FA is ENABLED on your Google Account.');
+            console.error('2. Generate a NEW "App Password" (16 characters).');
+            console.error('3. Update EMAIL_PASSWORD in backend/.env (removing spaces).');
+            console.error('4. Visit: https://myaccount.google.com/apppasswords');
+            console.error('---------------------------------------------------------');
+        }
+
         if (error.response) console.error('SMTP Response:', error.response);
         throw error;
     }

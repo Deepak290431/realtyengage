@@ -17,11 +17,13 @@ import {
   Visibility,
   Favorite,
   Share,
-  CurrencyRupee
+  CurrencyRupee,
+  PlayCircleOutline
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../store/slices/uiSlice';
+import toast from 'react-hot-toast';
 
 const ProjectCard = ({ project, isAdmin = false }) => {
   const navigate = useNavigate();
@@ -66,11 +68,23 @@ const ProjectCard = ({ project, isAdmin = false }) => {
     }
   };
 
+  const handleVirtualTourClick = (e) => {
+    e.stopPropagation();
+    const hasContent = project.virtualTour?.enabled &&
+      (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url);
+
+    if (hasContent) {
+      navigate(`/projects/${project._id}?viewTour=true`);
+    } else {
+      toast.error('Virtual tour is not available right now');
+    }
+  };
+
   return (
-    <Card 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
         transition: 'all 0.3s ease',
@@ -115,10 +129,36 @@ const ProjectCard = ({ project, isAdmin = false }) => {
       </Box>
 
       <CardContent sx={{ flexGrow: 1, pb: 1 }}>
-        <Typography gutterBottom variant="h6" component="h2">
-          {project.name}
-        </Typography>
-        
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Typography gutterBottom variant="h6" component="h2" sx={{ fontWeight: 600, mb: 0 }}>
+            {project.name}
+          </Typography>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={handleVirtualTourClick}
+            startIcon={<PlayCircleOutline />}
+            sx={{
+              borderRadius: '20px',
+              textTransform: 'none',
+              fontSize: '0.7rem',
+              py: 0.2,
+              px: 1,
+              ml: 1,
+              whiteSpace: 'nowrap',
+              backgroundColor: project.virtualTour?.enabled ? 'primary.main' : 'transparent',
+              color: project.virtualTour?.enabled ? 'white' : 'text.disabled',
+              borderColor: project.virtualTour?.enabled ? 'primary.main' : 'grey.300',
+              '&:hover': {
+                backgroundColor: project.virtualTour?.enabled ? 'primary.dark' : 'grey.100',
+                borderColor: project.virtualTour?.enabled ? 'primary.dark' : 'grey.400',
+              }
+            }}
+          >
+            Virtual Tour
+          </Button>
+        </Box>
+
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, color: 'text.secondary' }}>
           <LocationOn fontSize="small" sx={{ mr: 0.5 }} />
           <Typography variant="body2">{project.area}</Typography>
@@ -148,7 +188,7 @@ const ProjectCard = ({ project, isAdmin = false }) => {
         )}
 
         {project.shortDescription && (
-          <Typography variant="body2" color="text.secondary" sx={{ 
+          <Typography variant="body2" color="text.secondary" sx={{
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             display: '-webkit-box',
@@ -161,8 +201,8 @@ const ProjectCard = ({ project, isAdmin = false }) => {
       </CardContent>
 
       <CardActions sx={{ px: 2, pb: 2, pt: 0 }}>
-        <Button 
-          size="small" 
+        <Button
+          size="small"
           variant="contained"
           onClick={handleEnquire}
           sx={{ flexGrow: 1 }}

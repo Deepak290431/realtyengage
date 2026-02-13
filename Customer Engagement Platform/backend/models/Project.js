@@ -205,6 +205,57 @@ const projectSchema = new mongoose.Schema({
       enum: ['brochure', 'floor_plan', 'price_list', 'other']
     }
   }],
+  virtualTour: {
+    enabled: {
+      type: Boolean,
+      default: false
+    },
+    type: {
+      type: String,
+      enum: ['360_image', '360_video', 'none'],
+      default: 'none'
+    },
+    images360: [{
+      url: {
+        type: String,
+        required: true
+      },
+      title: String,
+      description: String,
+      order: {
+        type: Number,
+        default: 0
+      },
+      uploadedAt: {
+        type: Date,
+        default: Date.now
+      },
+      uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    }],
+    video360: {
+      url: String,
+      title: String,
+      description: String,
+      duration: Number, // in seconds
+      uploadedAt: Date,
+      uploadedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    },
+    viewCount: {
+      type: Number,
+      default: 0
+    },
+    uniqueViewers: [String], // Store unique emails of users who viewed the tour
+    lastUpdated: {
+      type: Date,
+      default: Date.now
+    }
+  },
   isActive: {
     type: Boolean,
     default: true

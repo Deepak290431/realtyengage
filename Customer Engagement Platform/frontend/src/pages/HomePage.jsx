@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion, useAnimation } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import {
@@ -32,6 +33,7 @@ import projectService from '../services/projectService';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const controls = useAnimation();
   const [ref, inView] = useInView({
@@ -63,7 +65,7 @@ const HomePage = () => {
       icon: Shield,
       title: 'Secure Transactions',
       description: 'End-to-end encrypted payments with multiple payment options',
-      color: 'from-purple-500 to-pink-500',
+      color: 'hero-gradient',
     },
     {
       icon: MapPin,
@@ -230,7 +232,16 @@ const HomePage = () => {
                 <Button
                   className="h-14 px-8 text-lg text-gray-900 border-gray-300 hover:bg-gray-50 dark:text-white dark:border-gray-700 dark:hover:bg-gray-800"
                   variant="outline"
-                  onClick={() => navigate('/register')}
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      const path = ['admin', 'super_admin'].includes(user?.role)
+                        ? '/admin/enquiries'
+                        : '/dashboard/enquiries?type=site_visit';
+                      navigate(path);
+                    } else {
+                      navigate('/login', { state: { from: '/dashboard/enquiries?type=site_visit' } });
+                    }
+                  }}
                 >
                   <Calendar className="mr-3 h-6 w-6" />
                   Schedule Visit
@@ -561,7 +572,7 @@ const HomePage = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-white/10 text-white border-white hover:bg-white hover:text-purple-600"
+                className="bg-white/10 text-white border-white hover:bg-white hover:text-blue-900"
                 onClick={() => navigate('/contact')}
               >
                 <Phone className="mr-2 h-5 w-5" />

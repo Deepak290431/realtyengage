@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   Divider,
   Paper,
+  Chip,
   useTheme,
   alpha
 } from '@mui/material';
@@ -23,7 +24,9 @@ import {
   FormatColorFill,
   Contrast,
   TextFields,
-  CheckCircle
+  CheckCircle,
+  ExpandLess,
+  ExpandMore
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { toggleTheme, setThemeMode, setThemeColor } from '../../store/slices/themeSlice';
@@ -31,16 +34,16 @@ import { toggleTheme, setThemeMode, setThemeColor } from '../../store/slices/the
 const themeColors = [
   { name: 'Blue', primary: '#1976d2', secondary: '#dc004e' },
   { name: 'Green', primary: '#2e7d32', secondary: '#ed6c02' },
-  { name: 'Purple', primary: '#7b1fa2', secondary: '#0288d1' },
+  { name: 'Dark Blue', primary: '#0B1F33', secondary: '#1E3A8A' },
   { name: 'Orange', primary: '#ed6c02', secondary: '#2e7d32' },
   { name: 'Teal', primary: '#00796b', secondary: '#c2185b' },
-  { name: 'Indigo', primary: '#3949ab', secondary: '#f57c00' }
+  { name: 'Steel Blue', primary: '#4682B4', secondary: '#B0C4DE' }
 ];
 
 const ThemeToggle = ({ showLabel = false, position = 'bottom' }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [advancedOpen, setAdvancedOpen] = React.useState(false);
-  
+
   const theme = useTheme();
   const dispatch = useDispatch();
   const { mode, primaryColor, autoMode, highContrast, fontSize } = useSelector((state) => state.theme);
@@ -147,7 +150,7 @@ const ThemeToggle = ({ showLabel = false, position = 'bottom' }) => {
           <Typography variant="h6" gutterBottom>
             Theme Settings
           </Typography>
-          
+
           {/* Theme Mode Selection */}
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
             Mode
@@ -170,7 +173,7 @@ const ThemeToggle = ({ showLabel = false, position = 'bottom' }) => {
                 Light
               </Typography>
             </Paper>
-            
+
             <Paper
               onClick={() => handleModeChange('dark')}
               sx={{
@@ -188,7 +191,7 @@ const ThemeToggle = ({ showLabel = false, position = 'bottom' }) => {
                 Dark
               </Typography>
             </Paper>
-            
+
             <Paper
               onClick={() => handleAutoMode(!autoMode)}
               sx={{
@@ -273,7 +276,7 @@ const ThemeToggle = ({ showLabel = false, position = 'bottom' }) => {
             </Typography>
             {advancedOpen ? <ExpandLess /> : <ExpandMore />}
           </Box>
-          
+
           {advancedOpen && (
             <Box sx={{ pl: 2 }}>
               <FormControlLabel
@@ -294,7 +297,7 @@ const ThemeToggle = ({ showLabel = false, position = 'bottom' }) => {
                   </Box>
                 }
               />
-              
+
               <Box sx={{ mt: 2 }}>
                 <Typography variant="caption" color="text.secondary">
                   Font Size

@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Generate JWT Token
-const generateToken = (userId) => {
+const generateToken = (userId, role, tokenVersion = 0) => {
   return jwt.sign(
-    { userId },
+    { userId, role, tokenVersion },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE || '7d' }
   );
@@ -55,6 +55,24 @@ const authenticateToken = async (req, res, next) => {
       });
     }
 
+    // Requirement: Handle role inconsistency by invalidating tokens with mismatched roles
+    if (user.role !== decoded.role) {
+      return res.status(401).json({
+        roleChanged: true,
+        error: 'Authentication failed',
+        message: 'Your role has been updated. Please log in again.'
+      });
+    }
+
+    // Check token version for global logout
+    if (decoded.tokenVersion !== undefined && decoded.tokenVersion !== user.tokenVersion) {
+      return res.status(401).json({
+        tokenInvalidated: true,
+        error: 'Authentication failed',
+        message: 'Session has been invalidated. Please log in again.'
+      });
+    }
+
     req.user = user;
     req.userId = user._id;
     next();
@@ -90,7 +108,7 @@ const authorizeRoles = (...roles) => {
       });
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (req.user.role !== 'super_admin' && !roles.includes(req.user.role)) {
       return res.status(403).json({
         error: 'Access denied',
         message: `This resource requires ${roles.join(' or ')} role`
@@ -190,3 +208,25 @@ module.exports = {
   checkResourceOwnership,
   authRateLimiter
 };
+
+// Require Super Admin Role - Strict validation for system-level operations
+const requireSuperAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({
+      error: 'Authentication required',
+      message: 'Please login first'
+    });
+  }
+
+  if (req.user.role !== 'super_admin') {
+    return res.status(403).json({
+      error: 'Access denied',
+      message: 'This operation requires Super Admin privileges'
+    });
+  }
+
+  next();
+};
+
+module.exports.requireSuperAdmin = requireSuperAdmin;
+

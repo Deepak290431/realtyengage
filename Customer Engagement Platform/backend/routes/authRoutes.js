@@ -40,7 +40,7 @@ router.post('/register',
   handleValidationErrors,
   async (req, res) => {
     try {
-      const { email, password, firstName, lastName, phone, role = 'customer' } = req.body;
+      const { email, password, firstName, lastName, phone, role = 'user' } = req.body;
 
       // Check if user exists
       const existingUser = await User.findOne({ email });
@@ -58,13 +58,13 @@ router.post('/register',
         firstName,
         lastName,
         phone,
-        role: role === 'admin' && process.env.ALLOW_ADMIN_REGISTRATION === 'true' ? 'admin' : 'customer'
+        role: role === 'admin' && process.env.ALLOW_ADMIN_REGISTRATION === 'true' ? 'admin' : 'user'
       });
 
       await user.save();
 
       // Generate tokens
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.role, user.tokenVersion);
       const refreshToken = generateRefreshToken(user._id);
 
       // Save refresh token
@@ -132,7 +132,7 @@ router.post('/login',
       user.lastLogin = new Date();
 
       // Generate tokens
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.role, user.tokenVersion);
       const refreshToken = generateRefreshToken(user._id);
 
       // Save refresh token
@@ -182,30 +182,40 @@ router.post('/google',
       const payload = ticket.getPayload();
       const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profilePicture } = payload;
 
-      let user = await User.findOne({ $or: [{ googleId }, { email }] });
+      let user = await User.findOne({ email });
 
       if (user) {
-        // If user exists but doesn't have googleId (linked by email)
+        // Requirement 1: If role === "admin", reject login attempt
+        if (user.role === 'admin') {
+          return res.status(401).json({
+            error: 'Access blocked',
+            message: 'Admin accounts cannot login using Google. Please login using email and password.'
+          });
+        }
+
+        // Update googleId if not present (linked account)
         if (!user.googleId) {
           user.googleId = googleId;
           if (!user.profilePicture) user.profilePicture = profilePicture;
           await user.save();
         }
       } else {
-        // Create new user
+        // Create new user with role = "user" and authProvider = "google"
         user = new User({
           email,
           googleId,
           firstName: firstName || 'Google',
           lastName: lastName || 'User',
           profilePicture,
+          role: 'user',
+          authProvider: 'google',
           isVerified: true
         });
         await user.save();
       }
 
       // Generate tokens
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, user.role, user.tokenVersion);
       const refreshToken = generateRefreshToken(user._id);
 
       // Save refresh token
@@ -251,7 +261,7 @@ router.post('/refresh',
       const user = await verifyRefreshToken(refreshToken);
 
       // Generate new tokens
-      const newToken = generateToken(user._id);
+      const newToken = generateToken(user._id, user.role, user.tokenVersion);
       const newRefreshToken = generateRefreshToken(user._id);
 
       // Save new refresh token
@@ -294,6 +304,33 @@ router.post('/logout', authenticateToken, async (req, res) => {
     res.status(500).json({
       error: 'Logout failed',
       message: 'Unable to logout'
+    });
+  }
+});
+
+// @route   POST /api/auth/logout-all
+// @desc    Logout from all devices
+// @access  Private
+router.post('/logout-all', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (user) {
+      // Increment token version to invalidate all current JWTs
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
+      // Clear refresh token
+      user.refreshToken = null;
+      await user.save();
+    }
+
+    res.json({
+      success: true,
+      message: 'Logged out from all devices successfully'
+    });
+  } catch (error) {
+    console.error('Logout all error:', error);
+    res.status(500).json({
+      error: 'Logout failed',
+      message: 'Unable to logout from all devices'
     });
   }
 });
@@ -587,8 +624,10 @@ router.post('/reset-password',
         });
       }
 
-      // Update password
+      // Update password and invalidate all current sessions
       user.password = newPassword;
+      user.tokenVersion = (user.tokenVersion || 0) + 1;
+      user.refreshToken = undefined;
       user.resetPasswordToken = undefined;
       user.resetPasswordExpires = undefined;
       await user.save();

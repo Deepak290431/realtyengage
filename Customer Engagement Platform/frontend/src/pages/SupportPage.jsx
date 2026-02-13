@@ -214,8 +214,8 @@ const SupportPage = ({ isAdmin = false }) => {
 
           <Card className="p-6 bg-white dark:bg-gray-800 shadow-lg">
             <div className="flex items-center space-x-4">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <MessageSquare className="h-6 w-6 text-purple-600" />
+              <div className="p-3 bg-blue-100 rounded-full">
+                <MessageSquare className="h-6 w-6 text-blue-600" />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Live Chat</p>

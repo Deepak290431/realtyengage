@@ -17,8 +17,8 @@ router.get('/', async (req, res) => {
 
 // @route   PUT /api/settings
 // @desc    Update app settings
-// @access  Private (Admin)
-router.put('/', authenticateToken, authorizeRoles('admin'), async (req, res) => {
+// @access  Private (Super Admin)
+router.put('/', authenticateToken, authorizeRoles('super_admin'), async (req, res) => {
     try {
         // We can just update the singleton
         // Use findOneAndUpdate with upsert to ensure we always have one document

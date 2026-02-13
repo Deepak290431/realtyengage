@@ -19,7 +19,9 @@ import { Card } from './ui/card';
 import { Badge } from './ui/badge';
 import toast from 'react-hot-toast';
 
-const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) => {
+import enquiryService from '../services/enquiryService';
+
+const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation, projectId }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         date: '',
@@ -31,17 +33,31 @@ const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) =
         phone: ''
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (step < 2) {
             setStep(2);
         } else {
-            toast.success('Site visit scheduled successfully!');
-            setStep(3); // Success step
-            setTimeout(() => {
-                onClose();
-                setStep(1);
-            }, 3000);
+            try {
+                const enquiryData = {
+                    projectId: projectId,
+                    enquiryType: 'site_visit',
+                    priority: 'medium',
+                    details: `Site Visit Scheduled for ${projectName}.\nDate: ${formData.date}\nTime: ${formData.time}\nType: ${formData.visitType}\nAttendees: ${formData.attendees}`,
+                    preferredContactMethod: 'phone',
+                    preferredContactTime: formData.time
+                };
+
+                await enquiryService.createEnquiry(enquiryData);
+                toast.success('Site visit scheduled successfully!');
+                setStep(3); // Success step
+                setTimeout(() => {
+                    onClose();
+                    setStep(1);
+                }, 3000);
+            } catch (error) {
+                toast.error('Failed to schedule visit. Please try again.');
+            }
         }
     };
 
@@ -63,7 +79,7 @@ const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) =
                 className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-xl overflow-hidden"
             >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white relative">
+                <div className="hero-gradient p-6 text-white relative">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
@@ -138,8 +154,8 @@ const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) =
                                             type="button"
                                             onClick={() => setFormData({ ...formData, visitType: 'site' })}
                                             className={`p-4 rounded-xl border-2 transition-all text-left ${formData.visitType === 'site'
-                                                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                                                    : 'border-gray-100 dark:border-gray-700 hover:border-blue-200'
+                                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                                                : 'border-gray-100 dark:border-gray-700 hover:border-blue-200'
                                                 }`}
                                         >
                                             <MapPin className={`h-6 w-6 mb-2 ${formData.visitType === 'site' ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -150,11 +166,11 @@ const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) =
                                             type="button"
                                             onClick={() => setFormData({ ...formData, visitType: 'virtual' })}
                                             className={`p-4 rounded-xl border-2 transition-all text-left ${formData.visitType === 'virtual'
-                                                    ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20'
-                                                    : 'border-gray-100 dark:border-gray-700 hover:border-purple-200'
+                                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                                                : 'border-gray-100 dark:border-gray-700 hover:border-blue-200'
                                                 }`}
                                         >
-                                            <Video className={`h-6 w-6 mb-2 ${formData.visitType === 'virtual' ? 'text-purple-600' : 'text-gray-400'}`} />
+                                            <Video className={`h-6 w-6 mb-2 ${formData.visitType === 'virtual' ? 'text-blue-600' : 'text-gray-400'}`} />
                                             <p className="font-bold">Virtual Tour</p>
                                             <p className="text-xs text-gray-500">Via Video Call</p>
                                         </button>
@@ -175,7 +191,7 @@ const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) =
                                     />
                                 </div>
 
-                                <Button type="submit" className="w-full bg-blue-600 py-6 text-lg">
+                                <Button type="submit" className="w-full bg-[#0B1F33] hover:bg-[#06121f] py-6 text-lg shadow-lg">
                                     Next Step
                                 </Button>
                             </motion.form>
@@ -235,7 +251,7 @@ const ScheduleVisitModal = ({ isOpen, onClose, projectName, projectLocation }) =
                                     <Button variant="outline" className="flex-1 py-6" onClick={() => setStep(1)}>
                                         Back
                                     </Button>
-                                    <Button type="submit" className="flex-[2] bg-blue-600 py-6 font-bold">
+                                    <Button type="submit" className="flex-[2] bg-[#0B1F33] hover:bg-[#06121f] py-6 font-bold shadow-lg">
                                         Confirm Visit
                                     </Button>
                                 </div>

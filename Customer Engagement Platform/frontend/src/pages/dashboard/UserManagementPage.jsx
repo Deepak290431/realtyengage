@@ -19,6 +19,8 @@ import {
     AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../../store/slices/authSlice';
 import toast from 'react-hot-toast';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -28,6 +30,8 @@ import { userAPI } from '../../services/api';
 
 const UserManagementPage = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { user: currentUser } = useSelector((state) => state.auth);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -130,8 +134,35 @@ const UserManagementPage = () => {
         e.preventDefault();
         try {
             setIsSubmitting(true);
-            await userAPI.updateUser(selectedUser._id, editFormData);
-            toast.success('User updated successfully');
+            const response = await userAPI.updateUser(selectedUser._id, editFormData);
+
+            // Check if role was changed
+            if (response.data.roleChanged) {
+                // If the updated user is the current user, force logout
+                const targetUserId = selectedUser._id || selectedUser.id;
+                const currentUserId = currentUser?._id || currentUser?.id;
+
+                if (targetUserId === currentUserId) {
+                    toast.success('Your role has been updated. Logging out for security...', {
+                        duration: 3000
+                    });
+
+                    setIsEditModalOpen(false);
+
+                    // Delay logout to let toast show
+                    setTimeout(() => {
+                        dispatch(logout());
+                        // Requirement: Redirect to proper application will happen after next login
+                        window.location.href = '/login';
+                    }, 2000);
+                    return;
+                }
+
+                toast.success('User role updated. Their session has been invalidated.');
+            } else {
+                toast.success('User updated successfully');
+            }
+
             setIsEditModalOpen(false);
             fetchUsers();
         } catch (error) {
@@ -162,13 +193,18 @@ const UserManagementPage = () => {
 
         const matchesRole = roleFilter === 'all' || user.role === roleFilter;
 
-        return matchesSearch && matchesRole;
+        // Requirement: Remove Super Admin from staff management page list
+        const isNotSuperAdmin = user.role !== 'super_admin';
+
+        return matchesSearch && matchesRole && isNotSuperAdmin;
     });
 
     const getRoleBadge = (role) => {
         switch (role) {
             case 'admin': return 'bg-[#C9A24D]/10 text-[#C9A24D] border-[#C9A24D]/20';
-            case 'customer': return 'bg-indigo-50 text-[#0B1F33] border-indigo-100';
+            case 'super_admin': return 'bg-blue-100 text-blue-800 border-blue-200';
+            case 'customer': return 'bg-blue-50 text-[#0B1F33] border-blue-100';
+            case 'user': return 'bg-blue-50 text-blue-700 border-blue-100';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
@@ -180,25 +216,27 @@ const UserManagementPage = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-[#0B1F33] dark:text-white flex items-center gap-3">
-                            <Users className="h-8 w-8 text-[#0B1F33] dark:text-indigo-400" />
+                            <Users className="h-8 w-8 text-[#0B1F33] dark:text-blue-400" />
                             User Management
                         </h1>
                         <p className="text-gray-500 dark:text-gray-400 mt-1">
                             Manage user roles, monitor activity, and handle account statuses.
                         </p>
                     </div>
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                    >
-                        <Button
-                            className="bg-[#0B1F33] hover:bg-[#0B1F33]/90 text-white font-bold shadow-lg h-12 px-6"
-                            onClick={() => setIsAddModalOpen(true)}
+                    {currentUser?.role === 'super_admin' && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
                         >
-                            <UserPlus className="mr-2 h-5 w-5" />
-                            Add New Staff
-                        </Button>
-                    </motion.div>
+                            <Button
+                                className="bg-[#0B1F33] hover:bg-[#0B1F33]/90 text-white font-bold shadow-lg h-12 px-6"
+                                onClick={() => setIsAddModalOpen(true)}
+                            >
+                                <UserPlus className="mr-2 h-5 w-5" />
+                                Add New Staff
+                            </Button>
+                        </motion.div>
+                    )}
                 </div>
             </div>
 
@@ -218,7 +256,7 @@ const UserManagementPage = () => {
                             </div>
                             <div className="flex gap-2">
                                 <select
-                                    className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#0B1F33] min-w-[150px]"
+                                    className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-700 min-w-[150px]"
                                     value={roleFilter}
                                     onChange={(e) => setRoleFilter(e.target.value)}
                                 >
@@ -297,29 +335,31 @@ const UserManagementPage = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="flex gap-2 pt-2 border-t dark:border-gray-700">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="flex-1 text-[#0B1F33] hover:text-[#0B1F33]/80 hover:bg-[#0B1F33]/5"
-                                                    onClick={() => handleEditClick(user)}
-                                                >
-                                                    <Edit className="h-4 w-4 mr-2" />
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                                    onClick={() => handleToggleStatus(user)}
-                                                >
-                                                    {user.isActive === false ? (
-                                                        <><UserCheck className="h-4 w-4 mr-2" /> Activate</>
-                                                    ) : (
-                                                        <><UserX className="h-4 w-4 mr-2" /> Suspend</>
-                                                    )}
-                                                </Button>
-                                            </div>
+                                            {currentUser?.role === 'super_admin' && (
+                                                <div className="flex gap-2 pt-2 border-t dark:border-gray-700">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex-1 text-[#0B1F33] hover:text-[#0B1F33]/80 hover:bg-[#0B1F33]/5"
+                                                        onClick={() => handleEditClick(user)}
+                                                    >
+                                                        <Edit className="h-4 w-4 mr-2" />
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                        onClick={() => handleToggleStatus(user)}
+                                                    >
+                                                        {user.isActive === false ? (
+                                                            <><UserCheck className="h-4 w-4 mr-2" /> Activate</>
+                                                        ) : (
+                                                            <><UserX className="h-4 w-4 mr-2" /> Suspend</>
+                                                        )}
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
                                         {user.isActive === false && (
                                             <div className="absolute top-0 right-0 p-2">
@@ -421,6 +461,7 @@ const UserManagementPage = () => {
                                             onChange={handleInputChange}
                                         >
                                             <option value="admin">Administrator</option>
+                                            <option value="super_admin">Super Admin</option>
                                             <option value="customer">Customer</option>
                                         </select>
                                     </div>
@@ -539,6 +580,7 @@ const UserManagementPage = () => {
                                             onChange={handleEditInputChange}
                                         >
                                             <option value="admin">Administrator</option>
+                                            <option value="super_admin">Super Admin</option>
                                             <option value="customer">Customer</option>
                                         </select>
                                     </div>
@@ -566,7 +608,7 @@ const UserManagementPage = () => {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 };
 

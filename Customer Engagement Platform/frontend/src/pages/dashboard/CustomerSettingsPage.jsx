@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     User, Mail, Phone, Camera, ShieldCheck, Lock, Globe,
@@ -14,7 +15,7 @@ import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Badge } from '../../components/ui/badge';
-import { updateProfile, logout } from '../../store/slices/authSlice';
+import { updateProfile, logout, logoutAll } from '../../store/slices/authSlice';
 
 // --- Sub-components ---
 
@@ -101,16 +102,16 @@ const OTPModal = ({ isOpen, onClose, target, onVerify }) => {
 
                 <Button
                     onClick={() => onVerify(otp.join(''))}
-                    className="w-full h-12 text-lg font-semibold bg-indigo-600 hover:bg-indigo-700 mb-4"
+                    className="w-full h-12 text-lg font-semibold bg-blue-700 hover:bg-blue-800 mb-4"
                 >
                     Confirm Code
                 </Button>
 
                 <div className="text-center">
                     {timer > 0 ? (
-                        <p className="text-sm text-gray-500">Resend code in <span className="text-indigo-600 font-medium">{timer}s</span></p>
+                        <p className="text-sm text-gray-500">Resend code in <span className="text-blue-700 font-medium">{timer}s</span></p>
                     ) : (
-                        <button onClick={() => setTimer(30)} className="text-sm text-indigo-600 font-bold hover:underline">
+                        <button onClick={() => setTimer(30)} className="text-sm text-blue-700 font-bold hover:underline">
                             Resend Code
                         </button>
                     )}
@@ -123,6 +124,7 @@ const OTPModal = ({ isOpen, onClose, target, onVerify }) => {
 // --- Main Page ---
 
 const CustomerSettingsPage = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
     const [activeTab, setActiveTab] = useState('profile');
@@ -174,14 +176,17 @@ const CustomerSettingsPage = () => {
     };
 
     const handleLogoutAllDevices = async () => {
+        if (!window.confirm('Are you sure you want to sign out from all devices? This will also log you out from your current session.')) {
+            return;
+        }
+
         setIsSaving(true);
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            toast.success('Successfully logged out from all other devices');
-            // In a real implementation, you might want to force a re-login or clear tokens
+            await dispatch(logoutAll()).unwrap();
+            toast.success('Successfully logged out from all devices');
+            navigate('/login');
         } catch (error) {
-            toast.error('Failed to log out from other devices');
+            toast.error(error || 'Failed to log out from other devices');
         } finally {
             setIsSaving(false);
         }
@@ -214,9 +219,9 @@ const CustomerSettingsPage = () => {
                     <aside className="lg:w-80">
                         <Card className="p-4 border-none shadow-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-md sticky top-24">
                             <div className="flex items-center gap-4 p-4 border-b border-gray-100 dark:border-gray-700 mb-4">
-                                <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 p-0.5">
+                                <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-blue-600 to-blue-900 p-0.5">
                                     <div className="h-full w-full rounded-full bg-white dark:bg-gray-800 flex items-center justify-center overflow-hidden">
-                                        <User className="h-8 w-8 text-indigo-500" />
+                                        <User className="h-8 w-8 text-blue-800" />
                                     </div>
                                 </div>
                                 <div className="grid overflow-hidden">
@@ -235,8 +240,8 @@ const CustomerSettingsPage = () => {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group ${activeTab === tab.id
-                                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none translate-x-1'
-                                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-indigo-600'
+                                            ? 'bg-blue-900 text-white shadow-lg shadow-blue-200 dark:shadow-none translate-x-1'
+                                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-blue-700'
                                             }`}
                                     >
                                         <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? 'text-white' : 'group-hover:scale-110 transition-transform'}`} />
@@ -282,10 +287,10 @@ const CustomerSettingsPage = () => {
 
                                             <div className="flex flex-col md:flex-row items-center gap-8 mb-8 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
                                                 <div className="relative group">
-                                                    <div className="h-32 w-32 rounded-3xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-700 shadow-md">
-                                                        <User className="h-16 w-16 text-indigo-600 dark:text-indigo-400" />
+                                                    <div className="h-32 w-32 rounded-3xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center overflow-hidden border-4 border-white dark:border-gray-700 shadow-md">
+                                                        <User className="h-16 w-16 text-blue-800 dark:text-blue-400" />
                                                     </div>
-                                                    <button className="absolute -bottom-2 -right-2 p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-xl hover:scale-110 transition-transform text-indigo-600">
+                                                    <button className="absolute -bottom-2 -right-2 p-3 bg-white dark:bg-gray-700 rounded-2xl shadow-xl hover:scale-110 transition-transform text-blue-800">
                                                         <Camera className="h-5 w-5" />
                                                     </button>
                                                 </div>
@@ -337,10 +342,10 @@ const CustomerSettingsPage = () => {
 
                                             <div className="space-y-2 mb-8">
                                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                                                    “This is ME” Section <Badge variant="outline" className="text-[10px] uppercase font-bold text-indigo-600">Public Note</Badge>
+                                                    “This is ME” Section <Badge variant="outline" className="text-[10px] uppercase font-bold text-blue-800">Public Note</Badge>
                                                 </label>
                                                 <textarea
-                                                    className="w-full min-h-[120px] p-4 rounded-xl border border-gray-100 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all"
+                                                    className="w-full min-h-[120px] p-4 rounded-xl border border-gray-100 dark:border-gray-700 dark:bg-gray-800 focus:ring-2 focus:ring-blue-700 focus:outline-none transition-all"
                                                     value={profileData.aboutMe}
                                                     onChange={(e) => setProfileData({ ...profileData, aboutMe: e.target.value })}
                                                     placeholder="Tell properties agents about your preferences..."
@@ -348,7 +353,7 @@ const CustomerSettingsPage = () => {
                                             </div>
 
                                             <div className="pt-4 border-t border-gray-100 dark:border-gray-700 flex justify-end">
-                                                <Button onClick={handleProfileUpdate} disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 px-8 h-12 rounded-xl text-lg shadow-lg shadow-indigo-100 dark:shadow-none">
+                                                <Button onClick={handleProfileUpdate} disabled={isSaving} className="bg-blue-800 hover:bg-blue-900 px-8 h-12 rounded-xl text-lg shadow-lg shadow-blue-100 dark:shadow-none">
                                                     {isSaving ? 'Syncing...' : 'Save Profile Changes'}
                                                 </Button>
                                             </div>
@@ -366,12 +371,12 @@ const CustomerSettingsPage = () => {
                                             />
 
                                             <div className="grid md:grid-cols-2 gap-6 mb-8">
-                                                <Card className="p-6 border-indigo-100 bg-indigo-50/30 dark:bg-indigo-900/10 dark:border-indigo-900/30">
+                                                <Card className="p-6 border-blue-100 bg-blue-50/30 dark:bg-blue-900/10 dark:border-blue-900/30">
                                                     <h4 className="font-bold flex items-center gap-2 mb-4">
-                                                        <Lock className="h-4 w-4 text-indigo-600" /> Update Password
+                                                        <Lock className="h-4 w-4 text-blue-800" /> Update Password
                                                     </h4>
                                                     <p className="text-sm text-gray-500 mb-6">Change your password regularly to keep your account secure.</p>
-                                                    <Button className="w-full bg-indigo-600 hover:bg-indigo-700 rounded-xl">Set New Password</Button>
+                                                    <Button className="w-full bg-blue-800 hover:bg-blue-900 rounded-xl">Set New Password</Button>
                                                 </Card>
 
                                                 <Card className="p-6">
@@ -421,7 +426,7 @@ const CustomerSettingsPage = () => {
                                                 </Button>
                                             </div>
 
-                                            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-800 rounded-2xl border border-blue-100 dark:border-gray-700">
+                                            <div className="flex items-center justify-between p-6 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-800 rounded-2xl border border-blue-100 dark:border-gray-700">
                                                 <div className="flex items-center gap-4">
                                                     <div className="h-12 w-12 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center text-blue-600 shadow-sm">
                                                         <Clock className="h-6 w-6" />
@@ -448,7 +453,7 @@ const CustomerSettingsPage = () => {
 
                                             <div className="grid lg:grid-cols-2 gap-8">
                                                 <div className="space-y-4">
-                                                    <h4 className="font-bold text-lg mb-4 text-indigo-600">Content Preferences</h4>
+                                                    <h4 className="font-bold text-lg mb-4 text-blue-700">Content Preferences</h4>
                                                     {[
                                                         { id: 'newProperty', label: 'New Property Alerts', icon: Home },
                                                         { id: 'enquiryUpdate', label: 'Enquiry Status Updates', icon: MessageSquare },
@@ -470,16 +475,16 @@ const CustomerSettingsPage = () => {
                                                 </div>
 
                                                 <div className="space-y-4">
-                                                    <h4 className="font-bold text-lg mb-4 text-purple-600">Delivery Channels</h4>
+                                                    <h4 className="font-bold text-lg mb-4 text-blue-800">Delivery Channels</h4>
                                                     {[
                                                         { id: 'email', label: 'Email Notifications', icon: Mail },
                                                         { id: 'whatsapp', label: 'WhatsApp Messenger', icon: MessageSquare },
                                                         { id: 'inApp', label: 'In-app Notifications', icon: Bell },
                                                     ].map(item => (
-                                                        <div key={item.id} className="flex items-center justify-between p-5 bg-indigo-50/40 dark:bg-indigo-900/10 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+                                                        <div key={item.id} className="flex items-center justify-between p-5 bg-blue-50/40 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                                                             <div className="flex items-center gap-4">
                                                                 <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                                                    <item.icon className="h-5 w-5 text-indigo-600" />
+                                                                    <item.icon className="h-5 w-5 text-blue-700" />
                                                                 </div>
                                                                 <span className="font-bold text-gray-800 dark:text-gray-200">{item.label}</span>
                                                             </div>
@@ -490,13 +495,13 @@ const CustomerSettingsPage = () => {
                                                         </div>
                                                     ))}
 
-                                                    <div className="mt-8 p-6 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-900/30">
+                                                    <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                                                         <div className="flex items-start gap-4">
-                                                            <Smartphone className="h-6 w-6 text-purple-600 mt-1" />
+                                                            <Smartphone className="h-6 w-6 text-blue-800 mt-1" />
                                                             <div>
-                                                                <h5 className="font-bold text-purple-900 dark:text-purple-300">Push Notifications</h5>
-                                                                <p className="text-sm text-purple-700 dark:text-purple-400 mb-4">Enable browser or mobile app push alerts for real-time updates.</p>
-                                                                <Button size="sm" className="bg-purple-600 hover:bg-purple-700 rounded-lg">Enable Browser Notifications</Button>
+                                                                <h5 className="font-bold text-blue-900 dark:text-blue-300">Push Notifications</h5>
+                                                                <p className="text-sm text-blue-700 dark:text-blue-400 mb-4">Enable browser or mobile app push alerts for real-time updates.</p>
+                                                                <Button size="sm" className="bg-blue-800 hover:bg-blue-900 rounded-lg">Enable Browser Notifications</Button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -537,8 +542,8 @@ const CustomerSettingsPage = () => {
                                                                 key={days}
                                                                 onClick={() => setPayPrefs({ ...payPrefs, daysBefore: days })}
                                                                 className={`p-4 rounded-2xl border-2 transition-all text-center ${payPrefs.daysBefore === days
-                                                                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30'
-                                                                    : 'border-gray-100 dark:border-gray-700 hover:border-indigo-200'
+                                                                    ? 'border-blue-900 bg-blue-50 text-blue-900 dark:bg-blue-900/30'
+                                                                    : 'border-gray-100 dark:border-gray-700 hover:border-blue-200'
                                                                     }`}
                                                             >
                                                                 <span className="block text-2xl font-black mb-1">{days}</span>
@@ -600,7 +605,7 @@ const CustomerSettingsPage = () => {
 
                                                 <div className="space-y-4">
                                                     <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
-                                                        <MessageSquare className="h-5 w-5 text-indigo-500" /> Allow Contact Via
+                                                        <MessageSquare className="h-5 w-5 text-blue-700" /> Allow Contact Via
                                                     </h4>
                                                     <div className="grid md:grid-cols-3 gap-4">
                                                         {[
@@ -612,7 +617,7 @@ const CustomerSettingsPage = () => {
                                                                 key={method.id}
                                                                 onClick={() => setPrivacy({ ...privacy, [method.id]: !privacy[method.id] })}
                                                                 className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${privacy[method.id]
-                                                                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30'
+                                                                    ? 'border-blue-900 bg-blue-50 text-blue-900 dark:bg-blue-900/30'
                                                                     : 'border-gray-100 dark:border-gray-700 opacity-60'
                                                                     }`}
                                                             >
@@ -669,7 +674,7 @@ const CustomerSettingsPage = () => {
                                                         <h4 className="font-bold text-lg flex items-center gap-2">
                                                             <Heart className="h-5 w-5 text-red-500 fill-red-500" /> Shortlisted
                                                         </h4>
-                                                        <Button variant="ghost" size="sm" className="text-indigo-600 font-bold p-0 h-auto">View All</Button>
+                                                        <Button variant="ghost" size="sm" className="text-blue-700 font-bold p-0 h-auto">View All</Button>
                                                     </div>
                                                     <div className="space-y-3">
                                                         {[1, 2].map(i => (
@@ -706,18 +711,18 @@ const CustomerSettingsPage = () => {
                                             </div>
 
                                             <div className="space-y-8">
-                                                <h4 className="font-bold text-lg text-indigo-600 flex items-center gap-2">
+                                                <h4 className="font-bold text-lg text-blue-800 flex items-center gap-2">
                                                     <Search className="h-5 w-5" /> Recommendation Preferences
                                                 </h4>
 
                                                 <div className="grid md:grid-cols-2 gap-8">
                                                     <div className="space-y-4">
                                                         <label className="text-sm font-bold flex items-center gap-2">
-                                                            <MapPin className="h-4 w-4 text-indigo-500" /> Preferred Locations
+                                                            <MapPin className="h-4 w-4 text-blue-700" /> Preferred Locations
                                                         </label>
                                                         <div className="flex flex-wrap gap-2">
                                                             {['Saravanampatti', 'RSPuram', 'Avinashi Road'].map(loc => (
-                                                                <Badge key={loc} className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 px-3 py-1.5 rounded-lg border-none">
+                                                                <Badge key={loc} className="bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 px-3 py-1.5 rounded-lg border-none">
                                                                     {loc} <X className="h-3 w-3 ml-2 cursor-pointer" />
                                                                 </Badge>
                                                             ))}
@@ -753,7 +758,7 @@ const CustomerSettingsPage = () => {
 
             {/* Float Help Button */}
             <Button
-                className="fixed bottom-8 right-8 h-14 w-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl flex items-center justify-center p-0 z-50 border-4 border-white dark:border-gray-800"
+                className="fixed bottom-8 right-8 h-14 w-14 rounded-full bg-blue-800 hover:bg-blue-900 text-white shadow-2xl flex items-center justify-center p-0 z-50 border-4 border-white dark:border-gray-800"
             >
                 <Headphones className="h-6 w-6" />
             </Button>

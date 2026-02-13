@@ -69,6 +69,20 @@ export const logout = createAsyncThunk(
   }
 );
 
+export const logoutAll = createAsyncThunk(
+  'auth/logoutAll',
+  async (_, { rejectWithValue }) => {
+    try {
+      await authService.logoutAll();
+      return null;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Logout all failed'
+      );
+    }
+  }
+);
+
 export const checkAuthStatus = createAsyncThunk(
   'auth/checkStatus',
   async (_, { rejectWithValue }) => {
@@ -85,7 +99,7 @@ export const checkAuthStatus = createAsyncThunk(
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
-      
+
       // Return null instead of rejecting to prevent error state
       return null;
     }
@@ -160,7 +174,7 @@ const authSlice = createSlice({
       state.user = action.payload.user;
       state.token = action.payload.token;
       state.isAuthenticated = true;
-      
+
       // Store in localStorage
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.setItem('token', action.payload.token);
@@ -193,7 +207,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.error = null;
-        
+
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(action.payload.user));
         localStorage.setItem('token', action.payload.token);
@@ -220,7 +234,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.refreshToken = action.payload.refreshToken;
         state.error = null;
-        
+
         // Store in localStorage
         localStorage.setItem('user', JSON.stringify(action.payload.user));
         localStorage.setItem('token', action.payload.token);
@@ -246,7 +260,7 @@ const authSlice = createSlice({
         state.token = null;
         state.refreshToken = null;
         state.error = null;
-        
+
         // Clear localStorage
         localStorage.removeItem('user');
         localStorage.removeItem('token');
@@ -259,7 +273,39 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         state.refreshToken = null;
-        
+
+        // Clear localStorage
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+      });
+
+    // Logout All
+    builder
+      .addCase(logoutAll.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(logoutAll.fulfilled, (state) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.refreshToken = null;
+        state.error = null;
+
+        // Clear localStorage
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+      })
+      .addCase(logoutAll.rejected, (state) => {
+        // Even if if fails on server, clear local state
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.refreshToken = null;
+
         // Clear localStorage
         localStorage.removeItem('user');
         localStorage.removeItem('token');

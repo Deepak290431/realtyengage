@@ -19,7 +19,8 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Plus
+  Plus,
+  Video
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -154,7 +155,7 @@ const ProjectsPage = ({ isAdmin = false }) => {
       case 'completed': return 'text-green-600 bg-green-50';
       case 'ongoing':
       case 'in_progress': return 'text-blue-600 bg-blue-50';
-      case 'upcoming': return 'text-purple-600 bg-purple-50';
+      case 'upcoming': return 'text-blue-700 bg-blue-50';
       default: return 'text-gray-600 bg-gray-50';
     }
   };
@@ -450,7 +451,30 @@ const ProjectsPage = ({ isAdmin = false }) => {
                         </div>
 
                         <div className="p-4">
-                          <h3 className="font-semibold text-lg mb-1">{project.name}</h3>
+                          <div className="flex justify-between items-start mb-1 gap-2">
+                            <h3 className="font-bold text-lg flex-1 leading-tight text-gray-900 dark:text-gray-100">{project.name}</h3>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const tourEnabled = project.virtualTour?.enabled;
+                                const hasContent = tourEnabled &&
+                                  ((project.virtualTour?.images360?.length > 0) || project.virtualTour?.video360?.url);
+
+                                if (hasContent) {
+                                  navigate(`/projects/${project._id || project.id}?viewTour=true`);
+                                } else {
+                                  toast.error('Virtual tour is not available right now');
+                                }
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${project.virtualTour?.enabled
+                                  ? 'bg-gradient-to-r from-blue-600 to-blue-800 text-white border-transparent shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95'
+                                  : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'
+                                }`}
+                            >
+                              <Video className="h-3 w-3" />
+                              Virtual Tour
+                            </button>
+                          </div>
                           <div className="flex flex-col mb-3">
                             <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
                               <MapPin className="h-4 w-4 mr-1" />

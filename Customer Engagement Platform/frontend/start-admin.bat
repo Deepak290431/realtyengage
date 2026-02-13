@@ -1,0 +1,6 @@
+@echo off
+REM Start Admin Server with Increased Memory
+echo Starting RealtyEngage Admin Server on port 4000...
+echo Setting Node.js memory limit to 4GB...
+set NODE_OPTIONS=--max-old-space-size=4096
+npm run start:admin

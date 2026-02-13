@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import {
     Settings, Save, Globe, Home, CreditCard, Bell, Shield,
@@ -28,16 +29,19 @@ const Toggle = ({ checked, onChange }) => (
 );
 
 const SettingsPage = () => {
+    const { user } = useSelector((state) => state.auth);
     const [activeTab, setActiveTab] = useState('general');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [settings, setSettings] = useState({
-        general: { appName: '', contactEmail: '', supportPhone: '', brandColors: { primary: '#4f46e5' } },
+        general: { appName: '', contactEmail: '', supportPhone: '', brandColors: { primary: '#0B1F33' } },
         property: { defaultVisibility: 'public', enquiryExpiryDays: 30 },
         payment: { enabled: true, allowEMI: true, gateway: 'stripe' },
         notification: { emailEnabled: true, whatsappEnabled: false, adminAlerts: { newEnquiry: true } },
         roles: {}
     });
+
+    const isSuperAdmin = user?.role === 'super_admin';
 
     useEffect(() => {
         fetchSettings();
@@ -137,6 +141,7 @@ const SettingsPage = () => {
         )
     }
 
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12">
             <div className="w-full px-4 md:px-6 py-8">
@@ -150,13 +155,25 @@ const SettingsPage = () => {
                             Control platform-wide configurations and preferences.
                         </p>
                     </div>
-                    <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 shadow-lg px-8">
-                        {saving ? 'Saving...' : (
-                            <>
-                                <Save className="h-4 w-4 mr-2" /> Save Changes
-                            </>
+                    <div className="flex flex-col items-end gap-2">
+                        <Button
+                            onClick={handleSave}
+                            disabled={saving || !isSuperAdmin}
+                            className={`${!isSuperAdmin ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary hover:bg-primary/90'} shadow-lg px-8`}
+                        >
+                            {saving ? 'Saving...' : (
+                                <>
+                                    <Save className="h-4 w-4 mr-2" /> Save Changes
+                                </>
+                            )}
+                        </Button>
+                        {!isSuperAdmin && (
+                            <p className="text-xs text-red-500 font-medium">
+                                <Shield className="h-3 w-3 inline mr-1" />
+                                Only Super Admin can modify settings
+                            </p>
                         )}
-                    </Button>
+                    </div>
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8">
@@ -223,7 +240,7 @@ const SettingsPage = () => {
 
                                     <Card className="p-6 border-none shadow-md">
                                         <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                            <Palette className="h-5 w-5 text-purple-500" /> Branding
+                                            <Palette className="h-5 w-5 text-blue-500" /> Branding
                                         </h2>
                                         <div className="flex items-center gap-6">
                                             <div className="space-y-2">

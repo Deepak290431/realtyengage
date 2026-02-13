@@ -213,7 +213,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                     className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 h-9 w-9 ml-1"
                     onClick={() => setIsVoiceSearchOpen(true)}
                   >
-                    <Mic className="h-4 w-4 text-purple-600" />
+                    <Mic className="h-4 w-4 text-blue-600" />
                   </Button>
                 </div>
 
@@ -454,7 +454,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                     onClick={() => { setIsVoiceSearchOpen(true); setIsMobileMenuOpen(false); }}
                     className="flex items-center w-full space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
                   >
-                    <Mic className="h-4 w-4 text-purple-600" />
+                    <Mic className="h-4 w-4 text-blue-600" />
                     <span className="text-xs md:text-sm">Voice Search</span>
                   </button>
 

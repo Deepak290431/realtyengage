@@ -23,8 +23,12 @@ import { logout } from '../../store/slices/authSlice';
 import AIChatbot from '../chatbot/AIChatbot';
 
 const AdminSidebar = ({ onToggleChatbot }) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { user } = useSelector((state) => state.auth);
+    const { theme } = useSelector((state) => state.theme);
+
     const menuItems = [
-        // ... (items remain same, will use '...' to skip unchanged lines if tool allows, but I need to be precise)
         {
             title: 'Dashboard',
             path: '/admin',
@@ -54,11 +58,11 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             path: '/admin/customers',
             icon: Users
         },
-        {
+        ...(user?.role === 'super_admin' ? [{
             title: 'Staff Management',
             path: '/admin/users',
             icon: Shield
-        },
+        }] : []),
         {
             title: 'EMI Calculator',
             path: '/admin/emi',
@@ -74,17 +78,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             path: '/admin/settings',
             icon: Settings
         },
-        // {
-        //     title: 'AI Assistant',
-        //     icon: Sparkles,
-        //     isAction: true
-        // }
     ];
-
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const { user } = useSelector((state) => state.auth);
-    const { theme } = useSelector((state) => state.theme);
     // const [isChatbotOpen, setIsChatbotOpen] = React.useState(false); // Removed local state
 
     const handleLogout = () => {
@@ -168,7 +162,7 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             <div className="p-4 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex flex-col space-y-2">
                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl flex items-center space-x-3">
-                        <div className="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-800 dark:text-blue-400 font-bold">
                             {user?.firstName?.charAt(0) || 'A'}
                         </div>
                         <div className="flex-1 overflow-hidden">

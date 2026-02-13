@@ -116,7 +116,7 @@ router.post('/',
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('firstName').notEmpty().trim().escape().withMessage('First name is required'),
     body('lastName').notEmpty().trim().escape().withMessage('Last name is required'),
-    body('role').isIn(['admin', 'customer']).withMessage('Invalid role'),
+    body('role').isIn(['admin', 'customer', 'user', 'super_admin']).withMessage('Invalid role'),
     body('phone').optional({ checkFalsy: true }).matches(/^[0-9]{10}$/).withMessage('Phone number must be 10 digits')
   ],
   handleValidationErrors,
@@ -143,6 +143,14 @@ router.post('/',
         role,
         isVerified: true // Staff created by admin are auto-verified
       });
+
+      // Role permission check: Only super_admin can create admin accounts
+      if ((role === 'admin' || role === 'super_admin') && req.user.role !== 'super_admin') {
+        return res.status(403).json({
+          error: 'Access denied',
+          message: 'Only Super Admin can create Admin accounts'
+        });
+      }
 
       await user.save();
 
@@ -178,26 +186,15 @@ router.put('/:id',
     body('firstName').optional().trim().escape(),
     body('lastName').optional().trim().escape(),
     body('phone').optional({ checkFalsy: true }).matches(/^[0-9]{10}$/),
-    body('role').optional().isIn(['admin', 'customer']),
+    body('role').optional().isIn(['admin', 'customer', 'user', 'super_admin']),
     body('isActive').optional().isBoolean()
   ],
   handleValidationErrors,
   async (req, res) => {
     try {
-      const updates = {};
       const allowedUpdates = ['firstName', 'lastName', 'phone', 'role', 'isActive'];
-      
-      allowedUpdates.forEach(update => {
-        if (req.body[update] !== undefined) {
-          updates[update] = req.body[update];
-        }
-      });
 
-      const user = await User.findByIdAndUpdate(
-        req.params.id,
-        updates,
-        { new: true, runValidators: true }
-      ).select('-password -refreshToken');
+      const user = await User.findById(req.params.id);
 
       if (!user) {
         return res.status(404).json({
@@ -205,10 +202,48 @@ router.put('/:id',
         });
       }
 
+      // Check if role is being changed or if the user being updated is an admin
+      const isRoleChanging = req.body.role !== undefined && req.body.role !== user.role;
+      const isTargetAdmin = user.role === 'admin' || user.role === 'super_admin';
+      const isNewRoleAdmin = req.body.role === 'admin' || req.body.role === 'super_admin';
+
+      // Permission check: Only super_admin can change roles or modify admin accounts
+      if ((isRoleChanging || isTargetAdmin || isNewRoleAdmin) && req.user.role !== 'super_admin') {
+        return res.status(403).json({
+          error: 'Access denied',
+          message: 'Only Super Admin can change user roles or modify Admin accounts'
+        });
+      }
+
+      // Apply updates
+      allowedUpdates.forEach(update => {
+        if (req.body[update] !== undefined) {
+          user[update] = req.body[update];
+        }
+      });
+
+      // Requirement: Invalidate session on role change or suspension
+      if (isRoleChanging || req.body.isActive === false) {
+        user.tokenVersion = (user.tokenVersion || 0) + 1;
+        user.refreshToken = undefined; // Force logout on next refresh attempt
+      }
+
+      await user.save();
+
       res.json({
         success: true,
-        message: 'User updated successfully',
-        data: user
+        message: isRoleChanging
+          ? 'Role updated. The user must log in again to apply changes.'
+          : 'User updated successfully',
+        roleChanged: isRoleChanging,
+        data: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          isActive: user.isActive
+        }
       });
     } catch (error) {
       console.error('Update user error:', error);

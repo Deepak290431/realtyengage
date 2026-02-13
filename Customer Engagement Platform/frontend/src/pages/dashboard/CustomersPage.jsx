@@ -355,7 +355,7 @@ const CustomersPage = () => {
                                                 <button
                                                     key={tab}
                                                     onClick={() => setActiveTab(tab)}
-                                                    className={`flex-1 pb-3 text-sm font-medium capitalize transition-colors relative ${activeTab === tab ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-700'
+                                                    className={`flex-1 pb-3 text-sm font-medium capitalize transition-colors relative ${activeTab === tab ? 'text-blue-700' : 'text-gray-500 hover:text-gray-700'
                                                         }`}
                                                 >
                                                     {tab}
@@ -442,7 +442,7 @@ const CustomersPage = () => {
                                                             <div key={idx} className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                                                                 <p className="text-sm text-gray-800 dark:text-gray-200">{note.text}</p>
                                                                 <div className="flex justify-between items-center mt-2">
-                                                                    <span className="text-xs text-indigo-600 font-medium">{note.addedBy?.firstName || 'Admin'}</span>
+                                                                    <span className="text-xs text-blue-700 font-medium">{note.addedBy?.firstName || 'Admin'}</span>
                                                                     <span className="text-xs text-gray-400">{new Date(note.addedAt).toLocaleString()}</span>
                                                                 </div>
                                                             </div>
@@ -465,7 +465,7 @@ const CustomersPage = () => {
                                                     {/* Simulated timeline from enquiries for now */}
                                                     {customerDetails.enquiries?.map((enq, idx) => (
                                                         <div key={idx} className="relative">
-                                                            <div className="absolute -left-[21px] top-0 h-4 w-4 rounded-full bg-indigo-600 ring-4 ring-white dark:ring-gray-900" />
+                                                            <div className="absolute -left-[21px] top-0 h-4 w-4 rounded-full bg-blue-700 ring-4 ring-white dark:ring-gray-900" />
                                                             <p className="text-sm text-gray-500 mb-1">{new Date(enq.createdAt).toLocaleDateString()}</p>
                                                             <h4 className="text-md font-medium text-gray-900 dark:text-white">Enquired about {enq.projectId?.name || 'Property'}</h4>
                                                             <p className="text-sm text-gray-600 mt-1">Status: {enq.status}</p>
@@ -478,7 +478,7 @@ const CustomersPage = () => {
                                 </div>
                             ) : (
                                 <div className="flex items-center justify-center h-full">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
                                 </div>
                             )}
                         </motion.div>

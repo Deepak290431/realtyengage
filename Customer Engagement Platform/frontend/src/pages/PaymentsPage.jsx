@@ -645,7 +645,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
 
                         {(!enquiry.paymentPlan || enquiry.installments?.find(i => i.status === 'pending')) && (
                           <Button
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 font-bold h-12 rounded-xl shadow-lg border-b-4 border-indigo-800 active:border-b-0 active:translate-y-1 transition-all"
+                            className="w-full bg-blue-800 hover:bg-blue-900 font-bold h-12 rounded-xl shadow-lg border-b-4 border-blue-900 active:border-b-0 active:translate-y-1 transition-all"
                             onClick={() => {
                               const pending = enquiry.installments?.find(i => i.status === 'pending');
                               handleOpenPayment(enquiry, pending);
@@ -678,7 +678,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border overflow-hidden">
                 <div className="p-6 border-b bg-gray-50/50 flex items-center justify-between">
                   <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5 text-indigo-600" />
+                    <TrendingUp className="h-5 w-5 text-blue-700" />
                     Recent Activity
                   </h3>
                   <Badge variant="outline" className="text-[10px]">{transactions.length} total payments</Badge>
@@ -707,7 +707,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                               {isAdmin && tx.userId && (
                                 <Badge
                                   variant="secondary"
-                                  className="bg-indigo-50 text-indigo-700 border-indigo-100 flex items-center gap-1 cursor-pointer hover:bg-indigo-100 transition-colors"
+                                  className="bg-blue-50 text-blue-700 border-blue-100 flex items-center gap-1 cursor-pointer hover:bg-blue-100 transition-colors"
                                   onClick={() => handleShowUserProfile({
                                     name: `${tx.userId.firstName} ${tx.userId.lastName}`,
                                     email: tx.userId.email,
@@ -722,7 +722,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                             <p className="text-xs text-gray-500 flex items-center gap-3 mt-1">
                               <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(tx.paymentDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                               <span className="flex items-center uppercase font-bold text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">{tx.paymentMethod}</span>
-                              <span className="text-indigo-600 font-medium">{tx.installmentType === 'emi' ? `Installment #${tx.installmentNumber}` : 'Full Settlement'}</span>
+                              <span className="text-blue-700 font-medium">{tx.installmentType === 'emi' ? `Installment #${tx.installmentNumber}` : 'Full Settlement'}</span>
                             </p>
                           </div>
                         </div>
@@ -735,7 +735,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-9 px-3 border-gray-200 hover:border-indigo-600 hover:text-indigo-600 transition-all"
+                              className="h-9 px-3 border-gray-200 hover:border-blue-800 hover:text-blue-800 transition-all"
                               onClick={() => handleDownloadInvoice(tx._id, tx.propertyName)}
                             >
                               <Download className="h-4 w-4 mr-2" />
@@ -781,7 +781,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                   </h2>
                   <div className="flex flex-col mt-1">
                     <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Property: {selectedEnquiryForPayment?.projectId?.name}</span>
-                    <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">{selectedEnquiryForPayment?.projectId?.area}</span>
+                    <span className="text-[10px] text-blue-800 font-bold uppercase tracking-widest">{selectedEnquiryForPayment?.projectId?.area}</span>
                   </div>
                 </div>
                 {paymentStep === 'details' && (
@@ -956,7 +956,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
 
                             <div className="pt-0">
                               <div className="flex items-center justify-center gap-2 text-[10px] font-bold text-gray-500">
-                                <span className="text-indigo-400">dsakthi533@okhdfcbank</span>
+                                <span className="text-blue-400">dsakthi533@okhdfcbank</span>
                                 <button
                                   onClick={() => {
                                     navigator.clipboard.writeText('dsakthi533@okhdfcbank');
@@ -1174,7 +1174,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                   {detailsType === 'totalPaid' && <><Banknote className="h-6 w-6 text-green-600" /> Total Paid Breakdown</>}
                   {detailsType === 'pending' && <><Clock className="h-6 w-6 text-yellow-600" /> Pending Dues List</>}
                   {detailsType === 'nextPayment' && <><Calendar className="h-6 w-6 text-blue-600" /> Next Payment</>}
-                  {detailsType === 'userDetails' && <><User className="h-6 w-6 text-indigo-600" /> Customer Information</>}
+                  {detailsType === 'userDetails' && <><User className="h-6 w-6 text-blue-600" /> Customer Information</>}
                 </h3>
                 <Button
                   variant="ghost"
@@ -1190,7 +1190,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                 {detailsType === 'userDetails' ? (
                   <div className="space-y-6">
                     <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl">
-                      <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-sm">
+                      <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-bold text-2xl shadow-sm">
                         {selectedUserDetails?.name?.charAt(0)}
                       </div>
                       <div>
@@ -1222,9 +1222,9 @@ const PaymentsPage = ({ isAdmin = false }) => {
                       <div className="text-center py-10 text-gray-500 italic">No records found for this category.</div>
                     ) : (
                       detailsData.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-indigo-200 transition-all hover:bg-white hover:shadow-md">
+                        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:bg-white hover:shadow-md">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white border border-gray-200 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
+                            <div className="w-10 h-10 bg-white border border-gray-200 text-blue-600 rounded-xl flex items-center justify-center font-bold">
                               {item.name.charAt(0)}
                             </div>
                             <div>
@@ -1233,7 +1233,7 @@ const PaymentsPage = ({ isAdmin = false }) => {
                             </div>
                           </div>
                           <div className="text-right shrink-0">
-                            <p className={`text-lg font-black ${detailsType === 'pending' ? 'text-red-600' : 'text-indigo-600'}`}>
+                            <p className={`text-lg font-black ${detailsType === 'pending' ? 'text-red-600' : 'text-blue-600'}`}>
                               {formatCurrency(detailsType === 'nextPayment' ? item.nextAmount : item.amount)}
                             </p>
                             {detailsType === 'nextPayment' && item.nextDate && (

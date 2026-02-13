@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
     Building,
     Users,
@@ -14,6 +15,7 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 
 const AboutPage = () => {
+    const navigate = useNavigate();
     const stats = [
         { value: '500+', label: 'Happy Families', icon: Heart },
         { value: '50+', label: 'Premium Projects', icon: Building },
@@ -76,12 +78,12 @@ const AboutPage = () => {
                             </p>
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-3">
-                                    <Target className="h-6 w-6 text-blue-600" />
+                                    <Target className="h-6 w-6 text-[#0B1F33]" />
                                     <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">Our Mission:</span>
                                     <span className="text-gray-600 dark:text-gray-400">To make dream homes accessible through transparent processes.</span>
                                 </div>
                                 <div className="flex items-center space-x-3">
-                                    <TrendingUp className="h-6 w-6 text-purple-600" />
+                                    <TrendingUp className="h-6 w-6 text-[#0B1F33]" />
                                     <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">Our Vision:</span>
                                     <span className="text-gray-600 dark:text-gray-400">To be the most trusted real estate brand in India by 2030.</span>
                                 </div>
@@ -115,7 +117,7 @@ const AboutPage = () => {
                                     whileHover={{ y: -10 }}
                                     className="text-center"
                                 >
-                                    <div className="h-16 w-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-6 text-blue-600">
+                                    <div className="h-16 w-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg flex items-center justify-center mx-auto mb-6 text-[#0B1F33]">
                                         <Icon className="h-8 w-8" />
                                     </div>
                                     <h3 className="text-4xl font-bold mb-2 text-gray-900 dark:text-white">{stat.value}</h3>
@@ -136,7 +138,7 @@ const AboutPage = () => {
                     </div>
                     <div className="grid md:grid-cols-4 gap-6">
                         {milestones.map((item, index) => (
-                            <Card key={index} className="p-6 relative overflow-hidden border-t-4 border-t-blue-600">
+                            <Card key={index} className="p-6 relative overflow-hidden border-t-4 border-t-[#0B1F33]">
                                 <span className="text-5xl font-bold text-gray-100 absolute -bottom-2 -right-2 z-0">{item.year}</span>
                                 <div className="relative z-10">
                                     <h4 className="text-xl font-bold mb-3 text-gray-900 dark:text-white">{item.title}</h4>
@@ -149,15 +151,21 @@ const AboutPage = () => {
             </section>
 
             {/* Contact CTA */}
-            <section className="py-20 bg-blue-600 text-white">
+            <section className="py-20 bg-[#0B1F33] text-white">
                 <div className="container mx-auto px-4 text-center">
                     <h2 className="text-4xl font-bold mb-6">Experience Excellence with Us</h2>
                     <p className="text-xl text-white/80 mb-8 max-w-2xl mx-auto">Our team is ready to help you find your perfect investment or dream home.</p>
                     <div className="flex justify-center space-x-4">
-                        <button className="px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-gray-100 transition-colors">
+                        <button
+                            onClick={() => navigate('/projects')}
+                            className="px-8 py-3 bg-white text-[#0B1F33] font-bold rounded-lg hover:bg-gray-100 transition-colors"
+                        >
                             Our Projects
                         </button>
-                        <button className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white/10 transition-colors">
+                        <button
+                            onClick={() => navigate('/contact')}
+                            className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-lg hover:bg-white/10 transition-colors"
+                        >
                             Contact Us
                         </button>
                     </div>

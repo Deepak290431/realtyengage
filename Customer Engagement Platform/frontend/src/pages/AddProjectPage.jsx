@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -27,6 +28,8 @@ import { Badge } from '../components/ui/badge';
 import projectService from '../services/projectService';
 
 const AddProjectPage = () => {
+    const { user } = useSelector((state) => state.auth);
+    const isSuperAdmin = user?.role === 'super_admin';
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [configurations, setConfigurations] = useState([]);
@@ -46,7 +49,10 @@ const AddProjectPage = () => {
             type: 'Apartment',
             commissionPercentage: 2,
             gstRate: 18,
-            gstType: 'exclusive'
+            gstType: 'exclusive',
+            latePenaltyType: 'fixed',
+            latePenaltyValue: 0,
+            gracePeriodDays: 0
         }
     });
 
@@ -59,9 +65,16 @@ const AddProjectPage = () => {
                 pricing: {
                     basePrice: Number(data.minPrice) * 100000,
                     range: `₹${data.minPrice}L - ₹${data.maxPrice}L`,
-                    commissionPercentage: Number(data.commissionPercentage) || 2,
-                    gstRate: Number(data.gstRate) || 18,
-                    gstType: data.gstType || 'exclusive',
+                    ...(isSuperAdmin && {
+                        commissionPercentage: Number(data.commissionPercentage) || 2,
+                        gstRate: Number(data.gstRate) || 18,
+                        gstType: data.gstType || 'exclusive',
+                        penaltyConfig: {
+                            latePenaltyType: data.latePenaltyType || 'fixed',
+                            latePenaltyValue: Number(data.latePenaltyValue) || 0,
+                            gracePeriodDays: Number(data.gracePeriodDays) || 0
+                        },
+                    }),
                     upiQRCode: upiQRCode ? { url: upiQRCode } : undefined
                 },
                 location: {
@@ -139,7 +152,7 @@ const AddProjectPage = () => {
     };
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6">
+            <div className="hero-gradient text-white py-6">
                 <div className="w-full px-4 md:px-10 lg:px-16 flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         <Button variant="ghost" className="text-white hover:bg-white/20" onClick={() => navigate(-1)}>
@@ -224,37 +237,61 @@ const AddProjectPage = () => {
                                     <label className="block text-sm font-medium mb-1">Max Price (Lac)</label>
                                     <Input type="number" {...register('maxPrice', { required: true })} placeholder="125" />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-purple-600 font-bold">Platform Commission (%)</label>
-                                    <Input
-                                        type="number"
-                                        step="0.1"
-                                        {...register('commissionPercentage', { required: true })}
-                                        placeholder="2"
-                                        className="border-purple-200 focus:ring-purple-500"
-                                    />
-                                    <p className="text-[10px] text-gray-500">Percentage the platform earns per sale/installment.</p>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-indigo-600 font-bold">GST Rate (%)</label>
-                                    <Input
-                                        type="number"
-                                        step="1"
-                                        {...register('gstRate', { required: true })}
-                                        placeholder="18"
-                                        className="border-indigo-200 focus:ring-indigo-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium mb-1 text-indigo-600 font-bold">GST Type</label>
-                                    <select
-                                        {...register('gstType')}
-                                        className="w-full px-3 py-2 border border-indigo-200 rounded-lg dark:bg-gray-800 focus:ring-indigo-500"
-                                    >
-                                        <option value="exclusive">Exclusive (Add on top)</option>
-                                        <option value="inclusive">Inclusive (Deduct from commission)</option>
-                                    </select>
-                                </div>
+                                {isSuperAdmin && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-blue-600 font-bold">Platform Commission (%)</label>
+                                            <Input
+                                                type="number"
+                                                step="0.1"
+                                                {...register('commissionPercentage', { required: true })}
+                                                placeholder="2"
+                                                className="border-blue-200 focus:ring-blue-500"
+                                            />
+                                            <p className="text-[10px] text-gray-500">Percentage the platform earns per sale/installment.</p>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-blue-800 font-bold">GST Rate (%)</label>
+                                            <Input
+                                                type="number"
+                                                step="1"
+                                                {...register('gstRate', { required: true })}
+                                                placeholder="18"
+                                                className="border-blue-200 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-blue-800 font-bold">GST Type</label>
+                                            <select
+                                                {...register('gstType')}
+                                                className="w-full px-3 py-2 border border-blue-200 rounded-lg dark:bg-gray-800 focus:ring-blue-500"
+                                            >
+                                                <option value="exclusive">Exclusive (Add on top)</option>
+                                                <option value="inclusive">Inclusive (Deduct from commission)</option>
+                                            </select>
+                                        </div>
+                                        <div className="md:col-span-2 border-t pt-4 mt-2">
+                                            <h3 className="text-sm font-bold text-orange-600 uppercase tracking-wider mb-3">EMI Late Payment Rules</h3>
+                                            <div className="grid md:grid-cols-3 gap-4">
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1">Penalty Type</label>
+                                                    <select {...register('latePenaltyType')} className="w-full text-xs px-2 py-1.5 border rounded">
+                                                        <option value="fixed">Fixed Amount (₹)</option>
+                                                        <option value="percentage">Percentage (%)</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1">Penalty Value</label>
+                                                    <Input type="number" {...register('latePenaltyValue')} placeholder="0" className="h-8 text-xs" />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-medium mb-1">Grace Period (Days)</label>
+                                                    <Input type="number" {...register('gracePeriodDays')} placeholder="0" className="h-8 text-xs" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </Card>
 

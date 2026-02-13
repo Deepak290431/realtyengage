@@ -8,7 +8,7 @@ const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -20,11 +20,11 @@ const NotFound = () => {
           transition={{ delay: 0.2 }}
           className="mb-8"
         >
-          <h1 className="text-9xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-9xl font-bold bg-gradient-to-r from-[#0B1F33] to-[#1E3A5F] bg-clip-text text-transparent">
             404
           </h1>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -37,7 +37,7 @@ const NotFound = () => {
             The page you're looking for doesn't exist or has been moved.
           </p>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -54,7 +54,7 @@ const NotFound = () => {
           </Button>
           <Button
             onClick={() => navigate('/')}
-            className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="flex items-center space-x-2 hero-gradient hover:opacity-90"
           >
             <Home className="h-4 w-4" />
             <span>Go to Homepage</span>
@@ -68,7 +68,7 @@ const NotFound = () => {
             <span>Browse Projects</span>
           </Button>
         </motion.div>
-        
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

@@ -32,7 +32,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
-import { logout, updateProfile, changePassword } from '../store/slices/authSlice';
+import { logout, updateProfile, changePassword, logoutAll } from '../store/slices/authSlice';
 import { userAPI } from '../services/api';
 
 const ProfilePage = ({ isAdmin = false }) => {
@@ -183,6 +183,22 @@ const ProfilePage = ({ isAdmin = false }) => {
     } catch (error) {
       // Even if logout fails, clear local session
       navigate('/login');
+    }
+  };
+
+  const handleLogoutAll = async () => {
+    if (!window.confirm('Are you sure you want to sign out from all devices? This will also log you out from your current session.')) {
+      return;
+    }
+    setIsLoading(true);
+    try {
+      await dispatch(logoutAll()).unwrap();
+      toast.success('Successfully logged out from all devices');
+      navigate('/login');
+    } catch (error) {
+      toast.error(error || 'Failed to logout from all devices');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -394,13 +410,13 @@ const ProfilePage = ({ isAdmin = false }) => {
           >
             <Card className="p-6 mb-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border-none shadow-lg">
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                <FileText className="h-5 w-5 text-indigo-500" /> Activity Summary
+                <FileText className="h-5 w-5 text-blue-800" /> Activity Summary
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { label: 'Properties Added', value: '12', icon: Home, color: 'text-blue-600', bg: 'bg-blue-100' },
                   { label: 'Enquiries Handled', value: '0', icon: MessageSquare, color: 'text-green-600', bg: 'bg-green-100' },
-                  { label: 'Payments Approved', value: '₹ 0', icon: CreditCard, color: 'text-purple-600', bg: 'bg-purple-100' },
+                  { label: 'Payments Approved', value: '₹ 0', icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-100' },
                   { label: 'Check-ins Done', value: '0', icon: CheckCircle, color: 'text-orange-600', bg: 'bg-orange-100' },
                 ].map((stat, i) => (
                   <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-white dark:bg-gray-800 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -468,8 +484,13 @@ const ProfilePage = ({ isAdmin = false }) => {
                 <h2 className="text-xl font-semibold flex items-center gap-2">
                   <Globe className="h-5 w-5 text-green-500" /> Active Sessions
                 </h2>
-                <Button variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50 text-sm h-8">
-                  Sign out all devices
+                <Button
+                  variant="ghost"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 text-sm h-8"
+                  onClick={handleLogoutAll}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processing...' : 'Sign out all devices'}
                 </Button>
               </div>
               <div className="space-y-4">
@@ -649,7 +670,7 @@ const ProfilePage = ({ isAdmin = false }) => {
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <Shield className="h-5 w-5 text-indigo-600" />
+                <Shield className="h-5 w-5 text-blue-800" />
                 Setup 2FA
               </h2>
               <button

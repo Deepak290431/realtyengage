@@ -30,27 +30,38 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          const response = await authAPI.refreshToken({ refreshToken });
-
-          const { token, refreshToken: newRefreshToken } = response.data;
-          localStorage.setItem('token', token);
-          localStorage.setItem('refreshToken', newRefreshToken);
-
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return axiosInstance(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh failed, clear storage and redirect to login
+    if (error.response?.status === 401) {
+      // If token was invalidated (logout all) or role changed, don't retry refresh
+      if (error.response?.data?.tokenInvalidated || error.response?.data?.roleChanged) {
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/login?message=' + encodeURIComponent(error.response.data.message);
+        return Promise.reject(error);
+      }
+
+      if (!originalRequest._retry) {
+        originalRequest._retry = true;
+
+        try {
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+
+            const { token, refreshToken: newRefreshToken } = response.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('refreshToken', newRefreshToken);
+
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return axiosInstance(originalRequest);
+          }
+        } catch (refreshError) {
+          // Refresh failed, clear storage and redirect to login
+          localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
       }
     }
 
@@ -88,6 +99,16 @@ const authService = {
       await axiosInstance.post('/auth/logout');
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  },
+
+  // Logout All
+  logoutAll: async () => {
+    try {
+      await axiosInstance.post('/auth/logout-all');
+    } catch (error) {
+      console.error('Logout all error:', error);
+      throw error;
     }
   },
 

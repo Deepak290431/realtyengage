@@ -131,6 +131,8 @@ app.use('/api/users', userRoutes);
 fs.appendFileSync('server_startup.log', 'Mounting Customer and Settings routes...\n');
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/virtual-tour', require('./routes/virtualTourRoutes'));
 app.use('/api/chatbot', chatbotRoutes);
 console.log('Mounting /api/contact route...');
 app.use('/api/contact', require('./routes/contactRoutes'));

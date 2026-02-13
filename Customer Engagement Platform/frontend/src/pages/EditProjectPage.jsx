@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -28,6 +29,8 @@ import { Badge } from '../components/ui/badge';
 import projectService from '../services/projectService';
 
 const EditProjectPage = () => {
+  const { user } = useSelector((state) => state.auth);
+  const isSuperAdmin = user?.role === 'super_admin';
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -68,6 +71,9 @@ const EditProjectPage = () => {
           commissionPercentage: proj.pricing?.commissionPercentage || 2,
           gstRate: proj.pricing?.gstRate || 18,
           gstType: proj.pricing?.gstType || 'exclusive',
+          latePenaltyType: proj.pricing?.penaltyConfig?.latePenaltyType || 'fixed',
+          latePenaltyValue: proj.pricing?.penaltyConfig?.latePenaltyValue || 0,
+          gracePeriodDays: proj.pricing?.penaltyConfig?.gracePeriodDays || 0,
           description: proj.description
         });
 
@@ -102,9 +108,16 @@ const EditProjectPage = () => {
         completionDate: data.deliveryDate || undefined, // Send as undefined if empty
         pricing: {
           basePrice: Number(data.minPrice) * 100000,
-          commissionPercentage: Number(data.commissionPercentage) || 2,
-          gstRate: Number(data.gstRate) || 18,
-          gstType: data.gstType || 'exclusive',
+          ...(isSuperAdmin && {
+            commissionPercentage: Number(data.commissionPercentage) || 2,
+            gstRate: Number(data.gstRate) || 18,
+            gstType: data.gstType || 'exclusive',
+            penaltyConfig: {
+              latePenaltyType: data.latePenaltyType || 'fixed',
+              latePenaltyValue: Number(data.latePenaltyValue) || 0,
+              gracePeriodDays: Number(data.gracePeriodDays) || 0
+            },
+          }),
           upiQRCode: upiQRCode
         },
         location: {
@@ -223,7 +236,7 @@ const EditProjectPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-primary text-white">
+      <div className="hero-gradient text-white">
         <div className="w-full px-4 md:px-6 py-6 font-bold">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -406,52 +419,77 @@ const EditProjectPage = () => {
                       <p className="text-red-500 text-xs mt-1">{errors.maxPrice.message}</p>
                     )}
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-2 text-purple-600 font-bold">
-                      Platform Commission (%) *
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      {...register('commissionPercentage', {
-                        required: 'Commission is required',
-                        min: { value: 0, message: 'Commission must be positive' }
-                      })}
-                      placeholder="e.g., 2"
-                      className="border-purple-200 focus:ring-purple-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Percentage the platform earns per sale/installment.</p>
-                    {errors.commissionPercentage && (
-                      <p className="text-red-500 text-xs mt-1">{errors.commissionPercentage.message}</p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-indigo-600 font-bold">
-                      GST Rate (%) *
-                    </label>
-                    <Input
-                      type="number"
-                      step="1"
-                      {...register('gstRate', {
-                        required: 'GST Rate is required',
-                        min: { value: 0, message: 'GST Rate must be positive' }
-                      })}
-                      placeholder="e.g., 18"
-                      className="border-indigo-200 focus:ring-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2 text-indigo-600 font-bold">
-                      GST Type *
-                    </label>
-                    <select
-                      {...register('gstType')}
-                      className="w-full px-3 py-2 border border-indigo-200 rounded-lg dark:bg-gray-800 focus:ring-indigo-500"
-                    >
-                      <option value="exclusive">Exclusive (Add on top)</option>
-                      <option value="inclusive">Inclusive (Deduct from commission)</option>
-                    </select>
-                  </div>
+                  {isSuperAdmin && (
+                    <>
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium mb-2 text-blue-600 font-bold">
+                          Platform Commission (%) *
+                        </label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          {...register('commissionPercentage', {
+                            required: 'Commission is required',
+                            min: { value: 0, message: 'Commission must be positive' }
+                          })}
+                          placeholder="e.g., 2"
+                          className="border-blue-200 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Percentage the platform earns per sale/installment.</p>
+                        {errors.commissionPercentage && (
+                          <p className="text-red-500 text-xs mt-1">{errors.commissionPercentage.message}</p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 text-blue-800 font-bold">
+                          GST Rate (%) *
+                        </label>
+                        <Input
+                          type="number"
+                          step="1"
+                          {...register('gstRate', {
+                            required: 'GST Rate is required',
+                            min: { value: 0, message: 'GST Rate must be positive' }
+                          })}
+                          placeholder="e.g., 18"
+                          className="border-blue-200 focus:ring-blue-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 text-blue-800 font-bold">
+                          GST Type *
+                        </label>
+                        <select
+                          {...register('gstType')}
+                          className="w-full px-3 py-2 border border-blue-200 rounded-lg dark:bg-gray-800 focus:ring-blue-500"
+                        >
+                          <option value="exclusive">Exclusive (Add on top)</option>
+                          <option value="inclusive">Inclusive (Deduct from commission)</option>
+                        </select>
+                      </div>
+
+                      <div className="md:col-span-2 border-t pt-4 mt-2">
+                        <h3 className="text-sm font-bold text-orange-600 uppercase tracking-wider mb-3">EMI Late Payment Rules</h3>
+                        <div className="grid md:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-medium mb-1">Penalty Type</label>
+                            <select {...register('latePenaltyType')} className="w-full text-xs px-2 py-1.5 border rounded">
+                              <option value="fixed">Fixed Amount (₹)</option>
+                              <option value="percentage">Percentage (%)</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium mb-1">Penalty Value</label>
+                            <Input type="number" {...register('latePenaltyValue')} placeholder="0" className="h-8 text-xs" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium mb-1">Grace Period (Days)</label>
+                            <Input type="number" {...register('gracePeriodDays')} placeholder="0" className="h-8 text-xs" />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </Card>
 
@@ -572,9 +610,9 @@ const EditProjectPage = () => {
                 <div className="space-y-4">
                   {!upiQRCode ? (
                     <label className="block">
-                      <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-indigo-300 border-dashed rounded-lg appearance-none cursor-pointer hover:border-indigo-400 focus:outline-none">
+                      <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-blue-300 border-dashed rounded-lg appearance-none cursor-pointer hover:border-blue-400 focus:outline-none">
                         <div className="flex flex-col items-center space-y-2">
-                          <Upload className="h-8 w-8 text-indigo-400" />
+                          <Upload className="h-8 w-8 text-blue-800" />
                           <span className="text-sm text-gray-600">
                             Upload Owner's Payment QR
                           </span>
@@ -588,7 +626,7 @@ const EditProjectPage = () => {
                       />
                     </label>
                   ) : (
-                    <div className="relative group rounded-xl overflow-hidden border-2 border-indigo-100 p-2">
+                    <div className="relative group rounded-xl overflow-hidden border-2 border-blue-100 p-2">
                       <img
                         src={upiQRCode.url}
                         alt="UPI QR"
@@ -604,7 +642,7 @@ const EditProjectPage = () => {
                           Remove QR
                         </Button>
                       </div>
-                      <p className="text-[10px] text-center mt-2 text-indigo-600 font-bold uppercase tracking-widest italic">Official Payment QR</p>
+                      <p className="text-[10px] text-center mt-2 text-blue-800 font-bold uppercase tracking-widest italic">Official Payment QR</p>
                     </div>
                   )}
                 </div>

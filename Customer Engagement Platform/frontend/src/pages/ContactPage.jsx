@@ -68,7 +68,7 @@ const ContactPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header */}
-            <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+            <section className="hero-gradient text-white py-20">
                 <div className="container mx-auto px-4 text-center">
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
@@ -97,8 +97,8 @@ const ContactPage = () => {
                             <h3 className="text-xl font-bold mb-6">Contact Info</h3>
                             <div className="space-y-6">
                                 <div className="flex items-start space-x-4">
-                                    <div className="p-3 bg-blue-100 rounded-lg">
-                                        <Mail className="h-6 w-6 text-blue-600" />
+                                    <div className="p-3 bg-[#0B1F33]/10 rounded-lg">
+                                        <Mail className="h-6 w-6 text-[#0B1F33]" />
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">Email Address</p>
@@ -106,8 +106,8 @@ const ContactPage = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-4">
-                                    <div className="p-3 bg-purple-100 rounded-lg">
-                                        <Phone className="h-6 w-6 text-purple-600" />
+                                    <div className="p-3 bg-[#0B1F33]/10 rounded-lg">
+                                        <Phone className="h-6 w-6 text-[#0B1F33]" />
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">Phone Number</p>
@@ -145,12 +145,12 @@ const ContactPage = () => {
                         </Card>
 
                         {/* Quick Actions */}
-                        <Card className="p-6 bg-blue-600 text-white">
+                        <Card className="p-6 bg-[#0B1F33] text-white">
                             <h3 className="text-xl font-bold mb-4">Prefer Messenger?</h3>
                             <p className="mb-6 text-white/80">Chat with us on WhatsApp for lightning fast support.</p>
                             <Button
                                 onClick={handleWhatsApp}
-                                className="w-full bg-white text-blue-600 hover:bg-gray-100 font-bold"
+                                className="w-full bg-white text-[#0B1F33] hover:bg-gray-100 font-bold"
                             >
                                 <MessageCircle className="mr-2 h-5 w-5" />
                                 Chat on WhatsApp
@@ -198,7 +198,7 @@ const ContactPage = () => {
                                     <label className="text-sm font-semibold">Message *</label>
                                     <textarea
                                         required
-                                        className="w-full h-40 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                        className="w-full h-40 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#0B1F33] resize-none"
                                         placeholder="Tell us about your requirements..."
                                         value={formData.message}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -207,7 +207,7 @@ const ContactPage = () => {
                                 <Button
                                     type="submit"
                                     size="lg"
-                                    className="w-full bg-blue-600 hover:bg-blue-700"
+                                    className="w-full bg-[#0B1F33] hover:opacity-90"
                                     disabled={isSubmitting}
                                 >
                                     {isSubmitting ? (
@@ -228,15 +228,15 @@ const ContactPage = () => {
                         {/* Why Contact Us? */}
                         <div className="grid md:grid-cols-3 gap-6 mt-12">
                             <div className="text-center">
-                                <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Clock className="h-6 w-6 text-blue-600" />
+                                <div className="h-12 w-12 bg-[#0B1F33]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Clock className="h-6 w-6 text-[#0B1F33]" />
                                 </div>
                                 <h4 className="font-bold mb-2">Fast Response</h4>
                                 <p className="text-sm text-gray-500">We usually reply within 24 hours.</p>
                             </div>
                             <div className="text-center">
-                                <div className="h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Shield className="h-6 w-6 text-purple-600" />
+                                <div className="h-12 w-12 bg-[#0B1F33]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Shield className="h-6 w-6 text-[#0B1F33]" />
                                 </div>
                                 <h4 className="font-bold mb-2">Secure Data</h4>
                                 <p className="text-sm text-gray-500">Your information is safe with us.</p>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     MapPin,
     Home,
@@ -44,12 +44,16 @@ import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import GoogleMap from '../components/GoogleMap';
 import ScheduleVisitModal from '../components/ScheduleVisitModal';
+import VirtualTourViewer from '../components/VirtualTourViewer';
+import VirtualTourManager from '../components/VirtualTourManager';
 
 import projectService from '../services/projectService';
+import { virtualTourAPI } from '../services/api';
 
 const ProjectDetailPage = ({ isAdmin = false }) => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { user } = useSelector((state) => state.auth);
 
     const [project, setProject] = useState(null);
@@ -59,23 +63,51 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
     const [isSaved, setIsSaved] = useState(false);
     const [showEnquiryForm, setShowEnquiryForm] = useState(false);
     const [isVisitModalOpen, setIsVisitModalOpen] = useState(false);
+    const [virtualTourData, setVirtualTourData] = useState(null);
+    const [showVirtualTour, setShowVirtualTour] = useState(false);
+    const [refreshVirtualTour, setRefreshVirtualTour] = useState(0);
 
     useEffect(() => {
         const fetchProject = async () => {
             try {
                 setLoading(true);
-                const [projectRes, projectsRes] = await Promise.all([
-                    projectService.getProject(id),
-                    projectService.getProjects()
+
+                // Fetch project data
+                const projectRes = await projectService.getProject(id);
+                const projectData = projectRes.data?.data || projectRes.data || projectRes;
+
+                if (!projectData || !projectData._id) {
+                    throw new Error('Project not found');
+                }
+
+                setProject(projectData);
+
+                // Fetch related data in parallel (don't fail if these fail)
+                const [projectsRes, virtualTourRes] = await Promise.allSettled([
+                    projectService.getProjects(),
+                    virtualTourAPI.getVirtualTour(id)
                 ]);
 
-                // Handle various response formats
-                setProject(projectRes.data?.data || projectRes.data || projectRes);
-                setProjects(projectsRes.data?.data || projectsRes.data || projectsRes || []);
+                // Handle projects list
+                if (projectsRes.status === 'fulfilled') {
+                    setProjects(projectsRes.value.data?.data || projectsRes.value.data || projectsRes.value || []);
+                }
+
+                // Handle virtual tour data
+                if (virtualTourRes.status === 'fulfilled') {
+                    setVirtualTourData(virtualTourRes.value?.data?.data?.virtualTour || null);
+                }
+
             } catch (error) {
                 console.error('Failed to fetch project:', error);
-                toast.error('Failed to load project details');
-                navigate('/projects');
+
+                if (error.response?.status === 404 || error.message === 'Project not found') {
+                    toast.error('Project not found');
+                    navigate('/projects');
+                } else {
+                    toast.error('Some features may not be available');
+                    // Don't navigate away - let the page show with whatever data we have
+                }
             } finally {
                 setLoading(false);
             }
@@ -84,7 +116,26 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
         if (id) {
             fetchProject();
         }
-    }, [id, navigate]);
+    }, [id, navigate, refreshVirtualTour]);
+
+    const handleVirtualTourUpdate = () => {
+        // Trigger re-fetch of virtual tour data
+        setRefreshVirtualTour(prev => prev + 1);
+    };
+
+    // Auto-open virtual tour if requested via query parameter
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        if (params.get('viewTour') === 'true' && virtualTourData?.enabled) {
+            setShowVirtualTour(true);
+
+            // Clean up the URL after opening
+            const newParams = new URLSearchParams(location.search);
+            newParams.delete('viewTour');
+            const newSearch = newParams.toString() ? `?${newParams.toString()}` : '';
+            window.history.replaceState(null, '', `${location.pathname}${newSearch}`);
+        }
+    }, [location.search, virtualTourData, location.pathname]);
 
     if (loading) {
         return (
@@ -235,16 +286,29 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                 </button>
 
                 {/* Action Buttons */}
-                <div className="absolute top-4 right-4 flex space-x-2">
+                <div className="absolute top-4 right-4 flex items-center space-x-3">
+                    {virtualTourData?.enabled && (
+                        <motion.button
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setShowVirtualTour(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full shadow-2xl hover:bg-primary/90 transition-all font-bold text-sm"
+                        >
+                            <Video className="h-4 w-4" />
+                            <span>VIRTUAL TOUR</span>
+                        </motion.button>
+                    )}
                     <button
                         onClick={handleSave}
-                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors border border-white/20"
                     >
                         <Heart className={`h-6 w-6 ${isSaved ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                     </button>
                     <button
                         onClick={handleShare}
-                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors border border-white/20"
                     >
                         <Share2 className="h-6 w-6 text-white" />
                     </button>
@@ -497,6 +561,17 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                             </div>
                         </Card>
 
+                        {/* Virtual Tour Management - Admin Only */}
+                        {isAdmin && (
+                            <div className="my-8">
+                                <VirtualTourManager
+                                    projectId={id}
+                                    projectName={project.name}
+                                    onUpdate={handleVirtualTourUpdate}
+                                />
+                            </div>
+                        )}
+
                         {/* Location & Map Section */}
                         <Card className="p-6">
                             <div className="flex items-center justify-between mb-6">
@@ -560,22 +635,23 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                         <div className="sticky top-4 space-y-4">
                             {/* Contact Card */}
                             <Card className="p-6">
-                                <h3 className="font-semibold text-lg mb-4">Contact Builder</h3>
                                 <div className="space-y-3">
                                     {(user) && (
                                         <>
-                                            <Button className="w-full" onClick={handleEnquiry}>
+                                            <Button className="w-full shadow-lg" onClick={handleEnquiry}>
                                                 <MessageCircle className="h-4 w-4 mr-2" />
                                                 Send Enquiry
                                             </Button>
-                                            <Button variant="outline" className="w-full" onClick={handleCallNow}>
-                                                <Phone className="h-4 w-4 mr-2" />
-                                                Call Now
-                                            </Button>
-                                            <Button variant="outline" className="w-full" onClick={handleScheduleVisit}>
-                                                <Video className="h-4 w-4 mr-2" />
-                                                Schedule Visit
-                                            </Button>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <Button variant="outline" className="w-full" onClick={handleCallNow}>
+                                                    <Phone className="h-4 w-4 mr-2" />
+                                                    Call
+                                                </Button>
+                                                <Button variant="outline" className="w-full" onClick={handleScheduleVisit}>
+                                                    <Calendar className="h-4 w-4 mr-2" />
+                                                    Visit
+                                                </Button>
+                                            </div>
                                         </>
                                     )}
                                     <Button variant="outline" className="w-full" onClick={handleDownloadBrochure}>
@@ -670,7 +746,17 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                 onClose={() => setIsVisitModalOpen(false)}
                 projectName={project.name}
                 projectLocation={project.location?.address || project.location}
+                projectId={id}
             />
+
+            {/* Virtual Tour Viewer */}
+            {showVirtualTour && virtualTourData?.enabled && (
+                <VirtualTourViewer
+                    projectId={id}
+                    virtualTourData={virtualTourData}
+                    onClose={() => setShowVirtualTour(false)}
+                />
+            )}
         </div>
     );
 };
