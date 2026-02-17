@@ -570,15 +570,20 @@ router.post('/forgot-password',
         }
       }
 
-      const isDev = (process.env.NODE_ENV || '').trim().toLowerCase() === 'development';
+      const nodeEnv = (process.env.NODE_ENV || '').trim().toLowerCase();
+      const isDev = nodeEnv === 'development' || nodeEnv === 'dev' || !nodeEnv;
       const noSmsConfig = !process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN;
       const noEmailConfig = !process.env.SENDGRID_API_KEY && !process.env.EMAIL_PASSWORD;
+
+      // Always return token in development for easier testing
+      const showToken = isDev || noSmsConfig || noEmailConfig;
+
+      console.log(`[Forgot Password] Method: ${email ? 'email' : 'phone'}, User: ${email || phone}, Mode: ${nodeEnv}, ShowToken: ${showToken}`);
 
       res.json({
         success: true,
         message: `OTP sent to your ${email ? 'email address' : 'mobile number'}`,
-        // Return token in dev mode OR when services aren't configured (simulation mode)
-        resetToken: (isDev || noSmsConfig || noEmailConfig) ? resetToken : undefined
+        resetToken: showToken ? resetToken : undefined
       });
     } catch (error) {
       console.error('Forgot password error:', error);

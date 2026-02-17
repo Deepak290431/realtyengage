@@ -29,6 +29,8 @@ router.post('/', async (req, res) => {
 
             await sendEmail({
                 to: 'deepaks310804@gmail.com', // Admin email
+                // to: process.env.ADMIN_EMAIL || process.env.EMAIL_FROM || 'admin@realtyengage.com', // Dynamic Admin email
+
                 subject: `New Inquiry: ${subject || 'Contact Form'}`,
                 html: adminEmailContent
             });
