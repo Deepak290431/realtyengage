@@ -19,7 +19,8 @@ import {
   ChevronRight,
   User,
   Settings,
-  HelpCircle
+  HelpCircle,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
@@ -130,6 +131,8 @@ const CustomerDashboard = () => {
     return `${d}/${m}/${y}`;
   };
 
+  const [showNotifications, setShowNotifications] = useState(false);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Welcome Header */}
@@ -148,15 +151,58 @@ const CustomerDashboard = () => {
                 Here's your property investment overview
               </p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 items-center">
               <Button variant="secondary" onClick={() => navigate('/')}>
                 <Home className="h-4 w-4 mr-2" />
                 Go to Home
               </Button>
-              <Button variant="secondary">
-                <Bell className="h-4 w-4 mr-2" />
-                Notifications
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className={showNotifications ? 'bg-white/20' : ''}
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Notifications
+                </Button>
+
+                {showNotifications && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-4 z-[100] text-gray-900 dark:text-gray-100 border border-gray-100 dark:border-gray-700"
+                  >
+                    <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-100 dark:border-gray-700">
+                      <h3 className="font-bold">Recent Notifications</h3>
+                      <button onClick={() => setShowNotifications(false)}>
+                        <X className="h-4 w-4 text-gray-400" />
+                      </button>
+                    </div>
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto">
+                      {recentActivities.length > 0 ? (
+                        recentActivities.map((activity) => (
+                          <div key={activity.id || activity._id} className="flex items-start space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
+                            <div className={`p-2 rounded-full mt-0.5 ${getActivityColor(activity.status)}`}>
+                              {getActivityIcon(activity.type)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold">{activity.description || activity.message}</p>
+                              <p className="text-[10px] text-gray-400 mt-1">
+                                {activity.date ? new Date(activity.date).toLocaleDateString() : new Date(activity.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8">
+                          <Bell className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                          <p className="text-sm text-gray-500">No new notifications</p>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
             </div>
           </motion.div>
         </div>

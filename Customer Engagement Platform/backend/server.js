@@ -7,17 +7,18 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 require('dotenv').config();
-const fs = require('fs');
-fs.appendFileSync('server_startup.log', 'Core requires done\n');
 const Project = require('./models/Project');
 const User = require('./models/User');
-fs.appendFileSync('server_startup.log', 'Models required done\n');
 
 // Auto-seeder function
 const seedInitialData = async () => {
   try {
-    const Project = require('./models/Project');
-    const User = require('./models/User');
+    // Check if projects already exist to avoid redundant updates
+    const count = await Project.countDocuments();
+    if (count > 0) {
+      console.log('ℹ️ Database already seeded, skipping project seeder');
+      return;
+    }
 
     // Find any user
     let admin = await User.findOne({ role: 'admin' });
@@ -101,26 +102,23 @@ const app = express();
 // DB Connection - trigger seeding after connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/realtyengage')
   .then(() => {
-    fs.appendFileSync('server_startup.log', 'MongoDB connected\n');
     seedInitialData();
   })
   .catch((err) => {
-    fs.appendFileSync('server_startup.log', 'MongoDB error: ' + err.message + '\n');
     console.error(' MongoDB connection error:', err);
   });
 
+app.use(compression());
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true })); // Simplified cors for debug
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(compression());
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
 // API Routes
-fs.appendFileSync('server_startup.log', 'Mounting API routes...\n');
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/enquiries', enquiryRoutes);
@@ -128,21 +126,17 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/users', userRoutes);
-fs.appendFileSync('server_startup.log', 'Mounting Customer and Settings routes...\n');
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/virtual-tour', require('./routes/virtualTourRoutes'));
 app.use('/api/chatbot', chatbotRoutes);
-console.log('Mounting /api/contact route...');
 app.use('/api/contact', require('./routes/contactRoutes'));
-fs.appendFileSync('server_startup.log', 'Routes mounted.\n');
 
 app.get('/api/health', (req, res) => res.status(200).json({ status: 'OK' }));
 app.get('/', (req, res) => res.json({ message: 'Welcome to RealtyEngage API' }));
 
 const PORT = process.env.PORT || 5005;
 app.listen(PORT, () => {
-  fs.appendFileSync('server_startup.log', 'Server listening on ' + PORT + '\n');
   console.log(`🚀 Server running on port ${PORT}`);
 });

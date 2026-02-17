@@ -119,7 +119,25 @@ const AddProjectPage = () => {
 
     const handleConfigChange = (index, field, value) => {
         const updated = [...configurations];
-        updated[index][field] = value;
+        let val = value;
+
+        // Auto-append logic for numeric inputs
+        if (field === 'type' || field === 'area' || field === 'price') {
+            // Remove existing suffixes to process raw number
+            const raw = value.replace(' BHK', '').replace(' sq.ft', '').replace(' Lac', '').replace(' Crore', '').trim();
+
+            if (raw && /^[\d.]+$/.test(raw)) {
+                const num = parseFloat(raw);
+                if (field === 'price' && num >= 100) {
+                    val = `${num / 100} Crore`;
+                } else {
+                    const suffix = field === 'type' ? ' BHK' : (field === 'area' ? ' sq.ft' : ' Lac');
+                    val = `${raw}${suffix}`;
+                }
+            }
+        }
+
+        updated[index][field] = val;
         setConfigurations(updated);
     };
 

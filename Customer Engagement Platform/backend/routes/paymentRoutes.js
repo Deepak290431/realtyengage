@@ -336,6 +336,36 @@ router.post('/verify',
         // Don't fail the payment if invoice generation fails
       }
 
+      // Send Payment Confirmation Email
+      try {
+        const sendEmail = require('../utils/emailService');
+        const user = await User.findById(req.userId);
+        const project = await Project.findById(payment.projectId);
+
+        await sendEmail({
+          to: user.email,
+          subject: `Payment Confirmation - ${project.name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+              <h2 style="color: #0B1F33; text-align: center;">Payment Successful!</h2>
+              <p style="font-size: 16px; color: #555;">Hi ${user.firstName},</p>
+              <p style="font-size: 16px; color: #555;">We have successfully received your payment for <strong>${project.name}</strong>.</p>
+              <div style="background-color: #f4f7f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Amount Paid:</strong> ₹${payment.amount.toLocaleString('en-IN')}</p>
+                <p><strong>Payment Type:</strong> ${payment.paymentType.replace('_', ' ').toUpperCase()}</p>
+                <p><strong>Transaction ID:</strong> ${paymentId}</p>
+                <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+              </div>
+              <p style="font-size: 16px; color: #555;">You can download your invoice from your dashboard.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+              <p style="font-size: 12px; color: #aaa; text-align: center;">© 2026 RealtyEngage. All rights reserved.</p>
+            </div>
+          `
+        });
+      } catch (emailError) {
+        console.error('Failed to send payment confirmation email:', emailError);
+      }
+
       res.json({
         success: true,
         message: 'Payment verified successfully',
@@ -779,11 +809,23 @@ router.get('/transactions/history',
       }
 
       const limit = parseInt(req.query.limit) || 10;
-      const transactions = await Transaction.find(filter)
+      let transactions = await Transaction.find(filter)
         .populate('propertyId', 'name area')
         .populate('userId', 'firstName lastName email phone')
         .sort({ paymentDate: -1 })
         .limit(limit);
+
+      // Mask sensitive fields for non-super_admin
+      if (req.user.role !== 'super_admin') {
+        transactions = transactions.map(tx => {
+          const txObj = tx.toObject();
+          delete txObj.commissionAmount;
+          delete txObj.commissionEarned;
+          delete txObj.gstAmount;
+          delete txObj.ownerPayout;
+          return txObj;
+        });
+      }
 
       res.json({
         success: true,

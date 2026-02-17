@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -37,6 +38,8 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const theme = useSelector((state) => state.theme); // Get the whole theme object
 
+  const isAdmin = user && ['admin', 'super_admin'].includes(user.role);
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -45,7 +48,12 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [notifications] = useState(3); // Example notification count
+  const [notificationsData, setNotificationsData] = useState([
+    { id: 1, title: 'New Project Alert', message: 'A new project "Emerald Heights" has been added.', time: '2 mins ago', unread: true },
+    { id: 2, title: 'Payment Success', message: 'Your payment for "Urban Square" was successful.', time: '1 hour ago', unread: true },
+    { id: 3, title: 'EMI Reminder', message: 'Your EMI for "Skyline Residency" is due in 3 days.', time: '5 hours ago', unread: false },
+  ]);
+  const notificationsCount = notificationsData.filter(n => n.unread).length;
 
   const isChatbotOpen = isChatbotOpenProp !== undefined ? isChatbotOpenProp : isChatbotOpenLocal;
 
@@ -82,11 +90,11 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
   };
 
   const navItems = [
-    ...(isAuthenticated && user?.role === 'admin' ? [] : [
+    ...(isAuthenticated && isAdmin ? [] : [
       { label: 'Home', path: '/', icon: Home },
-      { label: 'Projects', path: '/projects', icon: Building }
+      { label: 'Projects', path: '/projects', icon: Building },
     ]),
-    ...(isAuthenticated && user?.role === 'admin' ? [
+    ...(isAuthenticated && isAdmin ? [
       { label: 'Admin Dashboard', path: '/admin', icon: LayoutDashboard },
       { label: 'Properties', path: '/admin/projects', icon: Building },
       { label: 'Enquiries', path: '/admin/enquiries', icon: FileQuestion },
@@ -94,7 +102,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
       { label: 'Customers', path: '/admin/customers', icon: Users },
       { label: 'EMI Calculator', path: '/admin/emi', icon: Calculator },
       { label: 'Settings', path: '/admin/settings', icon: Settings },
-    ] : isAuthenticated && user?.role !== 'admin' ? [
+    ] : isAuthenticated && !isAdmin ? [
       { label: 'My Enquiries', path: '/dashboard/enquiries', icon: FileQuestion },
       { label: 'My Payments', path: '/dashboard/payments', icon: CreditCard },
       { label: 'EMI Calculator', path: '/dashboard/emi', icon: Calculator },
@@ -231,23 +239,88 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                 )}
 
                 {/* Notifications - Desktop Customer Only */}
-                {isAuthenticated && user?.role !== 'admin' && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="relative rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  >
-                    <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                    {notifications > 0 && (
-                      <Badge
-                        variant="destructive"
-                        className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center border-2 border-white dark:border-gray-900"
-                      >
-                        {notifications}
-                      </Badge>
-                    )}
-                  </Button>
+                {isAuthenticated && !isAdmin && (
+                  <div className="relative">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`relative rounded-full transition-all hover:bg-gray-100 dark:hover:bg-gray-800 ${isNotificationOpen ? 'bg-primary/10' : ''}`}
+                      onClick={() => { setIsNotificationOpen(!isNotificationOpen); setIsProfileMenuOpen(false); }}
+                    >
+                      <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                      {notificationsCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center border-2 border-white dark:border-gray-900"
+                        >
+                          {notificationsCount}
+                        </Badge>
+                      )}
+                    </Button>
+
+                    <AnimatePresence>
+                      {isNotificationOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          className="absolute right-0 mt-3 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-700 z-[110] overflow-hidden"
+                        >
+                          <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
+                            <h3 className="font-bold text-gray-900 dark:text-white">Notifications</h3>
+                            <button
+                              className="text-xs text-primary font-semibold hover:underline"
+                              onClick={() => {
+                                setNotificationsData(notificationsData.map(n => ({ ...n, unread: false })));
+                                toast.success('All marked as read');
+                              }}
+                            >
+                              Mark all as read
+                            </button>
+                          </div>
+                          <div className="max-h-[350px] overflow-y-auto">
+                            {notificationsData.length > 0 ? (
+                              notificationsData.map((notif) => (
+                                <div
+                                  key={notif.id}
+                                  className={`p-4 border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors cursor-pointer ${notif.unread ? 'bg-blue-50/30 dark:bg-blue-900/10' : ''}`}
+                                  onClick={() => {
+                                    setNotificationsData(notificationsData.map(n => n.id === notif.id ? { ...n, unread: false } : n));
+                                  }}
+                                >
+                                  <div className="flex justify-between items-start mb-1">
+                                    <h4 className={`text-sm ${notif.unread ? 'font-bold' : 'font-semibold'} text-gray-900 dark:text-gray-100`}>{notif.title}</h4>
+                                    <span className="text-[10px] text-gray-500 whitespace-nowrap ml-2">{notif.time}</span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">{notif.message}</p>
+                                  {notif.unread && (
+                                    <div className="mt-2 flex items-center">
+                                      <div className="h-1.5 w-1.5 bg-primary rounded-full" />
+                                      <span className="text-[10px] text-primary font-bold ml-1.5 uppercase tracking-wider">New Notification</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="p-8 text-center">
+                                <Bell className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                                <p className="text-sm text-gray-500">No new notifications</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="p-3 bg-gray-50/50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
+                            <Button
+                              variant="ghost"
+                              className="w-full text-xs font-bold text-gray-600 hover:text-primary h-8"
+                              onClick={() => { navigate('/dashboard/settings'); setIsNotificationOpen(false); }}
+                            >
+                              View Notification Settings
+                            </Button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 )}
 
                 {isAuthenticated ? (
@@ -261,12 +334,12 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                       <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-white font-semibold shadow-sm">
                         {user?.firstName?.charAt(0) || user?.name?.charAt(0) || 'U'}
                       </div>
-                      {(user?.role === 'admin' && notifications > 0) && (
+                      {(isAdmin && notificationsCount > 0) && (
                         <Badge
                           variant="destructive"
                           className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center border-2 border-white dark:border-gray-900"
                         >
-                          {notifications}
+                          {notificationsCount}
                         </Badge>
                       )}
                     </Button>
@@ -307,15 +380,15 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                                 <Bell className="h-4 w-4 text-red-600" />
                               </div>
                               <span className="text-sm font-semibold flex-1 text-left">Notifications</span>
-                              {notifications > 0 && (
-                                <Badge variant="destructive" className="h-5 min-w-[20px] px-1">{notifications}</Badge>
+                              {notificationsCount > 0 && (
+                                <Badge variant="destructive" className="h-5 min-w-[20px] px-1">{notificationsCount}</Badge>
                               )}
                             </button>
 
                             <div className="h-px bg-gray-100 dark:bg-gray-700 my-1 mx-2" />
 
                             <Link
-                              to={user?.role === 'admin' ? '/admin' : '/dashboard'}
+                              to={isAdmin ? '/admin' : '/dashboard'}
                               className="flex items-center space-x-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all"
                               onClick={() => setIsProfileMenuOpen(false)}
                             >
@@ -326,7 +399,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                             </Link>
 
                             <Link
-                              to={user?.role === 'admin' ? '/admin/profile' : '/dashboard/profile'}
+                              to={isAdmin ? '/admin/profile' : '/dashboard/profile'}
                               className="flex items-center space-x-3 px-3 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all"
                               onClick={() => setIsProfileMenuOpen(false)}
                             >
@@ -405,7 +478,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                     <div className="overflow-hidden">
                       <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name}</p>
                       <p className="text-[11px] text-gray-700 dark:text-gray-300 font-semibold truncate">{user?.email}</p>
-                      <Badge variant={user?.role === 'admin' ? 'destructive' : 'secondary'} className="mt-0.5 text-[9px] h-4 font-semibold px-1.5 uppercase tracking-tight">
+                      <Badge variant={isAdmin ? 'destructive' : 'secondary'} className="mt-0.5 text-[9px] h-4 font-semibold px-1.5 uppercase tracking-tight">
                         {user?.role}
                       </Badge>
                     </div>
@@ -414,7 +487,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
               )}
 
               <div className="p-3 space-y-0.5">
-                {/* Main Navigation */}
+                {/* Main Navigation ... */}
                 <div className="px-4 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mb-2">
                   Main Menu
                 </div>
@@ -436,7 +509,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                   );
                 })}
 
-                {/* Quick Tools */}
+                {/* Quick Tools ... */}
                 <div className="px-3 py-1 mt-3 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">
                   Quick Tools
                 </div>
@@ -472,13 +545,13 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                   >
                     <div className="relative">
                       <Bell className="h-4 w-4 text-red-600" />
-                      {notifications > 0 && (
+                      {notificationsCount > 0 && (
                         <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full border border-white dark:border-gray-800" />
                       )}
                     </div>
                     <span className="text-xs md:text-sm">Notifications</span>
-                    {notifications > 0 && (
-                      <Badge variant="destructive" className="ml-auto h-4 min-w-[16px] px-1 text-[9px]">{notifications}</Badge>
+                    {notificationsCount > 0 && (
+                      <Badge variant="destructive" className="ml-auto h-4 min-w-[16px] px-1 text-[9px]">{notificationsCount}</Badge>
                     )}
                   </button>
                 </div>
@@ -486,8 +559,54 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                 {isAuthenticated ? (
                   <>
                     <div className="border-t border-gray-100 dark:border-gray-700 my-2 pt-1" />
+
+                    {!isAdmin && (
+                      <div className="space-y-0.5">
+                        <Link
+                          to="/dashboard"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                        >
+                          <LayoutDashboard className="h-4 w-4 text-blue-600" />
+                          <span className="text-xs md:text-sm">Dashboard</span>
+                        </Link>
+                        <Link
+                          to="/dashboard/enquiries"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                        >
+                          <FileQuestion className="h-4 w-4 text-indigo-600" />
+                          <span className="text-xs md:text-sm">My Enquiries</span>
+                        </Link>
+                        <Link
+                          to="/dashboard/payments"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                        >
+                          <CreditCard className="h-4 w-4 text-pink-600" />
+                          <span className="text-xs md:text-sm">My Payments</span>
+                        </Link>
+                        <Link
+                          to="/dashboard/emi"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                        >
+                          <Calculator className="h-4 w-4 text-amber-600" />
+                          <span className="text-xs md:text-sm">EMI Calculator</span>
+                        </Link>
+                        <Link
+                          to="/dashboard/support"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
+                        >
+                          <MessageSquare className="h-4 w-4 text-teal-600" />
+                          <span className="text-xs md:text-sm">Support</span>
+                        </Link>
+                      </div>
+                    )}
+
                     <Link
-                      to={user?.role === 'admin' ? '/admin/profile' : '/dashboard/profile'}
+                      to={isAdmin ? '/admin/profile' : '/dashboard/profile'}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
                     >

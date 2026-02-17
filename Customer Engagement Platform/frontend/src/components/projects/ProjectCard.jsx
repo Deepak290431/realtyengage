@@ -70,13 +70,20 @@ const ProjectCard = ({ project, isAdmin = false }) => {
 
   const handleVirtualTourClick = (e) => {
     e.stopPropagation();
-    const hasContent = project.virtualTour?.enabled &&
-      (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url);
+    const projectId = project._id || project.id;
+    if (!projectId) {
+      toast.error('Project ID not found');
+      return;
+    }
 
-    if (hasContent) {
-      navigate(`/projects/${project._id}?viewTour=true`);
+    const virtualTour = project.virtualTour;
+    const hasTour = (virtualTour?.images360?.length > 0) || !!virtualTour?.video360?.url;
+
+    if (hasTour) {
+      const detailPath = isAdmin ? `/admin/projects/${projectId}` : `/projects/${projectId}`;
+      navigate(`${detailPath}?viewTour=true`);
     } else {
-      toast.error('Virtual tour is not available right now');
+      toast.error('Virtual tour content is not available yet');
     }
   };
 
@@ -146,12 +153,12 @@ const ProjectCard = ({ project, isAdmin = false }) => {
               px: 1,
               ml: 1,
               whiteSpace: 'nowrap',
-              backgroundColor: project.virtualTour?.enabled ? 'primary.main' : 'transparent',
-              color: project.virtualTour?.enabled ? 'white' : 'text.disabled',
-              borderColor: project.virtualTour?.enabled ? 'primary.main' : 'grey.300',
+              backgroundColor: (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url) ? 'primary.main' : 'transparent',
+              color: (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url) ? 'white' : 'text.disabled',
+              borderColor: (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url) ? 'primary.main' : 'grey.300',
               '&:hover': {
-                backgroundColor: project.virtualTour?.enabled ? 'primary.dark' : 'grey.100',
-                borderColor: project.virtualTour?.enabled ? 'primary.dark' : 'grey.400',
+                backgroundColor: (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url) ? 'primary.dark' : 'grey.100',
+                borderColor: (project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url) ? 'primary.dark' : 'grey.400',
               }
             }}
           >

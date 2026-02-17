@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     X, ZoomIn, ZoomOut, Maximize, Minimize, ChevronLeft, ChevronRight,
-    Play, Pause, Volume2, VolumeX, RotateCw, Info
+    Play, Pause, Volume2, VolumeX, RotateCw, Info, Image
 } from 'lucide-react';
 import { Button } from './ui/button';
 import toast from 'react-hot-toast';
@@ -28,8 +28,20 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
     const imageRef = useRef(null);
     const videoRef = useRef(null);
 
-    const { type, images360, video360, enabled } = virtualTourData || {};
-    const currentMedia = type === '360_image' ? images360?.[currentIndex] : video360;
+    const { images360, video360 } = virtualTourData || {};
+    const [selectedMode, setSelectedMode] = useState(null); // '360_image' or '360_video'
+
+    const hasImages = images360?.length > 0;
+    const hasVideo = !!video360?.url;
+
+    useEffect(() => {
+        // Auto-select if only one type exists
+        if (hasImages && !hasVideo) setSelectedMode('360_image');
+        else if (!hasImages && hasVideo) setSelectedMode('360_video');
+    }, [hasImages, hasVideo]);
+
+    const currentMedia = selectedMode === '360_image' ? images360?.[currentIndex] : video360;
+    const type = selectedMode;
 
     useEffect(() => {
         // Auto-hide info after 5 seconds
@@ -154,7 +166,70 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
         toast.success('View reset');
     };
 
-    if (!enabled || !currentMedia) {
+    if (!selectedMode && hasImages && hasVideo) {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
+            >
+                <Button
+                    onClick={onClose}
+                    className="absolute top-6 right-6 z-50 bg-white/10 hover:bg-white/20 text-white rounded-full h-12 w-12 p-0 border border-white/20"
+                >
+                    <X className="h-6 w-6" />
+                </Button>
+
+                <div className="max-w-2xl w-full text-center">
+                    <motion.div
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        className="mb-12"
+                    >
+                        <h2 className="text-4xl font-black text-white mb-4 tracking-tight">Choose Your Experience</h2>
+                        <p className="text-gray-400 text-lg">Select how you would like to explore this property</p>
+                    </motion.div>
+
+                    <div className="grid sm:grid-cols-2 gap-6">
+                        <motion.button
+                            whileHover={{ scale: 1.05, translateY: -5 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSelectedMode('360_image')}
+                            className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/50 rounded-2xl p-8 transition-all duration-300 text-left"
+                        >
+                            <div className="h-16 w-16 bg-blue-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
+                                <Image size={32} className="text-blue-500 group-hover:text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">360° Photos</h3>
+                            <p className="text-gray-500 leading-relaxed">High-definition panoramic views of every room with manual exploration.</p>
+                            <div className="mt-6 flex items-center text-blue-500 font-bold uppercase text-xs tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                                Launch Tour <ChevronRight className="h-4 w-4 ml-1" />
+                            </div>
+                        </motion.button>
+
+                        <motion.button
+                            whileHover={{ scale: 1.05, translateY: -5 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSelectedMode('360_video')}
+                            className="group relative bg-white/5 hover:bg-white/10 border border-white/10 hover:border-pink-500/50 rounded-2xl p-8 transition-all duration-300 text-left"
+                        >
+                            <div className="h-16 w-16 bg-pink-600/20 rounded-xl flex items-center justify-center mb-6 group-hover:bg-pink-600 transition-colors">
+                                <Play size={32} className="text-pink-500 group-hover:text-white" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">360° Video</h3>
+                            <p className="text-gray-500 leading-relaxed">Immersive cinematic walkthrough of the entire property in 360 degrees.</p>
+                            <div className="mt-6 flex items-center text-pink-500 font-bold uppercase text-xs tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                                Start Video <ChevronRight className="h-4 w-4 ml-1" />
+                            </div>
+                        </motion.button>
+                    </div>
+                </div>
+            </motion.div>
+        );
+    }
+
+    if (!currentMedia) {
         return null;
     }
 

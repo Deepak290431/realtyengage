@@ -399,23 +399,39 @@ const CustomerSettingsPage = () => {
                                                 <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                                                     <Smartphone className="h-5 w-5 text-gray-500" /> Active Sessions
                                                 </h4>
-                                                {[
-                                                    { device: 'Windows PC • Chrome', location: 'Coimbatore, India', active: true },
-                                                    { device: 'iPhone 15 • App', location: 'Chennai, India', active: false },
-                                                ].map((session, i) => (
-                                                    <div key={i} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
+                                                {user?.loginHistory?.length > 0 ? (
+                                                    user.loginHistory.map((session, i) => (
+                                                        <div key={i} className={`flex items-center justify-between p-4 ${i === 0 ? 'bg-green-50/30 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30' : 'bg-gray-50 dark:bg-gray-800'} rounded-2xl`}>
+                                                            <div className="flex items-center gap-4">
+                                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${i === 0 ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
+                                                                    {session.device?.includes('Phone') ? <Smartphone className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-sm">{session.device} • {session.browser}</p>
+                                                                    <p className="text-xs text-gray-500">{session.location || 'Unknown Location'} {i === 0 && '• Current'}</p>
+                                                                </div>
+                                                            </div>
+                                                            {i === 0 ? (
+                                                                <Badge className="bg-green-100 text-green-700 border-none">Active</Badge>
+                                                            ) : (
+                                                                <Button variant="ghost" size="sm" className="text-red-500">Log out</Button>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
                                                         <div className="flex items-center gap-4">
-                                                            <div className={`h-10 w-10 rounded-full flex items-center justify-center ${session.active ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
+                                                            <div className="h-10 w-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
                                                                 <Globe className="h-5 w-5" />
                                                             </div>
                                                             <div>
-                                                                <p className="font-bold text-sm">{session.device}</p>
-                                                                <p className="text-xs text-gray-500">{session.location} {session.active && '• Current'}</p>
+                                                                <p className="font-bold text-sm">Current Session</p>
+                                                                <p className="text-xs text-gray-500">Active Now</p>
                                                             </div>
                                                         </div>
-                                                        {!session.active && <Button variant="ghost" size="sm" className="text-red-500">Log out</Button>}
+                                                        <Badge className="bg-green-100 text-green-700 border-none">Active</Badge>
                                                     </div>
-                                                ))}
+                                                )}
                                                 <Button
                                                     variant="outline"
                                                     className="w-full text-red-500 border-red-100 hover:bg-red-50 rounded-xl mt-4"

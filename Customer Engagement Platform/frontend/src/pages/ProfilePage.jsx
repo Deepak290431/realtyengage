@@ -494,30 +494,37 @@ const ProfilePage = ({ isAdmin = false }) => {
                 </Button>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
-                      <Globe className="h-5 w-5" />
+                {user?.loginHistory?.length > 0 ? (
+                  user.loginHistory.map((session, i) => (
+                    <div key={i} className={`flex items-center justify-between p-3 rounded-lg ${i === 0 ? 'bg-green-50/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30' : 'bg-gray-50 dark:bg-gray-800'}`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${i === 0 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                          {session.device?.includes('Phone') ? <Smartphone className="h-5 w-5" /> : <Globe className="h-5 w-5" />}
+                        </div>
+                        <div>
+                          <p className="font-medium">{session.device} - {session.browser}</p>
+                          <p className="text-xs text-gray-500">
+                            {session.location || 'Unknown Location'} • {i === 0 ? 'Active Now' : new Date(session.lastActive).toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                      {i === 0 && <Badge className="bg-green-100 text-green-700 border-none">Current</Badge>}
                     </div>
-                    <div>
-                      <p className="font-medium">Windows PC - Chrome</p>
-                      <p className="text-xs text-gray-500">Coimbatore, Tamil Nadu • Active Now</p>
+                  ))
+                ) : (
+                  <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                        <Globe className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="font-medium">Current Session</p>
+                        <p className="text-xs text-gray-500">Active Now</p>
+                      </div>
                     </div>
+                    <Badge className="bg-green-100 text-green-700 border-none">Current</Badge>
                   </div>
-                  <Badge className="bg-green-100 text-green-700 border-none">Current</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-white border border-gray-100 dark:bg-gray-800/50 dark:border-gray-700 rounded-lg opacity-75">
-                  <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
-                      <Smartphone className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium">iPhone 13 - App</p>
-                      <p className="text-xs text-gray-500">Coimbatore, Tamil Nadu • 2 hours ago</p>
-                    </div>
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-gray-400">Log out</Button>
-                </div>
+                )}
               </div>
             </Card>
           </motion.div>

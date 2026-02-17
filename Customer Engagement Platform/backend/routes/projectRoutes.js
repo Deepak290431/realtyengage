@@ -79,7 +79,8 @@ router.get('/',
         .sort(sortObj)
         .limit(limit * 1)
         .skip((page - 1) * limit)
-        .select('-__v');
+        .select('-__v')
+        .lean();
 
       // Get total count for pagination
       const totalCount = await Project.countDocuments(filter);
@@ -226,6 +227,54 @@ router.post('/',
 
       const project = new Project(projectData);
       await project.save();
+
+      // Notify users of new project launch (Async)
+      const notifyUsers = async () => {
+        try {
+          const User = require('../models/User');
+          const sendEmail = require('../utils/emailService');
+
+          // Find all users who opted in for notifications
+          const users = await User.find({ 'preferences.notifications': true, isActive: true });
+
+          if (users.length === 0) return;
+
+          console.log(`Sending launch notifications to ${users.length} users...`);
+
+          // For the demo, we'll send a single broadcast email logic or just loop
+          // In production, use a BCC list or a mailing service API
+          for (const user of users) {
+            try {
+              await sendEmail({
+                to: user.email,
+                subject: `New Project Launched: ${project.name}`,
+                html: `
+                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                    <img src="${project.images && project.images.length > 0 ? project.images[0].url : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'}" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
+                    <h2 style="color: #0B1F33; text-align: center;">Discover Our Newest Project!</h2>
+                    <p style="font-size: 16px; color: #555;">Hi ${user.firstName},</p>
+                    <p style="font-size: 16px; color: #555;">We are excited to announce the launch of <strong>${project.name}</strong> in <strong>${project.area}</strong>.</p>
+                    <p style="font-size: 16px; color: #555;">${project.shortDescription || project.description.substring(0, 100) + '...'}</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                      <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/projects/${project._id}" style="background-color: #C9A24D; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Details</a>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="font-size: 12px; color: #aaa; text-align: center;">You received this email because you opted for property updates.</p>
+                    <p style="font-size: 12px; color: #aaa; text-align: center;">© 2026 RealtyEngage. All rights reserved.</p>
+                  </div>
+                `
+              });
+            } catch (err) {
+              console.error(`Failed to notify user ${user.email}:`, err.message);
+            }
+          }
+        } catch (err) {
+          console.error('Launch notification system error:', err);
+        }
+      };
+
+      // Run notification after response sent to admin
+      setImmediate(notifyUsers);
 
       res.status(201).json({
         success: true,

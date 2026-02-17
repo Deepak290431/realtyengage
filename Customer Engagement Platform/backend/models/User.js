@@ -100,7 +100,19 @@ const userSchema = new mongoose.Schema({
   tokenVersion: {
     type: Number,
     default: 0
-  }
+  },
+  loginHistory: [{
+    device: String,
+    browser: String,
+    os: String,
+    location: String,
+    ip: String,
+    lastActive: {
+      type: Date,
+      default: Date.now
+    },
+    userAgent: String
+  }]
 }, {
   timestamps: true
 });

@@ -456,19 +456,25 @@ const ProjectsPage = ({ isAdmin = false }) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const tourEnabled = project.virtualTour?.enabled;
-                                const hasContent = tourEnabled &&
-                                  ((project.virtualTour?.images360?.length > 0) || project.virtualTour?.video360?.url);
+                                const projectId = project._id || project.id;
+                                if (!projectId) {
+                                  toast.error('Could not find project ID');
+                                  return;
+                                }
 
-                                if (hasContent) {
-                                  navigate(`/projects/${project._id || project.id}?viewTour=true`);
+                                const virtualTour = project.virtualTour;
+                                const hasTour = (virtualTour?.images360?.length > 0) || !!virtualTour?.video360?.url;
+
+                                if (hasTour) {
+                                  const detailPath = isAdmin ? `/admin/projects/${projectId}` : `/projects/${projectId}`;
+                                  navigate(`${detailPath}?viewTour=true`);
                                 } else {
-                                  toast.error('Virtual tour is not available right now');
+                                  toast.error('Virtual tour content is not available yet');
                                 }
                               }}
-                              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${project.virtualTour?.enabled
-                                  ? 'bg-gradient-to-r from-blue-600 to-blue-800 text-white border-transparent shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95'
-                                  : 'bg-gray-100 text-gray-400 border-gray-200 hover:bg-gray-200'
+                              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all shrink-0 ${(project.virtualTour?.images360?.length > 0 || project.virtualTour?.video360?.url)
+                                ? 'bg-gradient-to-r from-blue-600 to-blue-800 text-white border-transparent shadow-lg shadow-blue-500/20 hover:scale-105 active:scale-95 cursor-pointer'
+                                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                                 }`}
                             >
                               <Video className="h-3 w-3" />

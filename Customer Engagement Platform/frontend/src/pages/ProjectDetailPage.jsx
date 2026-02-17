@@ -123,10 +123,11 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
         setRefreshVirtualTour(prev => prev + 1);
     };
 
-    // Auto-open virtual tour if requested via query parameter
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        if (params.get('viewTour') === 'true' && virtualTourData?.enabled) {
+        const hasContent = (virtualTourData?.images360?.length > 0) || !!virtualTourData?.video360?.url;
+
+        if (params.get('viewTour') === 'true' && hasContent) {
             setShowVirtualTour(true);
 
             // Clean up the URL after opening
@@ -287,14 +288,17 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
 
                 {/* Action Buttons */}
                 <div className="absolute top-4 right-4 flex items-center space-x-3">
-                    {virtualTourData?.enabled && (
+                    {((virtualTourData?.images360?.length > 0) || virtualTourData?.video360?.url) && (
                         <motion.button
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setShowVirtualTour(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full shadow-2xl hover:bg-primary/90 transition-all font-bold text-sm"
+                            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-2xl transition-all font-bold text-sm ${virtualTourData?.enabled
+                                ? 'bg-primary text-white hover:bg-primary/90'
+                                : 'bg-blue-600/80 text-white hover:bg-blue-600'
+                                }`}
                         >
                             <Video className="h-4 w-4" />
                             <span>VIRTUAL TOUR</span>
@@ -750,7 +754,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
             />
 
             {/* Virtual Tour Viewer */}
-            {showVirtualTour && virtualTourData?.enabled && (
+            {showVirtualTour && virtualTourData && (
                 <VirtualTourViewer
                     projectId={id}
                     virtualTourData={virtualTourData}

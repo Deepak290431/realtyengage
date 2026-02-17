@@ -162,8 +162,8 @@ router.get('/stats',
   authenticateToken,
   async (req, res) => {
     try {
-      if (req.user.role === 'admin') {
-        const stats = await getAdminStats();
+      if (req.user.role === 'admin' || req.user.role === 'super_admin') {
+        const stats = await getAdminStats(req.user.role);
         return res.json({ success: true, data: stats });
       } else {
         const stats = await getCustomerStats(req.userId);
@@ -184,7 +184,7 @@ router.get('/admin/stats',
   authorizeRoles('admin'),
   async (req, res) => {
     try {
-      const stats = await getAdminStats();
+      const stats = await getAdminStats(req.user.role);
       res.json({ success: true, data: stats });
     } catch (error) {
       console.error('Get admin stats error:', error);
@@ -281,10 +281,10 @@ router.get('/charts',
   }
 );
 
-// Helper functions
 // Debug counting
-async function getAdminStats() {
-  console.log('Calculating Admin Stats...');
+async function getAdminStats(role) {
+  console.log('Calculating Admin Stats for role:', role);
+  const isSuperAdmin = role === 'super_admin';
 
   const [transactionStats, propertyBreakdown, totalProjects, activeProjects, totalUsers, newUsers, totalEnquiries, pendingEnquiries] = await Promise.all([
     Transaction.aggregate([
@@ -337,16 +337,31 @@ async function getAdminStats() {
     totalOwnerPayout: 0
   };
 
+  // Filter property breakdown based on role
+  const filteredBreakdown = isSuperAdmin ? propertyBreakdown : propertyBreakdown.map(item => ({
+    _id: item._id,
+    propertyName: item.propertyName,
+    totalSales: item.totalSales,
+    transactionCount: item.transactionCount,
+    // Sensitive fields restricted
+    totalCommission: 0,
+    totalGST: 0,
+    totalPenalties: item.totalPenalties,
+    totalOwnerPayout: 0,
+    totalLate: item.totalLate,
+    totalRefunds: item.totalRefunds
+  }));
+
   return {
-    totalRevenue: (stats.totalPlatformRevenue || 0) + (stats.totalGST || 0) + (stats.totalPenalties || 0),
-    netEarnings: (stats.totalPlatformRevenue || 0) + (stats.totalPenalties || 0),
-    totalPlatformRevenue: stats.totalPlatformRevenue || 0,
-    totalGST: stats.totalGST || 0,
+    totalRevenue: isSuperAdmin ? ((stats.totalPlatformRevenue || 0) + (stats.totalGST || 0) + (stats.totalPenalties || 0)) : 0,
+    netEarnings: isSuperAdmin ? ((stats.totalPlatformRevenue || 0) + (stats.totalPenalties || 0)) : 0,
+    totalPlatformRevenue: isSuperAdmin ? (stats.totalPlatformRevenue || 0) : 0,
+    totalGST: isSuperAdmin ? (stats.totalGST || 0) : 0,
     totalPenalties: stats.totalPenalties || 0,
     lateEMICount: stats.lateEMICount || 0,
     totalSalesValue: stats.totalSalesValue || 0,
-    totalOwnerPayout: stats.totalOwnerPayout || 0,
-    propertyBreakdown,
+    totalOwnerPayout: isSuperAdmin ? (stats.totalOwnerPayout || 0) : 0,
+    propertyBreakdown: filteredBreakdown,
     revenueGrowth: 0,
     totalProjects,
     activeProjects,

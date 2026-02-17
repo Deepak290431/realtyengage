@@ -66,7 +66,7 @@ const LoginPage = ({ isAdmin = false }) => {
 
     try {
       const response = await authService.login(formData.email, formData.password);
-      const { user, token } = response.data;
+      const { user, token, refreshToken } = response.data;
 
       // Requirement: Admin login page logic
       if (isAdmin && !['admin', 'super_admin'].includes(user.role)) {
@@ -82,33 +82,13 @@ const LoginPage = ({ isAdmin = false }) => {
 
       dispatch(setUser({
         user: user,
-        token: token
+        token: token,
+        refreshToken: refreshToken
       }));
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
 
       toast.success('Login successful!');
 
-      // Requirement: Role-Based Redirect to specific application ports
-      const adminAppURL = 'http://127.0.0.1:4000';
-      const userAppURL = 'http://127.0.0.1:3000';
-
-      /* Redirect logic disabled for stability in local environment
-      if (['admin', 'super_admin'].includes(user.role)) {
-        if (window.location.port !== '4000') {
-          window.location.href = `${adminAppURL}/admin`;
-          return;
-        }
-        navigate('/admin');
-      } else {
-        if (window.location.port !== '3000') {
-          window.location.href = `${userAppURL}/`;
-          return;
-        }
-        navigate('/');
-      } */
-      navigate(['admin', 'super_admin'].includes(user.role) ? '/admin' : '/');
+      navigate(['admin', 'super_admin'].includes(user.role) ? '/admin' : '/dashboard');
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message || 'Login failed. Please try again.';
       setError(errorMessage);
@@ -264,35 +244,16 @@ const LoginPage = ({ isAdmin = false }) => {
 
               <div className="flex justify-center">
                 <GoogleLogin
+                  clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
                   onSuccess={async (credentialResponse) => {
                     setLoading(true);
                     try {
                       const response = await authService.googleLogin(credentialResponse.credential);
-                      const { user, token } = response.data;
-                      dispatch(setUser({ user, token }));
-                      localStorage.setItem('token', token);
-                      localStorage.setItem('user', JSON.stringify(user));
+                      const { user, token, refreshToken } = response.data;
+                      dispatch(setUser({ user, token, refreshToken }));
                       toast.success('Google login successful!');
 
-                      // Requirement: Role-Based Redirect to specific application ports
-                      const adminAppURL = 'http://127.0.0.1:4000';
-                      const userAppURL = 'http://127.0.0.1:3000';
-
-                      /* Redirect logic disabled for stability
-                      if (['admin', 'super_admin'].includes(user.role)) {
-                        if (window.location.port !== '4000') {
-                          window.location.href = `${adminAppURL}/admin`;
-                          return;
-                        }
-                        navigate('/admin');
-                      } else {
-                        if (window.location.port !== '3000') {
-                          window.location.href = `${userAppURL}/`;
-                          return;
-                        }
-                        navigate('/');
-                      } */
-                      navigate(['admin', 'super_admin'].includes(user.role) ? '/admin' : '/');
+                      navigate(['admin', 'super_admin'].includes(user.role) ? '/admin' : '/dashboard');
                     } catch (err) {
                       const errorMessage = err.response?.data?.message || 'Google login failed';
                       setError(errorMessage);
@@ -302,12 +263,15 @@ const LoginPage = ({ isAdmin = false }) => {
                     }
                   }}
                   onError={() => {
-                    toast.error('Google Login Failed');
+                    const msg = !import.meta.env.VITE_GOOGLE_CLIENT_ID
+                      ? 'Google Client ID is missing. Please check your configuration.'
+                      : 'Google Login Failed. Please check your internet connection or console.';
+                    toast.error(msg);
+                    console.error('Google Login Error: Client ID might be invalid or missing.');
                   }}
                   useOneTap
                   theme="outline"
                   shape="pill"
-                  width="100%"
                 />
               </div>
             </>

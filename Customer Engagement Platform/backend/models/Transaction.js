@@ -75,4 +75,11 @@ const transactionSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Indexes for performance
+transactionSchema.index({ userId: 1 });
+transactionSchema.index({ propertyId: 1 });
+transactionSchema.index({ paymentStatus: 1 });
+transactionSchema.index({ paymentDate: -1 });
+transactionSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Transaction', transactionSchema);

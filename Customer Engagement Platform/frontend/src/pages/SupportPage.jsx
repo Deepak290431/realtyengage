@@ -106,8 +106,9 @@ const SupportPage = ({ isAdmin = false }) => {
   const onSubmitTicket = async (data) => {
     try {
       const response = await supportService.createTicket({
-        subject: data.subject,
+        type: data.type,
         category: data.category,
+        subject: data.subject,
         priority: data.priority,
         description: data.description
       });
@@ -131,13 +132,12 @@ const SupportPage = ({ isAdmin = false }) => {
 
     try {
       const response = await supportService.addComment(selectedTicket._id || selectedTicket.id, {
-        message: replyMessage
+        text: replyMessage
       });
 
-      const updatedTicket = {
-        ...selectedTicket,
-        messages: [...(selectedTicket.messages || []), response.data || response]
-      };
+      // The backend returns { success: true, message: "...", data: updatedTicket }
+      // Our service returns response.data, so response is the { success, message, data } object
+      const updatedTicket = response.data || response;
 
       setTickets(tickets.map(t => (t._id === selectedTicket._id || t.id === selectedTicket.id) ? updatedTicket : t));
       setSelectedTicket(updatedTicket);
@@ -256,7 +256,7 @@ const SupportPage = ({ isAdmin = false }) => {
             <div className="lg:col-span-2 space-y-4">
               {filteredTickets.map((ticket) => (
                 <Card
-                  key={ticket.id}
+                  key={ticket._id || ticket.id}
                   className="p-6 hover:shadow-lg cursor-pointer"
                   onClick={() => setSelectedTicket(ticket)}
                 >
@@ -268,14 +268,19 @@ const SupportPage = ({ isAdmin = false }) => {
                     </Badge>
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <p>#{ticket.id} • {ticket.category}</p>
-                    <p>{ticket.messages[0].message.substring(0, 100)}...</p>
+                    <p>#{ticket.ticketNumber || ticket.id} • {ticket.type || ticket.category}</p>
+                    <p>
+                      {ticket.comments && ticket.comments.length > 0
+                        ? ticket.comments[0].text?.substring(0, 100)
+                        : ticket.description?.substring(0, 100)}
+                      ...
+                    </p>
                   </div>
                   <div className="flex items-center mt-3 text-xs text-gray-500">
                     <Calendar className="h-3 w-3 mr-1" />
-                    {new Date(ticket.createdDate).toLocaleDateString()}
+                    {new Date(ticket.createdAt || ticket.createdDate).toLocaleDateString()}
                     <MessageCircle className="h-3 w-3 ml-3 mr-1" />
-                    {ticket.messages.length} messages
+                    {(ticket.comments?.length || 0)} messages
                   </div>
                 </Card>
               ))}
@@ -291,26 +296,36 @@ const SupportPage = ({ isAdmin = false }) => {
                   </Button>
                 </div>
                 <div className="space-y-3 max-h-96 overflow-y-auto mb-4 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg">
-                  {selectedTicket.messages?.map((msg, idx) => (
+                  {/* Show initial description */}
+                  <div className="p-3 rounded-lg bg-blue-600 text-white ml-4">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-bold text-xs uppercase opacity-80">Initial Request</span>
+                      <span className="text-[10px] opacity-70">
+                        {new Date(selectedTicket.createdAt || selectedTicket.createdDate).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="text-sm">{selectedTicket.description}</p>
+                  </div>
+
+                  {selectedTicket.comments?.map((msg, idx) => (
                     <div
                       key={idx}
-                      className={`p-3 rounded-lg ${msg.type === 'customer' || msg.senderRole === 'customer'
+                      className={`p-3 rounded-lg ${(msg.author?.role || msg.senderRole) === 'customer' || msg.type === 'customer'
                         ? 'bg-blue-600 text-white ml-4'
                         : 'bg-white dark:bg-gray-800 mr-4 border'
                         }`}
                     >
                       <div className="flex justify-between mb-1">
-                        <span className="font-bold text-xs uppercase opacity-80">{msg.sender?.firstName || msg.sender}</span>
+                        <span className="font-bold text-xs uppercase opacity-80">
+                          {msg.author?.firstName || msg.sender?.firstName || msg.sender || 'Staff'}
+                        </span>
                         <span className="text-[10px] opacity-70">
-                          {new Date(msg.timestamp || msg.createdAt).toLocaleTimeString()}
+                          {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
-                      <p className="text-sm">{msg.message}</p>
+                      <p className="text-sm">{msg.text || msg.message}</p>
                     </div>
                   ))}
-                  {selectedTicket.messages?.length === 0 && (
-                    <p className="text-center text-gray-500 text-sm py-4">No messages yet.</p>
-                  )}
                 </div>
                 <div className="flex space-x-2">
                   <Input
@@ -380,29 +395,48 @@ const SupportPage = ({ isAdmin = false }) => {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Category</label>
+                      <label className="block text-sm font-medium mb-2">Request Type *</label>
                       <select
-                        {...register('category')}
-                        className="w-full px-3 py-2 border rounded-lg"
+                        {...register('type', { required: 'Type is required' })}
+                        className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700"
                       >
-                        <option value="Payment">Payment</option>
-                        <option value="Property Info">Property Info</option>
-                        <option value="Visit">Site Visit</option>
-                        <option value="Other">Other</option>
+                        <option value="technical">Technical Issue</option>
+                        <option value="billing">Billing & Payment</option>
+                        <option value="feedback">Feedback</option>
+                        <option value="grievance">Grievance</option>
+                        <option value="suggestion">Suggestion</option>
                       </select>
+                      {errors.type && (
+                        <p className="text-red-500 text-sm mt-1">{errors.type.message}</p>
+                      )}
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium mb-2">Priority</label>
                       <select
                         {...register('priority')}
-                        className="w-full px-3 py-2 border rounded-lg"
+                        className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>
                         <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Category (Optional)</label>
+                    <select
+                      {...register('category')}
+                      className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700"
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Payment">Payment Related</option>
+                      <option value="Property Info">Property Info</option>
+                      <option value="Visit">Site Visit</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
 
                   <div>

@@ -339,8 +339,12 @@ const AdminDashboard = () => {
                       <th className="pb-3 px-6 font-semibold">Property Name</th>
                       <th className="pb-3 px-6 font-semibold text-right">Transactions</th>
                       <th className="pb-3 px-6 font-semibold text-right">Sales (GMV)</th>
-                      <th className="pb-3 px-6 font-semibold text-right text-primary">Commission</th>
-                      <th className="pb-3 px-6 font-semibold text-right text-blue-600">GST</th>
+                      {user?.role === 'super_admin' && (
+                        <>
+                          <th className="pb-3 px-6 font-semibold text-right text-primary">Commission</th>
+                          <th className="pb-3 px-6 font-semibold text-right text-blue-600">GST</th>
+                        </>
+                      )}
                       <th className="pb-3 px-6 font-semibold text-right text-orange-600">Penalties</th>
                       <th className="pb-3 px-6 font-semibold text-right text-red-600">Refunds</th>
                     </tr>
@@ -354,8 +358,12 @@ const AdminDashboard = () => {
                           <td className="py-3 px-6 font-medium text-gray-900">{item.propertyName}</td>
                           <td className="py-3 px-6 text-right">{item.transactionCount}</td>
                           <td className="py-3 px-6 text-right font-semibold">{formatCurrency(item.totalSales)}</td>
-                          <td className="py-3 px-6 text-right text-primary font-bold">{formatCurrency(item.totalCommission)}</td>
-                          <td className="py-3 px-6 text-right text-blue-600">{formatCurrency(item.totalGST)}</td>
+                          {user?.role === 'super_admin' && (
+                            <>
+                              <td className="py-3 px-6 text-right text-primary font-bold">{formatCurrency(item.totalCommission)}</td>
+                              <td className="py-3 px-6 text-right text-blue-600">{formatCurrency(item.totalGST)}</td>
+                            </>
+                          )}
                           <td className="py-3 px-6 text-right text-orange-600 font-bold">{formatCurrency(item.totalPenalties || 0)}</td>
                           <td className="py-3 px-6 text-right text-red-600 font-medium">-{formatCurrency(item.totalRefunds || 0)}</td>
                         </tr>
@@ -389,9 +397,13 @@ const AdminDashboard = () => {
                       <th className="pb-3 px-6 text-xs uppercase tracking-wider">Customer</th>
                       <th className="pb-3 px-6 text-xs uppercase tracking-wider">Property</th>
                       <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">Amount</th>
-                      <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">Comm</th>
-                      <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">GST</th>
-                      <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">Payout</th>
+                      {user?.role === 'super_admin' && (
+                        <>
+                          <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">Comm</th>
+                          <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">GST</th>
+                          <th className="pb-3 px-6 text-right text-xs uppercase tracking-wider">Payout</th>
+                        </>
+                      )}
                       <th className="pb-3 px-6 text-xs uppercase tracking-wider">Status</th>
                       <th className="pb-3 px-6 text-xs uppercase tracking-wider">Date</th>
                     </tr>
@@ -409,20 +421,30 @@ const AdminDashboard = () => {
                           <td className="py-4 px-6">
                             <p className="text-sm font-medium">{tx.propertyName}</p>
                             <div className="flex items-center gap-1">
-                              <Badge variant="outline" className="text-[10px] capitalize px-1">{tx.installmentType}</Badge>
-                              {tx.installmentType === 'emi' && <span className="text-[10px] text-gray-400">#{tx.installmentNumber}</span>}
+                              <Badge variant="outline" className="text-[10px] capitalize px-1">
+                                {tx.installmentType === 'down_payment' ? 'EMI' : tx.installmentType}
+                              </Badge>
+                              {(tx.installmentType === 'emi' || tx.installmentType === 'down_payment') && (
+                                <span className="text-[10px] text-gray-400">
+                                  #{tx.installmentNumber || 1}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="py-4 px-6 text-right font-bold text-gray-900">{formatCurrency(tx.amountPaid)}</td>
-                          <td className="py-4 px-6 text-right">
-                            <span className="text-sm font-semibold text-primary">+{formatCurrency(tx.commissionAmount || tx.commissionEarned || 0)}</span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <span className="text-sm font-semibold text-blue-600">+{formatCurrency(tx.gstAmount || 0)}</span>
-                          </td>
-                          <td className="py-4 px-6 text-right">
-                            <span className="text-sm font-semibold text-green-600">{formatCurrency(tx.ownerPayout || 0)}</span>
-                          </td>
+                          {user?.role === 'super_admin' && (
+                            <>
+                              <td className="py-4 px-6 text-right">
+                                <span className="text-sm font-semibold text-primary">+{formatCurrency(tx.commissionAmount || tx.commissionEarned || 0)}</span>
+                              </td>
+                              <td className="py-4 px-6 text-right">
+                                <span className="text-sm font-semibold text-blue-600">+{formatCurrency(tx.gstAmount || 0)}</span>
+                              </td>
+                              <td className="py-4 px-6 text-right">
+                                <span className="text-sm font-semibold text-green-600">{formatCurrency(tx.ownerPayout || 0)}</span>
+                              </td>
+                            </>
+                          )}
                           <td className="py-4 px-6">
                             <Badge className={`${getStatusColor(tx.paymentStatus)} border-none capitalize`}>
                               {tx.paymentStatus}

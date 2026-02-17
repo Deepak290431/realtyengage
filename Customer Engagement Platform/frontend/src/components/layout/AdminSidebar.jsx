@@ -16,7 +16,8 @@ import {
     UserCircle,
     Sparkles,
     Sun,
-    Calculator
+    Calculator,
+    Headphones
 } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../../store/slices/authSlice';
@@ -52,6 +53,11 @@ const AdminSidebar = ({ onToggleChatbot }) => {
             title: 'Transactions',
             path: '/admin/payments',
             icon: CreditCard
+        },
+        {
+            title: 'Support Requests',
+            path: '/admin/support',
+            icon: Headphones
         },
         {
             title: 'Customers',

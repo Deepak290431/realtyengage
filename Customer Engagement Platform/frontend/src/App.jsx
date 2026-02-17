@@ -1,45 +1,51 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Button } from '@mui/material';
 
 // Layout Components
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 
-// Public Pages
-import HomePage from './pages/HomePage';
-import ProjectsPage from './pages/ProjectsPage';
-import ProjectDetailPage from './pages/ProjectDetailPage';
-import LoginPage from './pages/auth/LoginPage';
-import RegisterPage from './pages/auth/RegisterPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
-import { PrivacyPage, TermsPage, RefundPolicyPage, CookiePolicyPage, DisclaimerPage } from './pages/LegalPages';
-import TestimonialsPage from './pages/TestimonialsPage';
-import CareersPage from './pages/CareersPage';
-import ServicePage from './pages/ServicePage';
+// Public Pages (Lazy Loaded)
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
+const ProjectDetailPage = lazy(() => import('./pages/ProjectDetailPage'));
+const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const { PrivacyPage, TermsPage, RefundPolicyPage, CookiePolicyPage, DisclaimerPage } = {
+  PrivacyPage: lazy(() => import('./pages/LegalPages').then(m => ({ default: m.PrivacyPage }))),
+  TermsPage: lazy(() => import('./pages/LegalPages').then(m => ({ default: m.TermsPage }))),
+  RefundPolicyPage: lazy(() => import('./pages/LegalPages').then(m => ({ default: m.RefundPolicyPage }))),
+  CookiePolicyPage: lazy(() => import('./pages/LegalPages').then(m => ({ default: m.CookiePolicyPage }))),
+  DisclaimerPage: lazy(() => import('./pages/LegalPages').then(m => ({ default: m.DisclaimerPage })))
+};
+const TestimonialsPage = lazy(() => import('./pages/TestimonialsPage'));
+const CareersPage = lazy(() => import('./pages/CareersPage'));
+const ServicePage = lazy(() => import('./pages/ServicePage'));
 
-// Protected Pages
-import CustomerDashboard from './pages/dashboard/CustomerDashboard';
-import AdminDashboard from './pages/dashboard/AdminDashboard';
-import EnquiriesPage from './pages/EnquiriesPage';
-import PaymentsPage from './pages/PaymentsPage';
-import SupportPage from './pages/SupportPage';
-import ProfilePage from './pages/ProfilePage';
-import EditProjectPage from './pages/EditProjectPage';
-import AddProjectPage from './pages/AddProjectPage';
-import UserManagementPage from './pages/dashboard/UserManagementPage';
-import CustomersPage from './pages/dashboard/CustomersPage';
-import SettingsPage from './pages/dashboard/SettingsPage';
-import CustomerSettingsPage from './pages/dashboard/CustomerSettingsPage';
-import EMICalculatorPage from './pages/EMICalculatorPage';
+// Protected Pages (Lazy Loaded)
+const CustomerDashboard = lazy(() => import('./pages/dashboard/CustomerDashboard'));
+const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
+const EnquiriesPage = lazy(() => import('./pages/EnquiriesPage'));
+const PaymentsPage = lazy(() => import('./pages/PaymentsPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const EditProjectPage = lazy(() => import('./pages/EditProjectPage'));
+const AddProjectPage = lazy(() => import('./pages/AddProjectPage'));
+const UserManagementPage = lazy(() => import('./pages/dashboard/UserManagementPage'));
+const CustomersPage = lazy(() => import('./pages/dashboard/CustomersPage'));
+const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
+const CustomerSettingsPage = lazy(() => import('./pages/dashboard/CustomerSettingsPage'));
+const EMICalculatorPage = lazy(() => import('./pages/EMICalculatorPage'));
 
 // Components
 import PrivateRoute from './components/auth/PrivateRoute';
-import NotFound from './pages/NotFound';
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // Services & Actions
 import { checkAuthStatus } from './store/slices/authSlice';
@@ -91,7 +97,16 @@ function App() {
   }
 
   return (
-    <>
+    <Suspense fallback={
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
+        <CircularProgress />
+      </Box>
+    }>
       <ThemeApplicator />
       <Routes>
         {/* Public Pages with Header/Footer */}
@@ -115,7 +130,7 @@ function App() {
           <Route element={<AuthLayout />}>
             <Route path="/login" element={
               isAuthenticated ? (
-                <Navigate to={['admin', 'super_admin'].includes(user?.role) ? '/admin' : '/'} replace />
+                <Navigate to={['admin', 'super_admin'].includes(user?.role) ? '/admin' : '/dashboard'} replace />
               ) : (
                 <LoginPage />
               )
@@ -128,20 +143,17 @@ function App() {
               )
             } />
             <Route path="/register" element={
-              isAuthenticated ? <Navigate to={['admin', 'super_admin'].includes(user?.role) ? '/admin' : '/'} replace /> : <RegisterPage />
+              isAuthenticated ? <Navigate to={['admin', 'super_admin'].includes(user?.role) ? '/admin' : '/dashboard'} replace /> : <RegisterPage />
             } />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
-
-          {/* 404 Route */}
-          <Route path="*" element={<NotFound />} />
         </Route>
 
         {/* Dashboard Routes - No standard header/footer */}
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute allowedRoles={['customer']}>
+            <PrivateRoute allowedRoles={['customer', 'user']}>
               <DashboardLayout />
             </PrivateRoute>
           }
@@ -178,8 +190,21 @@ function App() {
           <Route path="profile" element={<ProfilePage isAdmin={true} />} />
           <Route path="emi" element={<EMICalculatorPage isAdmin={true} />} />
         </Route>
+
+        <Route path="/unauthorized" element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <div className="text-center p-8 bg-white rounded-2xl shadow-xl max-w-md">
+              <h1 className="text-4xl font-bold text-red-600 mb-4">Unauthorized</h1>
+              <p className="text-gray-600 mb-6">You don't have permission to access this page.</p>
+              <Button onClick={() => window.location.href = '/'}>Go Home</Button>
+            </div>
+          </div>
+        } />
+
+        {/* 404 Catch-all */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </Suspense>
   );
 }
 

@@ -3,40 +3,51 @@ import { createTheme } from '@mui/material/styles';
 // Common theme options
 const commonTheme = {
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", "system-ui", "-apple-system", sans-serif',
     h1: {
-      fontWeight: 700,
+      fontFamily: '"Outfit", sans-serif',
+      fontWeight: 800,
       fontSize: '2.5rem',
       lineHeight: 1.2,
+      letterSpacing: '-0.02em',
     },
     h2: {
-      fontWeight: 600,
+      fontFamily: '"Outfit", sans-serif',
+      fontWeight: 700,
       fontSize: '2rem',
       lineHeight: 1.3,
+      letterSpacing: '-0.01em',
     },
     h3: {
-      fontWeight: 600,
+      fontFamily: '"Outfit", sans-serif',
+      fontWeight: 700,
       fontSize: '1.75rem',
       lineHeight: 1.4,
+      letterSpacing: '-0.01em',
     },
     h4: {
-      fontWeight: 500,
+      fontFamily: '"Outfit", sans-serif',
+      fontWeight: 600,
       fontSize: '1.5rem',
       lineHeight: 1.4,
     },
     h5: {
-      fontWeight: 500,
+      fontFamily: '"Outfit", sans-serif',
+      fontWeight: 600,
       fontSize: '1.25rem',
       lineHeight: 1.5,
     },
     h6: {
-      fontWeight: 500,
+      fontFamily: '"Outfit", sans-serif',
+      fontWeight: 600,
       fontSize: '1rem',
       lineHeight: 1.5,
     },
     button: {
+      fontFamily: '"Outfit", sans-serif',
       textTransform: 'none',
-      fontWeight: 500,
+      fontWeight: 600,
+      letterSpacing: '0.01em',
     },
   },
   shape: {

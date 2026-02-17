@@ -131,6 +131,44 @@ router.post('/login',
       // Update last login
       user.lastLogin = new Date();
 
+      // Parse User Agent for login history
+      const ua = req.headers['user-agent'] || '';
+      let device = 'Web Browser';
+      let browser = 'Unknown Browser';
+      let os = 'Unknown OS';
+
+      if (ua.includes('Windows')) {
+        os = 'Windows';
+        device = 'Windows PC';
+      } else if (ua.includes('Macintosh')) {
+        os = 'macOS';
+        device = 'MacBook/iMac';
+      } else if (ua.includes('Android')) {
+        os = 'Android';
+        device = 'Android Phone';
+      } else if (ua.includes('iPhone')) {
+        os = 'iOS';
+        device = 'iPhone';
+      }
+
+      if (ua.includes('Chrome')) browser = 'Chrome';
+      else if (ua.includes('Firefox')) browser = 'Firefox';
+      else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
+      else if (ua.includes('Edge')) browser = 'Edge';
+
+      const newHistory = {
+        device,
+        browser,
+        os,
+        ip: req.ip || req.headers['x-forwarded-for'] || 'Unknown',
+        location: 'Tamil Nadu, India', // Simplified for demo, in prod use geo-ip
+        lastActive: new Date(),
+        userAgent: ua
+      };
+
+      // Add to history and keep only last 5
+      user.loginHistory = [newHistory, ...(user.loginHistory || [])].slice(0, 5);
+
       // Generate tokens
       const token = generateToken(user._id, user.role, user.tokenVersion);
       const refreshToken = generateRefreshToken(user._id);
@@ -182,11 +220,14 @@ router.post('/google',
       const payload = ticket.getPayload();
       const { sub: googleId, email, given_name: firstName, family_name: lastName, picture: profilePicture } = payload;
 
+      console.log(`[GOOGLE LOGIN] Attempt for email: ${email}, GoogleID: ${googleId}`);
+
       let user = await User.findOne({ email });
 
       if (user) {
         // Requirement 1: If role === "admin", reject login attempt
         if (user.role === 'admin') {
+          console.warn(`[GOOGLE LOGIN] Blocked: Admin account ${email} tried to login via Google`);
           return res.status(401).json({
             error: 'Access blocked',
             message: 'Admin accounts cannot login using Google. Please login using email and password.'
@@ -238,11 +279,12 @@ router.post('/google',
         token,
         refreshToken
       });
+      console.log(`[GOOGLE LOGIN] Success: ${email} logged in as ${user.role}`);
     } catch (error) {
       console.error('Google login error:', error);
       res.status(500).json({
         error: 'Google login failed',
-        message: 'Unable to authenticate with Google'
+        message: error.message || 'Unable to authenticate with Google'
       });
     }
   }
@@ -479,10 +521,10 @@ router.post('/forgot-password',
       const user = await User.findOne(query);
 
       if (!user) {
-        // For security, return success even if user not found
+        const isDev = (process.env.NODE_ENV || '').trim().toLowerCase() === 'development';
         return res.json({
           success: true,
-          message: `If the ${email ? 'email' : 'mobile number'} exists, an OTP has been sent`
+          message: isDev ? `USER NOT FOUND: The provided ${email ? 'email' : 'mobile number'} does not exist in the database.` : `If the ${email ? 'email' : 'mobile number'} exists, an OTP has been sent`
         });
       }
 
@@ -516,16 +558,27 @@ router.post('/forgot-password',
           console.error('Failed to send OTP email:', emailError);
         }
       } else if (phone) {
-        // TODO: Integrate SMS Service (e.g., Twilio)
-        // For now, simulate sending SMS
-        console.log(`[SMS SIMULATION] To: ${phone} | OTP: ${resetToken}`);
-        console.log(`Message: Your RealtyEngage password reset code is ${resetToken}. Valid for 10 mins.`);
+        // Integrate SMS Service
+        const sendSMS = require('../utils/smsService');
+        try {
+          await sendSMS({
+            to: phone,
+            message: `Your RealtyEngage password reset code is ${resetToken}. Valid for 10 mins.`
+          });
+        } catch (smsError) {
+          console.error('Failed to send OTP SMS:', smsError);
+        }
       }
+
+      const isDev = (process.env.NODE_ENV || '').trim().toLowerCase() === 'development';
+      const noSmsConfig = !process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN;
+      const noEmailConfig = !process.env.SENDGRID_API_KEY && !process.env.EMAIL_PASSWORD;
 
       res.json({
         success: true,
         message: `OTP sent to your ${email ? 'email address' : 'mobile number'}`,
-        resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
+        // Return token in dev mode OR when services aren't configured (simulation mode)
+        resetToken: (isDev || noSmsConfig || noEmailConfig) ? resetToken : undefined
       });
     } catch (error) {
       console.error('Forgot password error:', error);
