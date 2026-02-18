@@ -275,7 +275,7 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
             </AnimatePresence>
 
             {/* Main Viewer */}
-            <div className="w-full h-full flex items-center justify-center overflow-hidden">
+            <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black/40" style={{ perspective: '1200px' }}>
                 {type === '360_image' && (
                     <div
                         ref={imageRef}
@@ -290,10 +290,11 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                         <img
                             src={currentMedia.url}
                             alt={currentMedia.title}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain md:object-cover sm:object-cover"
                             style={{
                                 transform: `rotateY(${viewAngle.yaw}deg) rotateX(${viewAngle.pitch}deg)`,
-                                transformStyle: 'preserve-3d'
+                                transformStyle: 'preserve-3d',
+                                backfaceVisibility: 'hidden'
                             }}
                             draggable={false}
                         />
@@ -304,12 +305,13 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                     <video
                         ref={videoRef}
                         src={currentMedia.url}
-                        className="w-full h-full object-cover cursor-grab active:cursor-grabbing"
+                        className="w-full h-full object-contain md:object-cover sm:object-cover cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onTouchStart={handleTouchStart}
                         style={{
                             transform: `scale(${zoom / 100}) rotateY(${viewAngle.yaw}deg) rotateX(${viewAngle.pitch}deg)`,
                             transformStyle: 'preserve-3d',
+                            backfaceVisibility: 'hidden',
                             transition: isDragging ? 'none' : 'transform 0.3s ease'
                         }}
                         loop

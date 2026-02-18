@@ -193,18 +193,27 @@ const ProjectsPage = ({ isAdmin = false }) => {
       {/* Hero Section */}
       {/* Hero Section */}
       {isAdmin ? (
-        <div className="w-full px-4 md:px-6 py-8">
-          <div className="mb-0">
-            <h1 className="text-3xl font-black text-primary">
-              Property Management
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1 font-bold">
-              Manage your property listings and details
-            </p>
+        <div className="w-full px-4 md:px-6 py-4 md:py-8 bg-white dark:bg-gray-800 border-b">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-black text-primary">
+                Property Management
+              </h1>
+              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mt-1 font-bold">
+                Manage your property listings and details
+              </p>
+            </div>
+            <Button
+              onClick={() => navigate('/admin/projects/new')}
+              className="bg-green-600 hover:bg-green-700 w-full md:w-auto"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add New Project
+            </Button>
           </div>
         </div>
       ) : (
-        <div className="hero-gradient text-white py-16 w-full flex flex-col items-center">
+        <div className="hero-gradient text-white py-12 md:py-16 w-full flex flex-col items-center">
           <div className="max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 text-center">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
@@ -217,23 +226,22 @@ const ProjectsPage = ({ isAdmin = false }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-lg md:text-xl font-bold mb-8 text-white/90"
+              className="text-base md:text-xl font-bold mb-8 text-white/90"
             >
               {filteredProjects.length} Premium Properties Available
             </motion.p>
 
-            {/* Search Bar */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               className="max-w-2xl mx-auto relative group"
             >
-              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors h-6 w-6 z-10" />
+              <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors h-5 w-5 md:h-6 md:w-6 z-10" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search location, project, or type..."
-                className="w-full pl-14 pr-6 h-16 bg-white/10 backdrop-blur-xl border-white/20 text-white placeholder:text-white/60 rounded-full text-lg focus:bg-white focus:text-gray-900 focus:ring-4 focus:ring-blue-500/20 transition-all shadow-2xl"
+                placeholder="Search location, project..."
+                className="w-full pl-12 md:pl-14 pr-6 h-12 md:h-16 bg-white/10 backdrop-blur-xl border-white/20 text-white placeholder:text-white/60 rounded-full text-base md:text-lg focus:bg-white focus:text-gray-900 focus:ring-2 md:focus:ring-4 focus:ring-blue-500/20 transition-all shadow-xl md:shadow-2xl"
               />
             </motion.div>
           </div>
@@ -242,14 +250,15 @@ const ProjectsPage = ({ isAdmin = false }) => {
       <div className="sticky top-0 z-40 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 w-full">
         <div className={isAdmin ? "w-full px-4 md:px-6 py-3" : "max-w-[1440px] mx-auto px-6 md:px-10 lg:px-12 py-3"}>
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center space-x-3">
-              {isAdmin && (
+            <div className="flex items-center space-x-2 md:space-x-3 overflow-x-auto pb-1 md:pb-0 scrollbar-hide">
+              {isAdmin && !isAdmin && ( // Only if we wanted a separate add button here, but we moved it up
                 <Button
                   onClick={() => navigate('/admin/projects/new')}
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-green-600 hover:bg-green-700 whitespace-nowrap"
+                  size="sm"
                 >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Project
+                  <Plus className="h-4 w-4 mr-1 md:mr-2" />
+                  Add
                 </Button>
               )}
               <Button
@@ -269,26 +278,26 @@ const ProjectsPage = ({ isAdmin = false }) => {
 
               <div className="flex items-center space-x-1 border rounded-lg p-1">
                 <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  variant={viewMode === 'grid' ? 'default' : 'secondary'}
                   size="sm"
                   onClick={() => setViewMode('grid')}
-                  className="px-3"
+                  className="px-2 md:px-3 h-8"
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  variant={viewMode === 'list' ? 'default' : 'secondary'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="px-3"
+                  className="px-2 md:px-3 h-8"
                 >
                   <List className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
-            <div className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-              <span>Showing {currentProjects.length} of {filteredProjects.length} properties</span>
+            <div className="hidden sm:flex items-center space-x-2 text-xs md:text-sm text-gray-600 dark:text-gray-400">
+              <span>{filteredProjects.length} Properties Found</span>
             </div>
           </div>
         </div>
@@ -300,25 +309,35 @@ const ProjectsPage = ({ isAdmin = false }) => {
           <AnimatePresence>
             {showFilters && (
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -300 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="w-80 flex-shrink-0"
+                exit={{ opacity: 0, x: -300 }}
+                className="fixed inset-0 lg:relative lg:inset-auto z-[100] lg:z-0 bg-transparent lg:w-80 flex-shrink-0"
               >
-                <Card className="p-6 sticky top-24">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Filters</h3>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setFilters({
-                        priceRange: { min: 0, max: 1000 },
-                        propertyType: [],
-                        status: []
-                      })}
-                    >
-                      Clear All
-                    </Button>
+                <div
+                  className="fixed inset-0 bg-black/50 lg:hidden"
+                  onClick={() => setShowFilters(false)}
+                />
+                <Card className="p-6 h-full lg:h-auto lg:sticky lg:top-24 w-[280px] lg:w-full relative z-[101] rounded-none lg:rounded-xl">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-xl font-bold">Filters</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-8"
+                        onClick={() => setFilters({
+                          priceRange: { min: 0, max: 1000 },
+                          propertyType: [],
+                          status: []
+                        })}
+                      >
+                        Reset
+                      </Button>
+                      <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8" onClick={() => setShowFilters(false)}>
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Price Range */}
@@ -394,6 +413,13 @@ const ProjectsPage = ({ isAdmin = false }) => {
                       ))}
                     </div>
                   </div>
+                  {/* Apply Button for mobile */}
+                  <Button
+                    className="w-full mt-4 lg:hidden bg-primary font-bold"
+                    onClick={() => setShowFilters(false)}
+                  >
+                    Apply Filters
+                  </Button>
                 </Card>
               </motion.div>
             )}
@@ -516,9 +542,9 @@ const ProjectsPage = ({ isAdmin = false }) => {
                             <span className="text-sm text-gray-500">{project.developer?.name || project.builder || 'Developer'}</span>
                           </div>
 
-                          <div className="flex space-x-2">
+                          <div className="flex flex-col sm:flex-row gap-2">
                             <Button
-                              className="flex-1"
+                              className="flex-1 h-10 md:h-9 text-sm font-bold"
                               onClick={() => {
                                 const projectId = project._id || project.id;
                                 console.log('Navigating to project:', projectId, 'isAdmin:', isAdmin);
@@ -529,17 +555,17 @@ const ProjectsPage = ({ isAdmin = false }) => {
                                 }
                               }}
                             >
-                              <Eye className="h-4 w-4 mr-1" />
-                              View Details
+                              <Eye className="h-4 w-4 mr-2" />
+                              Details
                             </Button>
                             {(!isAdmin && user?.role !== 'admin') && (
                               <Button
                                 variant="outline"
-                                className="flex-1"
+                                className="flex-1 h-10 md:h-9 text-sm font-bold border-primary text-primary hover:bg-primary/5"
                                 onClick={() => handleEnquiry(project._id || project.id)}
                               >
                                 <MessageCircle className="h-4 w-4 mr-2" />
-                                Enquire Now
+                                Enquire
                               </Button>
                             )}
                           </div>

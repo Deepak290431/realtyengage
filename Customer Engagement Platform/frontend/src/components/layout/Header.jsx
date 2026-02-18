@@ -570,38 +570,6 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                           <LayoutDashboard className="h-4 w-4 text-blue-600" />
                           <span className="text-xs md:text-sm">Dashboard</span>
                         </Link>
-                        <Link
-                          to="/dashboard/enquiries"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                        >
-                          <FileQuestion className="h-4 w-4 text-indigo-600" />
-                          <span className="text-xs md:text-sm">My Enquiries</span>
-                        </Link>
-                        <Link
-                          to="/dashboard/payments"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                        >
-                          <CreditCard className="h-4 w-4 text-pink-600" />
-                          <span className="text-xs md:text-sm">My Payments</span>
-                        </Link>
-                        <Link
-                          to="/dashboard/emi"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                        >
-                          <Calculator className="h-4 w-4 text-amber-600" />
-                          <span className="text-xs md:text-sm">EMI Calculator</span>
-                        </Link>
-                        <Link
-                          to="/dashboard/support"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center space-x-2.5 px-3 py-2 rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700 font-semibold transition-all"
-                        >
-                          <MessageSquare className="h-4 w-4 text-teal-600" />
-                          <span className="text-xs md:text-sm">Support</span>
-                        </Link>
                       </div>
                     )}
 

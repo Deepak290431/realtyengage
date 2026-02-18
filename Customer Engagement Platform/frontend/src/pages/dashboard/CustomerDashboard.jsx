@@ -141,29 +141,29 @@ const CustomerDashboard = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex justify-between items-center"
+            className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
           >
             <div>
-              <h1 className="text-3xl font-bold mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">
                 Welcome back, {user?.firstName || 'Customer'}!
               </h1>
-              <p className="text-white/90">
+              <p className="text-white/90 text-sm md:text-base">
                 Here's your property investment overview
               </p>
             </div>
-            <div className="flex space-x-3 items-center">
-              <Button variant="secondary" onClick={() => navigate('/')}>
+            <div className="flex flex-wrap gap-2 items-center w-full md:w-auto">
+              <Button variant="secondary" onClick={() => navigate('/')} className="flex-1 md:flex-none text-xs md:text-sm h-9">
                 <Home className="h-4 w-4 mr-2" />
-                Go to Home
+                Home
               </Button>
-              <div className="relative">
+              <div className="relative flex-1 md:flex-none">
                 <Button
                   variant="secondary"
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className={showNotifications ? 'bg-white/20' : ''}
+                  className={`w-full text-xs md:text-sm h-9 ${showNotifications ? 'bg-white/20' : ''}`}
                 >
                   <Bell className="h-4 w-4 mr-2" />
-                  Notifications
+                  Alerts
                 </Button>
 
                 {showNotifications && (
@@ -258,15 +258,15 @@ const CustomerDashboard = () => {
                     const project = enquiry.projectId;
                     if (!project) return null;
                     return (
-                      <div key={enquiry._id} className="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div key={enquiry._id} className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <img
                           src={project.images && project.images.length > 0 ? (project.images[0].url || project.images[0]) : "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400"}
                           alt={project.name}
-                          className="w-24 h-24 rounded-lg object-cover"
+                          className="w-full sm:w-24 h-48 sm:h-24 rounded-lg object-cover shadow-sm"
                         />
-                        <div className="flex-1">
+                        <div className="flex-1 w-full">
                           <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-semibold text-lg">{project.name}</h3>
+                            <h3 className="font-bold text-base md:text-lg">{project.name}</h3>
                             <Badge className={
                               enquiry.status === 'closed'
                                 ? 'bg-green-50 text-green-600'
@@ -275,42 +275,57 @@ const CustomerDashboard = () => {
                               {enquiry.status === 'closed' ? 'Booked' : 'Processing'}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-500">Location:</span> {project.area || project.location?.address}
+                          <div className="grid grid-cols-1 xs:grid-cols-2 gap-2 text-[13px] md:text-sm">
+                            <div className="flex items-center text-gray-600 dark:text-gray-400">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              <span className="truncate">{project.area || project.location?.address}</span>
                             </div>
-                            <div>
-                              <span className="text-gray-500">Status:</span> <span className="capitalize">{project.status?.replace('_', ' ')}</span>
+                            <div className="flex items-center text-gray-600 dark:text-gray-400">
+                              <Clock className="h-3 w-3 mr-1" />
+                              <span className="capitalize">{project.status?.replace('_', ' ')}</span>
                             </div>
-                            <div>
-                              <span className="text-gray-500">Price:</span> ₹{(project.pricing?.basePrice / 100000).toFixed(1)}L
+                            <div className="flex items-center font-bold text-gray-900 dark:text-white">
+                              <IndianRupee className="h-3 w-3 mr-1" />
+                              ₹{(project.pricing?.basePrice / 100000).toFixed(1)}L
                             </div>
-                            <div>
-                              <span className="text-gray-500">Next Payment:</span> <span className="text-sm font-bold text-blue-600 ml-1">
+                            <div className="flex items-center">
+                              <Calendar className="h-3 w-3 mr-1 text-blue-600" />
+                              <span className="text-blue-600 font-bold">
                                 {enquiry.isOk
                                   ? (enquiry.installments?.find(i => i.status === 'pending')?.dueDate
                                     ? formatDate(enquiry.installments.find(i => i.status === 'pending').dueDate)
                                     : 'Due soon')
-                                  : 'Awaiting admin OK'
+                                  : 'Awaiting OK'
                                 }
                               </span>
                             </div>
                           </div>
-                          <div className="mt-3">
-                            <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="mt-4">
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 md:h-2">
                               <div
-                                className="bg-gradient-to-r from-blue-700 to-blue-900 h-2 rounded-full"
+                                className="bg-gradient-to-r from-blue-700 to-blue-900 h-1.5 md:h-2 rounded-full"
                                 style={{ width: project.status === 'completed' ? '100%' : '65%' }}
                               />
                             </div>
                           </div>
+
+                          <div className="flex flex-row gap-2 mt-4 sm:hidden">
+                            <Button className="flex-1 h-9 text-xs" onClick={() => navigate(`/projects/${project._id}`)}>
+                              <Eye className="h-4 w-4 mr-1" />
+                              Details
+                            </Button>
+                            <Button className="flex-1 h-9 text-xs bg-green-600 hover:bg-green-700 text-white" onClick={() => navigate('/dashboard/payments')}>
+                              <CreditCard className="h-4 w-4 mr-1" />
+                              Pay Now
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex flex-col gap-2">
-                          <Button size="sm" onClick={() => navigate(`/projects/${project._id}`)}>
+                        <div className="hidden sm:flex flex-col gap-2 min-w-[120px]">
+                          <Button size="sm" variant="outline" className="w-full" onClick={() => navigate(`/projects/${project._id}`)}>
                             <Eye className="h-4 w-4 mr-1" />
-                            View Details
+                            Details
                           </Button>
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => navigate('/dashboard/payments')}>
+                          <Button size="sm" className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => navigate('/dashboard/payments')}>
                             <CreditCard className="h-4 w-4 mr-1" />
                             Pay Now
                           </Button>
@@ -354,12 +369,12 @@ const CustomerDashboard = () => {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between md:justify-end gap-6">
-                        <div className="text-right">
-                          <p className="font-bold">{formatCurrency(tx.amountPaid)}</p>
+                      <div className="flex items-center justify-between md:justify-end gap-4 md:gap-8 bg-blue-50/50 dark:bg-blue-900/10 p-4 md:p-0 rounded-2xl md:bg-transparent md:dark:bg-transparent -mx-2 md:mx-0">
+                        <div className="text-left md:text-right">
+                          <p className="text-xl md:text-lg font-black text-blue-900 dark:text-blue-300">{formatCurrency(tx.amountPaid)}</p>
                           <p className="text-[10px] uppercase font-bold text-gray-400">{tx.paymentMethod}</p>
                         </div>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="h-10 w-10 md:h-8 md:w-8 bg-white md:bg-transparent shadow-sm md:shadow-none rounded-xl">
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>

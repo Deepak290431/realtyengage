@@ -287,7 +287,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                 </button>
 
                 {/* Action Buttons */}
-                <div className="absolute top-4 right-4 flex items-center space-x-3">
+                <div className="absolute top-4 right-4 flex items-center space-x-2 md:space-x-3">
                     {((virtualTourData?.images360?.length > 0) || virtualTourData?.video360?.url) && (
                         <motion.button
                             initial={{ scale: 0.8, opacity: 0 }}
@@ -295,26 +295,27 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => setShowVirtualTour(true)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-2xl transition-all font-bold text-sm ${virtualTourData?.enabled
+                            className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-full shadow-2xl transition-all font-bold text-[10px] md:text-sm ${virtualTourData?.enabled
                                 ? 'bg-primary text-white hover:bg-primary/90'
                                 : 'bg-blue-600/80 text-white hover:bg-blue-600'
                                 }`}
                         >
-                            <Video className="h-4 w-4" />
-                            <span>VIRTUAL TOUR</span>
+                            <Video className="h-3 w-3 md:h-4 md:w-4" />
+                            <span className="hidden sm:inline">VIRTUAL TOUR</span>
+                            <span className="sm:hidden">TOUR</span>
                         </motion.button>
                     )}
                     <button
                         onClick={handleSave}
-                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors border border-white/20"
+                        className="p-1.5 md:p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors border border-white/20"
                     >
-                        <Heart className={`h-6 w-6 ${isSaved ? 'fill-red-500 text-red-500' : 'text-white'}`} />
+                        <Heart className={`h-5 w-5 md:h-6 md:w-6 ${isSaved ? 'fill-red-500 text-red-500' : 'text-white'}`} />
                     </button>
                     <button
                         onClick={handleShare}
-                        className="p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors border border-white/20"
+                        className="p-1.5 md:p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors border border-white/20"
                     >
-                        <Share2 className="h-6 w-6 text-white" />
+                        <Share2 className="h-5 w-5 md:h-6 md:w-6 text-white" />
                     </button>
                 </div>
 
@@ -322,38 +323,40 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                 <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white text-shadow-lg bg-gradient-to-t from-black/90 via-black/40 to-transparent">
                     <div className={isAdmin ? "w-full" : "max-w-[1440px] mx-auto"}>
                         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                            <div className="flex-1 space-y-3">
+                            <div className="flex-1 space-y-2 md:space-y-3">
                                 <Badge className="bg-primary text-white uppercase tracking-wider px-3 py-1 text-[10px] md:text-xs">
                                     <Clock className="h-3 w-3 mr-1" />
                                     {project.status?.replace('_', ' ')}
                                 </Badge>
-                                <h1 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">{project.name}</h1>
-                                <div className="flex flex-wrap items-center gap-4 text-sm md:text-lg text-white/90">
+                                <h1 className="text-2xl md:text-5xl font-black tracking-tight leading-loose md:leading-tight">{project.name}</h1>
+                                <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-lg text-white/90">
                                     <span className="flex items-center break-words">
-                                        <MapPin className="h-4 w-4 md:h-5 md:w-5 mr-1.5 text-primary flex-shrink-0" />
+                                        <MapPin className="h-3.5 w-3.5 md:h-5 md:w-5 mr-1.5 text-primary flex-shrink-0" />
                                         <span className="truncate sm:whitespace-normal">{project.location?.address || project.location}</span>
                                     </span>
                                     <span className="flex items-center">
-                                        <Star className="h-4 w-4 md:h-5 md:w-5 mr-1.5 fill-primary text-primary flex-shrink-0" />
-                                        {project.rating || '4.5'} ({project.reviews || 0} reviews)
+                                        <Star className="h-3.5 w-3.5 md:h-5 md:w-5 mr-1.5 fill-primary text-primary flex-shrink-0" />
+                                        {project.rating || '4.5'} ({project.reviews || 0})
                                     </span>
                                 </div>
                             </div>
 
                             {/* Admin Actions */}
                             {isAdmin && (
-                                <div className="flex flex-wrap gap-2 pt-2 md:pt-0">
+                                <div className="flex flex-row md:flex-col lg:flex-row gap-2 w-full md:w-auto pt-2 md:pt-0">
                                     <Button
                                         variant="secondary"
-                                        className="bg-white/95 hover:bg-white text-gray-900 border-none shadow-xl"
+                                        size="sm"
+                                        className="flex-1 md:flex-none bg-white/95 hover:bg-white text-gray-900 border-none shadow-xl"
                                         onClick={() => navigate(`/admin/projects/edit/${project._id}`)}
                                     >
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        Edit Project
+                                        <Edit className="h-4 w-4 mr-1.5" />
+                                        Edit
                                     </Button>
                                     <Button
                                         variant="destructive"
-                                        className="shadow-xl"
+                                        size="sm"
+                                        className="flex-1 md:flex-none shadow-xl"
                                         onClick={async () => {
                                             if (window.confirm('Are you sure you want to delete this project?')) {
                                                 try {
@@ -367,7 +370,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                             }
                                         }}
                                     >
-                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        <Trash2 className="h-4 w-4 mr-1.5" />
                                         Delete
                                     </Button>
                                 </div>
@@ -441,14 +444,14 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {(project.configurations && project.configurations.length > 0) ? (
                                     project.configurations.map((config, index) => (
-                                        <div key={index} className="p-4 border rounded-lg hover:border-primary transition-colors relative group">
+                                        <div key={index} className="p-4 border rounded-lg hover:border-primary transition-colors relative group bg-white dark:bg-gray-800">
                                             {isAdmin && (
-                                                <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="absolute top-2 right-2 flex space-x-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => toast.success('Edit configuration')}
-                                                        className="p-1 bg-blue-100 hover:bg-blue-200 rounded"
+                                                        className="p-1.5 bg-blue-100 hover:bg-blue-200 rounded text-blue-600 shadow-sm"
                                                     >
-                                                        <Edit className="h-3 w-3 text-blue-600" />
+                                                        <Edit className="h-3.5 w-3.5" />
                                                     </button>
                                                     <button
                                                         onClick={() => {
@@ -456,9 +459,9 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                                                 toast.success('Configuration deleted');
                                                             }
                                                         }}
-                                                        className="p-1 bg-red-100 hover:bg-red-200 rounded"
+                                                        className="p-1.5 bg-red-100 hover:bg-red-200 rounded text-red-600 shadow-sm"
                                                     >
-                                                        <Trash2 className="h-3 w-3 text-red-600" />
+                                                        <Trash2 className="h-3.5 w-3.5" />
                                                     </button>
                                                 </div>
                                             )}
@@ -542,23 +545,23 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                         {/* Specifications */}
                         <Card className="p-6">
                             <h2 className="text-2xl font-semibold mb-6">Technical Specifications</h2>
-                            <div className="grid md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 {(project.specifications && project.specifications.length > 0) ? (
                                     project.specifications.map((spec, index) => (
-                                        <div key={index} className="flex flex-col md:flex-row md:items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-white hover:shadow-sm border border-gray-100/50 dark:border-gray-700/50 transition-all gap-1 md:gap-4">
-                                            <span className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-bold uppercase tracking-wider">
+                                        <div key={index} className="flex flex-row items-center justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl group hover:bg-white hover:shadow-sm border border-gray-100/50 dark:border-gray-700/50 transition-all gap-4">
+                                            <span className="text-gray-500 dark:text-gray-400 text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap">
                                                 {spec.label || spec.type}
                                             </span>
-                                            <span className="font-black text-gray-900 dark:text-white text-sm md:text-base break-words">
+                                            <span className="font-black text-gray-900 dark:text-white text-xs md:text-sm text-right break-words">
                                                 {spec.value}
                                             </span>
                                         </div>
                                     ))
                                 ) : (
-                                    ['Structure', 'Flooring', 'Doors', 'Electrical', 'Plumbing', 'Painting'].map((item) => (
-                                        <div key={item} className="flex justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-                                            <span className="text-gray-600 dark:text-gray-400 font-medium">{item}</span>
-                                            <span className="font-bold">RCC Framed Structure</span>
+                                    ['Structure', 'Flooring', 'Doors', 'Electrical'].map((item) => (
+                                        <div key={item} className="flex justify-between p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                                            <span className="text-gray-600 dark:text-gray-400 text-xs font-medium">{item}</span>
+                                            <span className="font-bold text-xs uppercase tracking-tight">RCC Framed</span>
                                         </div>
                                     ))
                                 )}
@@ -578,13 +581,15 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
 
                         {/* Location & Map Section */}
                         <Card className="p-6">
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                 <div className="flex items-center space-x-2">
-                                    <Map className="h-6 w-6 text-primary" />
-                                    <h2 className="text-2xl font-semibold">Location & Connectivity</h2>
+                                    <Map className="h-5 w-5 md:h-6 md:w-6 text-primary" />
+                                    <h2 className="text-xl md:text-2xl font-semibold">Location & Connectivity</h2>
                                 </div>
                                 <Button
                                     variant="outline"
+                                    size="sm"
+                                    className="w-full sm:w-auto"
                                     onClick={() => {
                                         const destination = encodeURIComponent(project.location?.address || project.location || '');
                                         window.open(`https://www.google.com/maps/dir/?api=1&destination=${destination}`, '_blank');

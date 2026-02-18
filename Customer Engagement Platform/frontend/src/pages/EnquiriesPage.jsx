@@ -319,52 +319,54 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                             <div className="flex-1 p-6">
                                                 <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                                                     <div>
-                                                        <div className="flex items-center gap-3 mb-1">
-                                                            <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1.5">
+                                                            <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-gray-100 flex-1 min-w-0 truncate">
                                                                 {enquiry.projectId?.name || 'Project Enquiry'}
                                                             </h3>
-                                                            <Badge className={`${getStatusColor(enquiry.status)} border px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider`}>
-                                                                {enquiry.status?.replace('_', ' ')}
-                                                            </Badge>
-                                                            <Badge variant="outline" className={`${getPriorityColor(enquiry.priority)} px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm`}>
-                                                                {enquiry.priority}
-                                                            </Badge>
-                                                            {enquiry.isOk && (
-                                                                <Badge className="bg-green-100 text-green-700 border-green-200 px-2 py-0.5 rounded-full text-xs font-semibold flex items-center gap-1">
-                                                                    <CheckCircle className="h-3 w-3" /> OK TAG
+                                                            <div className="flex flex-wrap gap-1.5 items-center">
+                                                                <Badge className={`${getStatusColor(enquiry.status)} border px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap`}>
+                                                                    {enquiry.status?.replace('_', ' ')}
                                                                 </Badge>
-                                                            )}
+                                                                <Badge variant="outline" className={`${getPriorityColor(enquiry.priority)} px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm`}>
+                                                                    {enquiry.priority}
+                                                                </Badge>
+                                                                {enquiry.isOk && (
+                                                                    <Badge className="bg-green-100 text-green-700 border-green-200 px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1">
+                                                                        <CheckCircle className="h-3 w-3" /> OK TAG
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                                                        <div className="flex items-center gap-3 text-[10px] md:text-sm text-gray-500 dark:text-gray-400">
                                                             <span className="flex items-center gap-1">
-                                                                <Calendar className="h-4 w-4" />
+                                                                <Calendar className="h-3.5 w-3.5" />
                                                                 {new Date(enquiry.createdAt).toLocaleDateString()}
                                                             </span>
                                                             <span className="flex items-center gap-1">
-                                                                <Tag className="h-4 w-4" />
-                                                                {enquiry.enquiryType}
+                                                                <Tag className="h-3.5 w-3.5" />
+                                                                <span className="capitalize">{enquiry.enquiryType}</span>
                                                             </span>
                                                         </div>
                                                     </div>
                                                     {isAdmin ? (
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
                                                             <select
                                                                 onChange={(e) => handleUpdateStatus(enquiry._id, e.target.value)}
                                                                 value={enquiry.status}
                                                                 disabled={enquiry.status === 'rejected' || enquiry.isOk}
-                                                                className={`text-xs border rounded px-2 py-1 bg-white dark:bg-gray-700 ${enquiry.status === 'rejected' || enquiry.isOk ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                                className={`text-[10px] md:text-xs border rounded px-2 py-1.5 h-8 bg-white dark:bg-gray-700 flex-1 sm:flex-none ${enquiry.status === 'rejected' || enquiry.isOk ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                             >
-                                                                <option value="new">Set New</option>
-                                                                <option value="in_progress">Set In Progress</option>
-                                                                <option value="follow_up">Set Follow Up</option>
-                                                                <option value="converted">Set Converted</option>
-                                                                <option value="closed">Set Closed</option>
+                                                                <option value="new">New</option>
+                                                                <option value="in_progress">Progress</option>
+                                                                <option value="follow_up">Follow Up</option>
+                                                                <option value="converted">Converted</option>
+                                                                <option value="closed">Closed</option>
                                                                 <option value="rejected">Rejected</option>
                                                             </select>
                                                             <Button
                                                                 size="sm"
                                                                 variant={enquiry.isOk ? "default" : "outline"}
-                                                                className={enquiry.isOk ? "bg-green-600 hover:bg-green-700 h-8" : "h-8"}
+                                                                className={`h-8 px-2 md:px-3 text-[10px] font-bold ${enquiry.isOk ? "bg-green-600 hover:bg-green-700" : ""}`}
                                                                 onClick={() => handleToggleOk(enquiry._id, enquiry.isOk)}
                                                                 disabled={enquiry.status === 'rejected' || enquiry.isOk}
                                                             >
@@ -373,7 +375,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                             <Button
                                                                 size="sm"
                                                                 variant="destructive"
-                                                                className={`h-8 text-white ${enquiry.status === 'rejected' || enquiry.isOk ? 'opacity-50' : 'bg-red-600 hover:bg-red-700'}`}
+                                                                className={`h-8 px-2 md:px-3 text-[10px] font-bold ${enquiry.status === 'rejected' || enquiry.isOk ? 'opacity-50' : 'bg-red-600 hover:bg-red-700'}`}
                                                                 onClick={() => handleUpdateStatus(enquiry._id, 'rejected')}
                                                                 disabled={enquiry.status === 'rejected' || enquiry.isOk}
                                                             >
@@ -382,6 +384,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
+                                                                className="h-8 w-8"
                                                                 onClick={() => {
                                                                     setSelectedEnquiry(enquiry);
                                                                     setShowNoteModal(true);
@@ -527,22 +530,22 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                             exit={{ scale: 0.9, opacity: 0, y: 20 }}
                             className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl my-8"
                         >
-                            <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
+                            <div className="flex justify-between items-center p-4 md:p-6 border-b border-gray-100 dark:border-gray-700">
                                 <div>
-                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Post an Enquiry</h3>
-                                    <p className="text-sm text-gray-500">Ask about projects or schedule site visits</p>
+                                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">Post an Enquiry</h3>
+                                    <p className="text-xs md:text-sm text-gray-500">Ask about projects or schedule site visits</p>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => setShowAddModal(false)}>
-                                    <X className="h-6 w-6" />
+                                <Button variant="ghost" size="icon" onClick={() => setShowAddModal(false)} className="h-8 w-8">
+                                    <X className="h-5 w-5" />
                                 </Button>
                             </div>
 
-                            <form onSubmit={handleCreateEnquiry} className="p-6 space-y-6">
-                                <div className="grid md:grid-cols-2 gap-6">
+                            <form onSubmit={handleCreateEnquiry} className="p-4 md:p-6 space-y-4 md:space-y-6">
+                                <div className="grid md:grid-cols-2 gap-4 md:grid-cols-2 md:gap-6">
                                     <div>
-                                        <label className="block text-sm font-semibold mb-2">Select Project *</label>
+                                        <label className="block text-xs md:text-sm font-semibold mb-1 md:mb-2">Select Project *</label>
                                         <select
-                                            className="w-full h-11 px-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full h-9 md:h-11 px-3 md:px-4 text-xs md:text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                                             value={newEnquiry.projectId}
                                             onChange={(e) => setNewEnquiry({ ...newEnquiry, projectId: e.target.value })}
                                             required
@@ -554,9 +557,9 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold mb-2">Enquiry Type</label>
+                                        <label className="block text-xs md:text-sm font-semibold mb-1 md:mb-2">Enquiry Type</label>
                                         <select
-                                            className="w-full h-11 px-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full h-9 md:h-11 px-3 md:px-4 text-xs md:text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                                             value={newEnquiry.enquiryType}
                                             onChange={(e) => setNewEnquiry({ ...newEnquiry, enquiryType: e.target.value })}
                                         >
@@ -568,11 +571,11 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="grid md:grid-cols-3 gap-6">
+                                <div className="grid md:grid-cols-3 gap-4 md:gap-6">
                                     <div>
-                                        <label className="block text-sm font-semibold mb-2">Priority</label>
+                                        <label className="block text-xs md:text-sm font-semibold mb-1 md:mb-2">Priority</label>
                                         <select
-                                            className="w-full h-11 px-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full h-9 md:h-11 px-3 md:px-4 text-xs md:text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                                             value={newEnquiry.priority}
                                             onChange={(e) => setNewEnquiry({ ...newEnquiry, priority: e.target.value })}
                                         >
@@ -582,9 +585,9 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold mb-2">Contact Method</label>
+                                        <label className="block text-xs md:text-sm font-semibold mb-1 md:mb-2">Contact Method</label>
                                         <select
-                                            className="w-full h-11 px-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full h-9 md:h-11 px-3 md:px-4 text-xs md:text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                                             value={newEnquiry.preferredContactMethod}
                                             onChange={(e) => setNewEnquiry({ ...newEnquiry, preferredContactMethod: e.target.value })}
                                         >
@@ -594,9 +597,9 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold mb-2">Best Time</label>
+                                        <label className="block text-xs md:text-sm font-semibold mb-1 md:mb-2">Best Time</label>
                                         <select
-                                            className="w-full h-11 px-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
+                                            className="w-full h-9 md:h-11 px-3 md:px-4 text-xs md:text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
                                             value={newEnquiry.preferredContactTime}
                                             onChange={(e) => setNewEnquiry({ ...newEnquiry, preferredContactTime: e.target.value })}
                                         >
@@ -609,9 +612,9 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold mb-2">Detailed Requirements *</label>
+                                    <label className="block text-xs md:text-sm font-semibold mb-1 md:mb-2">Detailed Requirements *</label>
                                     <textarea
-                                        className="w-full h-32 p-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                                        className="w-full h-24 md:h-32 p-3 md:p-4 text-xs md:text-sm rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                                         placeholder="Tell us what you are looking for..."
                                         value={newEnquiry.details}
                                         onChange={(e) => setNewEnquiry({ ...newEnquiry, details: e.target.value })}
@@ -620,12 +623,12 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                 </div>
 
                                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                    <Button variant="outline" type="button" onClick={() => setShowAddModal(false)}>
+                                    <Button variant="outline" type="button" onClick={() => setShowAddModal(false)} className="h-9 md:h-10 text-xs md:text-sm">
                                         Cancel
                                     </Button>
-                                    <Button type="submit" className="px-8">
-                                        <Send className="h-4 w-4 mr-2" />
-                                        Submit Enquiry
+                                    <Button type="submit" className="px-6 md:px-8 h-9 md:h-10 text-xs md:text-sm">
+                                        <Send className="h-3 w-3 md:h-4 md:w-4 mr-2" />
+                                        Submit
                                     </Button>
                                 </div>
                             </form>

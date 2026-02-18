@@ -95,80 +95,100 @@ const CustomersPage = () => {
 
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
-            case 'new': return 'bg-blue-100 text-blue-700 border-blue-200';
+            case 'new': return 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20';
             case 'in_progress':
-            case 'contacted': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-            case 'interested': return 'bg-green-100 text-green-700 border-green-200';
-            case 'converted': return 'bg-blue-100 text-primary border-blue-200';
+            case 'contacted': return 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20';
+            case 'interested':
+            case 'follow_up': return 'bg-indigo-50 text-indigo-700 border-indigo-100 dark:bg-indigo-900/20';
+            case 'converted': return 'bg-green-50 text-green-700 border-green-100 dark:bg-green-900/20';
             case 'closed':
-            case 'lost': return 'bg-red-100 text-red-700 border-red-200';
-            default: return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'lost': return 'bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20';
+            default: return 'bg-gray-50 text-gray-700 border-gray-100 dark:bg-gray-800';
         }
     };
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-12 relative text-left">
             {/* Header */}
-            <div className="w-full px-4">
-                <div className="flex justify-between items-center mb-8">
+            <div className="w-full px-4 md:px-6 py-8">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-primary flex items-center gap-3">
-                            <Users className="h-8 w-8 text-primary" />
+                        <h1 className="text-2xl md:text-3xl font-bold text-[#0B1F33] dark:text-white flex items-center gap-3">
+                            <Users className="h-7 w-7 md:h-8 md:w-8 text-[#0B1F33] dark:text-blue-400" />
                             Customers & Leads
                         </h1>
-                        <p className="text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mt-1">
                             Manage your leads, track status, and convert enquiries.
                         </p>
                     </div>
-                    <Button onClick={fetchCustomers} variant="outline" className="shadow-sm">
+                    <Button
+                        onClick={fetchCustomers}
+                        variant="outline"
+                        className="w-full md:w-auto shadow-sm border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 h-10 md:h-11"
+                    >
+                        <Clock className="h-4 w-4" />
                         Refresh List
                     </Button>
                 </div>
 
                 {/* Filters */}
-                <Card className="p-6 mb-8 border-none shadow-xl bg-white/90 backdrop-blur-md dark:bg-gray-800/90">
-                    <div className="flex flex-col md:flex-row gap-4">
+                <Card className="p-4 md:p-6 mb-8 border-none shadow-xl bg-white/90 backdrop-blur-md dark:bg-gray-800/90 rounded-2xl">
+                    <div className="flex flex-col md:flex-row gap-3 md:gap-4">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4 md:h-5 md:w-5" />
                             <Input
                                 placeholder="Search by name, email, or phone..."
-                                className="pl-10 h-12"
+                                className="pl-10 h-10 md:h-12 text-sm border-gray-100 focus:border-blue-400 transition-all bg-gray-50/50"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <select
-                            className="h-12 px-4 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                        >
-                            <option value="All">All Statuses</option>
-                            <option value="new">New</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="follow_up">Follow Up</option>
-                            <option value="converted">Converted</option>
-                            <option value="closed">Closed / Lost</option>
-                        </select>
+                        <div className="flex gap-2">
+                            <select
+                                className="h-10 md:h-12 px-4 rounded-md border border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 flex-1 md:min-w-[180px] text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer"
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                            >
+                                <option value="All">All Statuses</option>
+                                <option value="new">New Lead</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="follow_up">Follow Up</option>
+                                <option value="converted">Converted</option>
+                                <option value="closed">Closed / Lost</option>
+                            </select>
+                            <Button variant="outline" className="h-10 md:h-12 border-gray-100 md:hidden">
+                                <Filter className="h-4 w-4" />
+                            </Button>
+                        </div>
                     </div>
                 </Card>
 
                 {/* List View */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                    <div className="p-5 pb-0 md:hidden">
-                        <div className="text-[10px] text-gray-400 font-medium mb-1 flex items-center gap-1">
-                            <ChevronRight className="h-3 w-3 animate-pulse" /> Swipe to see more details
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                    <div className="p-4 md:p-6 border-b border-gray-50 dark:border-gray-700 flex justify-between items-center">
+                        <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <History className="h-4 w-4 text-blue-600" />
+                            Customer List
+                        </h2>
+                        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-2 py-1 rounded">
+                            {customers.length} Entries
+                        </span>
+                    </div>
+                    <div className="p-4 pb-0 md:hidden">
+                        <div className="text-[10px] text-blue-600 font-bold mb-1 flex items-center gap-1.5 bg-blue-50 px-2 py-1 rounded-full w-fit">
+                            <ChevronRight className="h-3 w-3 animate-pulse" /> Horizontal Scroll Available
                         </div>
                     </div>
                     <div className="scrollable-container">
-                        <table className="text-left border-collapse">
+                        <table className="text-left border-collapse w-full">
                             <thead>
-                                <tr className="bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
-                                    <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Customer</th>
-                                    <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Contact</th>
-                                    <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Interested Property</th>
-                                    <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Status</th>
-                                    <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Last Contacted</th>
-                                    <th className="p-5 font-semibold text-gray-600 dark:text-gray-300">Assigned To</th>
+                                <tr className="bg-gray-50/80 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700">
+                                    <th className="p-4 md:p-5 font-bold text-[10px] md:text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">Customer</th>
+                                    <th className="p-4 md:p-5 font-bold text-[10px] md:text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">Contact Details</th>
+                                    <th className="p-4 md:p-5 font-bold text-[10px] md:text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">Property</th>
+                                    <th className="p-4 md:p-5 font-bold text-[10px] md:text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 text-center">Status</th>
+                                    <th className="p-4 md:p-5 font-bold text-[10px] md:text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400">Activity</th>
+                                    <th className="p-4 md:p-5 font-bold text-[10px] md:text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -178,9 +198,9 @@ const CustomersPage = () => {
                                             <td className="p-5"><div className="h-4 w-32 bg-gray-200 rounded"></div></td>
                                             <td className="p-5"><div className="h-4 w-40 bg-gray-200 rounded"></div></td>
                                             <td className="p-5"><div className="h-4 w-24 bg-gray-200 rounded"></div></td>
-                                            <td className="p-5"><div className="h-6 w-20 bg-gray-200 rounded-full"></div></td>
+                                            <td className="p-5"><div className="h-6 w-20 bg-gray-200 rounded-full mx-auto"></div></td>
                                             <td className="p-5"><div className="h-4 w-24 bg-gray-200 rounded"></div></td>
-                                            <td className="p-5"><div className="h-4 w-24 bg-gray-200 rounded"></div></td>
+                                            <td className="p-5 text-right"><div className="h-8 w-8 bg-gray-200 rounded-full ml-auto"></div></td>
                                         </tr>
                                     ))
                                 ) : customers.length > 0 ? (
@@ -189,53 +209,77 @@ const CustomersPage = () => {
                                             key={customer._id}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
-                                            whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
+                                            whileHover={{ backgroundColor: "rgba(37, 99, 235, 0.02)" }}
                                             onClick={() => handleCustomerClick(customer)}
-                                            className="cursor-pointer border-b border-gray-50 dark:border-gray-800 last:border-none transition-colors"
+                                            className="cursor-pointer border-b border-gray-50 dark:border-gray-800 last:border-none transition-colors group"
                                         >
-                                            <td className="p-5">
+                                            <td className="p-4 md:p-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+                                                    <div className="h-10 w-10 md:h-11 md:w-11 rounded-xl bg-blue-50 text-[#0B1F33] border border-blue-100 flex items-center justify-center font-black shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
                                                         {customer.fullName?.charAt(0)}
                                                     </div>
-                                                    <span className="font-medium text-gray-900 dark:text-white">
-                                                        {customer.fullName}
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-sm md:text-base text-gray-900 dark:text-white truncate">
+                                                            {customer.fullName}
+                                                        </p>
+                                                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                                            ID: {customer._id.slice(-6).toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 md:p-5">
+                                                <div className="flex flex-col gap-1 text-[11px] md:text-xs text-gray-500 font-medium">
+                                                    <div className="flex items-center gap-2 truncate max-w-[180px]">
+                                                        <Mail className="w-3.5 h-3.5 text-blue-400 shrink-0" /> {customer.email}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Phone className="w-3.5 h-3.5 text-blue-400 shrink-0" /> {customer.phone}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 md:p-5">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="flex items-center gap-1.5 text-xs md:text-sm font-bold text-gray-800 dark:text-gray-200">
+                                                        <Building className="w-3.5 h-3.5 text-blue-600" />
+                                                        {customer.interestedProperty}
                                                     </span>
+                                                    <span className="text-[10px] text-gray-400 font-medium line-clamp-1">Last contacted by {customer.assignedAdmin}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-5">
-                                                <div className="flex flex-col gap-1 text-sm text-gray-500">
-                                                    <div className="flex items-center gap-2">
-                                                        <Mail className="w-3 h-3" /> {customer.email}
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <Phone className="w-3 h-3" /> {customer.phone}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="p-5">
-                                                <span className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    <Building className="w-4 h-4 text-primary" />
-                                                    {customer.interestedProperty}
-                                                </span>
-                                            </td>
-                                            <td className="p-5">
-                                                <Badge className={`${getStatusColor(customer.enquiryStatus)} uppercase text-xs font-bold tracking-wider`}>
-                                                    {customer.enquiryStatus}
+                                            <td className="p-4 md:p-5 text-center">
+                                                <Badge className={`${getStatusColor(customer.enquiryStatus)} uppercase text-[9px] md:text-[10px] font-black tracking-widest px-2.5 py-1 rounded-full border shadow-sm inline-block`}>
+                                                    {customer.enquiryStatus?.replace('_', ' ')}
                                                 </Badge>
                                             </td>
-                                            <td className="p-5 text-sm text-gray-500">
-                                                {new Date(customer.lastContactedDate).toLocaleDateString()}
+                                            <td className="p-4 md:p-5">
+                                                <div className="flex flex-col">
+                                                    <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                                                        <Calendar className="h-3.5 w-3.5 text-blue-600" />
+                                                        {new Date(customer.lastContactedDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                                    </span>
+                                                    <span className="text-[10px] text-gray-400 font-mono mt-0.5">{new Date(customer.lastContactedDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                </div>
                                             </td>
-                                            <td className="p-5 text-sm text-gray-600">
-                                                {customer.assignedAdmin}
+                                            <td className="p-4 md:p-5 text-right">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-all rounded-full">
+                                                    <ChevronRight className="h-5 w-5" />
+                                                </Button>
                                             </td>
                                         </motion.tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan="6" className="p-10 text-center text-gray-500">
-                                            No customers found matching your criteria.
+                                        <td colSpan="6" className="p-20 text-center">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="h-16 w-16 bg-gray-50 rounded-full flex items-center justify-center">
+                                                    <Users className="h-8 w-8 text-gray-300" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="font-bold text-gray-900 dark:text-white">No customers found</p>
+                                                    <p className="text-sm text-gray-500">Try adjusting your filters or search terms.</p>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
@@ -255,7 +299,7 @@ const CustomersPage = () => {
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsDetailOpen(false)}
-                            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[140]"
                         />
 
                         {/* Sidebar */}
@@ -264,53 +308,61 @@ const CustomersPage = () => {
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
                             transition={{ type: 'tween', duration: 0.3, ease: 'easeOut' }}
-                            className="fixed inset-y-0 right-0 w-full md:w-[600px] bg-white dark:bg-gray-900 shadow-2xl z-50 overflow-y-auto"
+                            className="fixed inset-y-0 right-0 w-full md:w-[600px] lg:w-[700px] bg-white dark:bg-gray-900 shadow-2xl z-[150] overflow-hidden"
                         >
                             {customerDetails ? (
                                 <div className="p-0 min-h-full flex flex-col">
                                     {/* Header */}
-                                    <div className="p-6 hero-gradient text-white shadow-lg sticky top-0 z-10">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-14 w-14 rounded-full bg-white/20 flex items-center justify-center text-2xl font-bold backdrop-blur-md">
+                                    <div className="p-4 md:p-6 bg-[#0B1F33] text-white shadow-xl sticky top-0 z-10 border-b border-white/10">
+                                        <div className="flex justify-between items-center mb-4 md:mb-6">
+                                            <div className="flex items-center gap-2 md:gap-4 overflow-hidden">
+                                                <button
+                                                    onClick={() => setIsDetailOpen(false)}
+                                                    className="p-2 -ml-2 hover:bg-white/10 rounded-full transition-colors md:mr-2"
+                                                >
+                                                    <ChevronRight className="h-6 w-6 rotate-180" />
+                                                </button>
+                                                <div className="h-10 w-10 md:h-16 md:w-16 rounded-xl bg-white/10 flex items-center justify-center text-lg md:text-2xl font-black backdrop-blur-md border border-white/20 shadow-inner shrink-0">
                                                     {selectedCustomer.fullName?.charAt(0)}
                                                 </div>
-                                                <div>
-                                                    <h2 className="text-2xl font-bold">{selectedCustomer.fullName}</h2>
-                                                    <p className="text-white/80 text-sm flex items-center gap-2">
-                                                        From {selectedCustomer.interestedProperty}
+                                                <div className="min-w-0">
+                                                    <h2 className="text-lg md:text-2xl font-black tracking-tight truncate">{selectedCustomer.fullName}</h2>
+                                                    <p className="text-blue-200 text-[10px] md:text-sm font-bold flex items-center gap-1.5 md:gap-2 mt-0.5 md:mt-1 truncate">
+                                                        <Building className="h-3 w-3 md:h-3.5 md:w-3.5" /> {selectedCustomer.interestedProperty}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={() => setIsDetailOpen(false)}
-                                                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                                            >
-                                                <X className="h-6 w-6" />
-                                            </button>
+                                            <div className="hidden md:block">
+                                                <button
+                                                    onClick={() => setIsDetailOpen(false)}
+                                                    className="p-2 hover:bg-white/10 rounded-full transition-colors group"
+                                                >
+                                                    <X className="h-6 w-6 text-white/50 group-hover:text-white" />
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        <div className="flex gap-3 mt-4">
+                                        <div className="grid grid-cols-3 gap-2 md:gap-3">
                                             <Button
                                                 size="sm"
-                                                className="bg-white/10 hover:bg-white/20 text-white border-none flex-1"
+                                                className="bg-white/10 hover:bg-white/20 text-white border-white/10 flex items-center justify-center gap-2 h-9 md:h-10 font-bold text-[10px] md:text-xs"
                                                 onClick={() => window.location.href = `tel:${selectedCustomer.phone}`}
                                             >
-                                                <Phone className="h-4 w-4 mr-2" /> Call
+                                                <Phone className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Call</span>
                                             </Button>
                                             <Button
                                                 size="sm"
-                                                className="bg-white/10 hover:bg-white/20 text-white border-none flex-1"
+                                                className="bg-green-500/20 hover:bg-green-500/30 text-green-400 border-green-500/20 flex items-center justify-center gap-2 h-9 md:h-10 font-bold text-[10px] md:text-xs"
                                                 onClick={() => {
                                                     const phone = selectedCustomer.phone?.replace(/[^0-9]/g, '');
                                                     window.open(`https://wa.me/${phone}`, '_blank');
                                                 }}
                                             >
-                                                <MessageSquare className="h-4 w-4 mr-2" /> WhatsApp
+                                                <MessageSquare className="h-3.5 w-3.5" /> <span className="hidden sm:inline">WhatsApp</span>
                                             </Button>
                                             <Button
                                                 size="sm"
-                                                className="bg-white/10 hover:bg-white/20 text-white border-none flex-1"
+                                                className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border-blue-500/20 flex items-center justify-center gap-2 h-9 md:h-10 font-bold text-[10px] md:text-xs"
                                                 onClick={() => {
                                                     if (selectedCustomer?.email) {
                                                         const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${selectedCustomer.email}`;
@@ -320,49 +372,52 @@ const CustomersPage = () => {
                                                     }
                                                 }}
                                             >
-                                                <Mail className="h-4 w-4 mr-2" /> Email
+                                                <Mail className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Email</span>
                                             </Button>
                                         </div>
                                     </div>
 
                                     {/* Body */}
-                                    <div className="p-6 flex-1 space-y-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+                                    <div className="p-4 md:p-6 flex-1 space-y-4 md:space-y-6 bg-gray-50 dark:bg-gray-900 overflow-y-auto custom-scrollbar">
 
                                         {/* Status Bar */}
-                                        <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
-                                            <span className="text-sm font-medium text-gray-500">Current Status</span>
-                                            <div className="flex items-center gap-2">
-                                                <Badge className={`${getStatusColor(selectedCustomer.enquiryStatus)} text-sm px-3 py-1`}>
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3 md:p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 gap-3 md:gap-4">
+                                            <span className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-widest">Status Management</span>
+                                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                                <Badge className={`${getStatusColor(selectedCustomer.enquiryStatus)} text-[10px] md:text-sm px-2.5 py-1 md:px-3 md:py-1 rounded-lg border-none shrink-0`}>
                                                     {selectedCustomer.enquiryStatus}
                                                 </Badge>
                                                 <select
-                                                    className="text-sm border-gray-200 rounded p-1"
+                                                    className="text-xs md:text-sm border-gray-100 rounded-lg p-1.5 md:p-2 bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 outline-none flex-1 sm:min-w-[120px] font-bold text-gray-700 dark:text-gray-200"
                                                     onChange={(e) => handleStatusUpdate(e.target.value)}
                                                     defaultValue={selectedCustomer.enquiryStatus}
                                                 >
-                                                    <option value="new">New</option>
+                                                    <option value="new">New Lead</option>
                                                     <option value="in_progress">In Progress</option>
                                                     <option value="follow_up">Follow Up</option>
                                                     <option value="converted">Converted</option>
-                                                    <option value="closed">Closed</option>
+                                                    <option value="closed">Closed / Lost</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                         {/* Tabs */}
-                                        <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
+                                        <div className="flex bg-white dark:bg-gray-800 p-1 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 sticky top-0 z-10 backdrop-blur-md bg-white/90">
                                             {['details', 'history', 'notes'].map(tab => (
                                                 <button
                                                     key={tab}
                                                     onClick={() => setActiveTab(tab)}
-                                                    className={`flex-1 pb-3 text-sm font-medium capitalize transition-colors relative ${activeTab === tab ? 'text-blue-700' : 'text-gray-500 hover:text-gray-700'
+                                                    className={`flex-1 py-2 md:py-2.5 text-[10px] md:text-xs font-black uppercase tracking-widest transition-all relative rounded-xl ${activeTab === tab
+                                                        ? 'text-white'
+                                                        : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
                                                         }`}
                                                 >
-                                                    {tab}
+                                                    <span className="relative z-10">{tab}</span>
                                                     {activeTab === tab && (
                                                         <motion.div
-                                                            layoutId="activeTab"
-                                                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+                                                            layoutId="activeTabDetails"
+                                                            className="absolute inset-0 bg-[#0B1F33] rounded-xl shadow-md"
+                                                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                                         />
                                                     )}
                                                 </button>
@@ -379,23 +434,33 @@ const CustomersPage = () => {
                                                     exit={{ opacity: 0, y: -10 }}
                                                     className="space-y-4"
                                                 >
-                                                    <Card className="p-4 space-y-3">
-                                                        <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                                                            <User className="h-4 w-4 text-primary" /> Personal Info
+                                                    <Card className="p-4 md:p-5 border-none shadow-sm bg-white dark:bg-gray-800 rounded-2xl overflow-hidden relative">
+                                                        <div className="absolute top-0 left-0 w-1.5 h-full bg-[#0B1F33]"></div>
+                                                        <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-4">
+                                                            <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
+                                                                <User className="h-4 w-4 text-[#0B1F33] dark:text-blue-400" />
+                                                            </div>
+                                                            Personal Information
                                                         </h3>
-                                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                                            <div>
-                                                                <span className="block text-gray-500 text-xs">Email</span>
-                                                                <span className="text-gray-900 dark:text-gray-200">{selectedCustomer.email}</span>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 text-sm">
+                                                            <div className="space-y-1">
+                                                                <span className="flex items-center gap-1.5 text-gray-400 text-[10px] font-bold uppercase tracking-wider">
+                                                                    <Mail className="h-3 w-3" /> Email Address
+                                                                </span>
+                                                                <span className="text-gray-900 dark:text-gray-200 font-bold block truncate">{selectedCustomer.email}</span>
                                                             </div>
-                                                            <div>
-                                                                <span className="block text-gray-500 text-xs">Phone</span>
-                                                                <span className="text-gray-900 dark:text-gray-200">{selectedCustomer.phone}</span>
+                                                            <div className="space-y-1">
+                                                                <span className="flex items-center gap-1.5 text-gray-400 text-[10px] font-bold uppercase tracking-wider">
+                                                                    <Phone className="h-3 w-3" /> Phone Number
+                                                                </span>
+                                                                <span className="text-gray-900 dark:text-gray-200 font-bold block">{selectedCustomer.phone}</span>
                                                             </div>
-                                                            <div>
-                                                                <span className="block text-gray-500 text-xs">Address</span>
-                                                                <span className="text-gray-900 dark:text-gray-200">
-                                                                    {customerDetails.personalDetails?.address?.street || 'N/A'}, {customerDetails.personalDetails?.address?.city || ''}
+                                                            <div className="sm:col-span-2 space-y-1 pt-2 border-t border-gray-50 dark:border-gray-700">
+                                                                <span className="flex items-center gap-1.5 text-gray-400 text-[10px] font-bold uppercase tracking-wider">
+                                                                    <MapPin className="h-3 w-3" /> Location / Address
+                                                                </span>
+                                                                <span className="text-gray-900 dark:text-gray-200 font-bold block">
+                                                                    {customerDetails.personalDetails?.address?.street || 'No street info available'}{customerDetails.personalDetails?.address?.city ? `, ${customerDetails.personalDetails?.address?.city}` : ''}
                                                                 </span>
                                                             </div>
                                                         </div>

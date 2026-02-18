@@ -255,27 +255,29 @@ const EditProjectPage = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <div className="hero-gradient text-white">
-        <div className="w-full px-4 md:px-6 py-6 font-bold">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="w-full px-4 md:px-6 py-4 md:py-6 font-bold">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4">
               <Button
                 variant="ghost"
-                className="text-white hover:bg-white/20 px-2 -ml-2 h-9"
+                className="text-white hover:bg-white/20 p-2 h-auto"
                 onClick={() => navigate(-1)}
               >
-                <ArrowLeft className="h-5 w-5 mr-1" />
-                Back
+                <ArrowLeft className="h-5 w-5 md:mr-1" />
+                <span className="hidden md:inline">Back</span>
               </Button>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 mt-1 sm:mt-0">
-                <h1 className="text-2xl md:text-3xl font-black">Edit Project</h1>
-                <Badge className="bg-white/20 text-white border-white/30 text-[10px] md:text-sm font-bold px-3">
-                  Project ID: #{id}
-                </Badge>
+              <div className="flex flex-col gap-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h1 className="text-xl md:text-3xl font-black">Edit Project</h1>
+                  <Badge className="bg-white/20 text-white border-white/30 text-[10px] font-bold px-2">
+                    #{id.slice(-6)}
+                  </Badge>
+                </div>
+                <p className="text-white/80 text-xs md:text-sm font-bold">Update project details and settings</p>
               </div>
             </div>
-            <div className="flex flex-col md:items-end">
-              <p className="text-white/80 text-sm md:text-base font-bold">Update project information</p>
-              <p className="text-white/60 text-[10px] uppercase tracking-widest mt-0.5">Admin Dashboard</p>
+            <div className="flex flex-row md:flex-col md:items-end gap-2 text-right">
+              <Badge className="bg-green-500/20 text-green-100 border-green-500/30 text-[10px] uppercase">Active Listing</Badge>
             </div>
           </div>
         </div>
@@ -572,38 +574,51 @@ const EditProjectPage = () => {
                 </div>
                 <div className="space-y-4">
                   {configurations.map((config, index) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <div className="grid md:grid-cols-4 gap-3">
-                        <Input
-                          placeholder="Type (e.g., 2 BHK)"
-                          value={config.type}
-                          onChange={(e) => handleConfigurationChange(index, 'type', e.target.value)}
-                        />
-                        <Input
-                          placeholder="Area (e.g., 1200 sq.ft)"
-                          value={config.area}
-                          onChange={(e) => handleConfigurationChange(index, 'area', e.target.value)}
-                        />
-                        <Input
-                          placeholder="Price (e.g., 75 Lac)"
-                          value={config.price}
-                          onChange={(e) => handleConfigurationChange(index, 'price', e.target.value)}
-                        />
-                        <div className="flex items-center space-x-2">
+                    <div key={index} className="p-4 border rounded-lg bg-gray-50/50">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Type</label>
                           <Input
-                            type="number"
-                            placeholder="Units"
-                            value={config.available}
-                            onChange={(e) => handleConfigurationChange(index, 'available', e.target.value)}
+                            placeholder="e.g. 2 BHK"
+                            value={config.type}
+                            onChange={(e) => handleConfigurationChange(index, 'type', e.target.value)}
                           />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => handleRemoveConfiguration(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Area</label>
+                          <Input
+                            placeholder="e.g. 1200 sq.ft"
+                            value={config.area}
+                            onChange={(e) => handleConfigurationChange(index, 'area', e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Price</label>
+                          <Input
+                            placeholder="e.g. 75 Lac"
+                            value={config.price}
+                            onChange={(e) => handleConfigurationChange(index, 'price', e.target.value)}
+                          />
+                        </div>
+                        <div className="relative">
+                          <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Available Units</label>
+                          <div className="flex gap-2">
+                            <Input
+                              type="number"
+                              placeholder="Units"
+                              value={config.available}
+                              onChange={(e) => handleConfigurationChange(index, 'available', e.target.value)}
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="shrink-0"
+                              onClick={() => handleRemoveConfiguration(index)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>

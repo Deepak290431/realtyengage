@@ -42,7 +42,11 @@ const ForgotPasswordPage = () => {
     try {
       const response = await authService.forgotPassword(getIdentifier());
       // Backend returns resetToken (OTP) for debug purposes in current state
-      console.log('OTP (Debug):', response.data.resetToken);
+      if (!response.data.resetToken) {
+        console.warn('Backend did not send resetToken. Response data:', response.data);
+      } else {
+        console.log('OTP (Debug):', response.data.resetToken);
+      }
       toast.success(response.data.message);
       setStep(2);
     } catch (err) {

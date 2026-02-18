@@ -170,13 +170,14 @@ const AddProjectPage = () => {
     };
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <div className="hero-gradient text-white py-6">
+            <div className="hero-gradient text-white py-4 md:py-6">
                 <div className="w-full px-4 md:px-10 lg:px-16 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <Button variant="ghost" className="text-white hover:bg-white/20" onClick={() => navigate(-1)}>
-                            <ArrowLeft className="h-5 w-5 mr-2" /> Back
+                    <div className="flex items-center space-x-2 md:space-x-4">
+                        <Button variant="ghost" className="text-white hover:bg-white/20 p-2 h-auto" onClick={() => navigate(-1)}>
+                            <ArrowLeft className="h-5 w-5 md:mr-2" />
+                            <span className="hidden md:inline">Back</span>
                         </Button>
-                        <h1 className="text-2xl font-bold">Add New Project</h1>
+                        <h1 className="text-xl md:text-2xl font-bold">Add New Project</h1>
                     </div>
                 </div>
             </div>
@@ -319,13 +320,26 @@ const AddProjectPage = () => {
                             </h2>
                             <div className="space-y-4">
                                 {configurations.map((config, index) => (
-                                    <div key={index} className="flex gap-2 items-center p-3 border rounded-lg">
-                                        <Input placeholder="2 BHK" value={config.type} onChange={e => handleConfigChange(index, 'type', e.target.value)} />
-                                        <Input placeholder="1200 sqft" value={config.area} onChange={e => handleConfigChange(index, 'area', e.target.value)} />
-                                        <Input placeholder="75L" value={config.price} onChange={e => handleConfigChange(index, 'price', e.target.value)} />
-                                        <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveConfiguration(index)}>
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                    <div key={index} className="p-4 border rounded-lg bg-gray-50/50 relative">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            <div>
+                                                <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Type</label>
+                                                <Input placeholder="2 BHK" value={config.type} onChange={e => handleConfigChange(index, 'type', e.target.value)} />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Area</label>
+                                                <Input placeholder="1200 sqft" value={config.area} onChange={e => handleConfigChange(index, 'area', e.target.value)} />
+                                            </div>
+                                            <div className="relative">
+                                                <label className="text-[10px] uppercase font-bold text-gray-400 mb-1 block">Price</label>
+                                                <div className="flex gap-2">
+                                                    <Input placeholder="75L" value={config.price} onChange={e => handleConfigChange(index, 'price', e.target.value)} />
+                                                    <Button type="button" variant="destructive" size="icon" className="shrink-0" onClick={() => handleRemoveConfiguration(index)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 ))}
                                 <Button type="button" variant="outline" className="w-full" onClick={handleAddConfiguration}>

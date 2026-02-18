@@ -230,44 +230,46 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
         <div className="space-y-6">
             {/* Header */}
             <Card className="p-6 border-none shadow-md">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <div>
                         <h3 className="text-xl font-semibold flex items-center gap-2">
                             <Video className="h-5 w-5 text-[#0B1F33]" />
                             Virtual Tour Management
                         </h3>
                         <p className="text-sm text-gray-500 mt-1">
-                            Upload and manage 360° images or video for immersive property tours
+                            Upload and manage immersive property tours
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-row items-center gap-2 sm:gap-3">
                         {hasContent && (
                             <>
                                 <Button
                                     onClick={handleToggleEnabled}
+                                    size="sm"
                                     className={`${virtualTour?.enabled
                                         ? 'bg-green-600 hover:bg-green-700'
                                         : 'bg-gray-400 hover:bg-gray-500'
-                                        } text-white`}
+                                        } text-white whitespace-nowrap`}
                                 >
                                     {virtualTour?.enabled ? (
                                         <>
-                                            <Eye className="h-4 w-4 mr-2" />
+                                            <Eye className="h-4 w-4 mr-1.5 md:mr-2" />
                                             Enabled
                                         </>
                                     ) : (
                                         <>
-                                            <EyeOff className="h-4 w-4 mr-2" />
+                                            <EyeOff className="h-4 w-4 mr-1.5 md:mr-2" />
                                             Disabled
                                         </>
                                     )}
                                 </Button>
                                 <Button
                                     onClick={() => setShowUploadModal(true)}
-                                    className="bg-[#0B1F33] hover:opacity-90"
+                                    size="sm"
+                                    className="bg-[#0B1F33] hover:opacity-90 whitespace-nowrap"
                                 >
-                                    <Upload className="h-4 w-4 mr-2" />
-                                    Upload Content
+                                    <Upload className="h-4 w-4 mr-1.5 md:mr-2" />
+                                    Upload
                                 </Button>
                             </>
                         )}
@@ -275,10 +277,10 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                 </div>
 
                 {/* Status Info */}
-                <div className="grid md:grid-cols-3 gap-4 mt-6">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex flex-row sm:flex-col items-center sm:items-start justify-between sm:justify-start">
                         <p className="text-sm text-gray-600 dark:text-gray-400">Status</p>
-                        <div className="text-lg font-semibold mt-1">
+                        <div className="text-lg font-semibold sm:mt-1">
                             {virtualTour?.enabled ? (
                                 <Badge className="bg-green-100 text-green-700">Active</Badge>
                             ) : (
@@ -286,16 +288,16 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                             )}
                         </div>
                     </div>
-                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                    <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex flex-row sm:flex-col items-center sm:items-start justify-between sm:justify-start">
                         <p className="text-sm text-gray-600 dark:text-gray-400">Type</p>
-                        <p className="text-lg font-semibold mt-1 capitalize">
+                        <p className="text-sm sm:text-lg font-semibold sm:mt-1 capitalize">
                             {virtualTour?.type === '360_image' ? '360° Images' :
                                 virtualTour?.type === '360_video' ? '360° Video' : 'None'}
                         </p>
                     </div>
-                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Unique Tour Views</p>
-                        <p className="text-lg font-semibold mt-1">{virtualTour?.viewCount || 0}</p>
+                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex flex-row sm:flex-col items-center sm:items-start justify-between sm:justify-start">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Total Views</p>
+                        <p className="text-lg font-semibold sm:mt-1">{virtualTour?.viewCount || 0}</p>
                     </div>
                 </div>
 
@@ -371,20 +373,22 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                             360° Video
                         </h4>
                         {isAdmin && (
-                            <div className="flex gap-2">
+                            <div className="flex flex-row items-center gap-2">
                                 <Button
                                     onClick={() => handleEditItem(virtualTour.video360, '360_video')}
+                                    size="sm"
                                     className="bg-blue-600 hover:bg-blue-700 text-white"
                                 >
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Edit Details
+                                    <Edit className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Edit Details</span>
                                 </Button>
                                 <Button
                                     onClick={handleDelete360Video}
-                                    className="bg-red-600 hover:bg-red-700 text-white"
+                                    size="sm"
+                                    variant="destructive"
                                 >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete Video
+                                    <Trash2 className="h-4 w-4 sm:mr-2" />
+                                    <span className="hidden sm:inline">Delete Video</span>
                                 </Button>
                             </div>
                         )}

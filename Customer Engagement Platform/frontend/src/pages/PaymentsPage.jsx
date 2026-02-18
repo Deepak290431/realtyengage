@@ -692,54 +692,81 @@ const PaymentsPage = ({ isAdmin = false }) => {
                       transition={{ delay: idx * 0.05 }}
                       className="p-4 hover:bg-gray-50/80 transition-color group"
                     >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${tx.paymentStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
+                        <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${tx.paymentStatus === 'success' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                             }`}>
-                            {tx.installmentType === 'emi' ? <Clock className="h-6 w-6" /> : <Home className="h-6 w-6" />}
+                            {tx.installmentType === 'emi' ? <Clock className="h-5 w-5 md:h-6 md:w-6" /> : <Home className="h-5 w-5 md:h-6 md:w-6" />}
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-bold text-gray-900 dark:text-gray-100">{tx.propertyName}</h4>
-                              <Badge className={tx.paymentStatus === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'} variant="outline">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between w-full gap-2">
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <h4 className="font-bold text-gray-900 dark:text-gray-100 truncate text-sm md:text-base">{tx.propertyName}</h4>
+                                {isAdmin && tx.userId && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="hidden sm:flex bg-blue-50 text-blue-700 border-blue-100 items-center gap-1 cursor-pointer hover:bg-blue-100 transition-colors shrink-0 text-[10px]"
+                                    onClick={() => handleShowUserProfile({
+                                      name: `${tx.userId.firstName} ${tx.userId.lastName}`,
+                                      email: tx.userId.email,
+                                      phone: tx.userId.phone || 'N/A'
+                                    })}
+                                  >
+                                    <User className="h-3 w-3" />
+                                    {tx.userId.firstName}
+                                  </Badge>
+                                )}
+                              </div>
+                              <Badge className={`${tx.paymentStatus === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'} text-[10px] py-0 px-2 shrink-0`}>
                                 {tx.paymentStatus.toUpperCase()}
                               </Badge>
-                              {isAdmin && tx.userId && (
-                                <Badge
-                                  variant="secondary"
-                                  className="bg-blue-50 text-blue-700 border-blue-100 flex items-center gap-1 cursor-pointer hover:bg-blue-100 transition-colors"
+                            </div>
+
+                            {isAdmin && tx.userId && (
+                              <div className="sm:hidden mt-0.5">
+                                <span
+                                  className="text-[10px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded cursor-pointer"
                                   onClick={() => handleShowUserProfile({
                                     name: `${tx.userId.firstName} ${tx.userId.lastName}`,
                                     email: tx.userId.email,
                                     phone: tx.userId.phone || 'N/A'
                                   })}
                                 >
-                                  <User className="h-3 w-3" />
-                                  {tx.userId.firstName} {tx.userId.lastName}
-                                </Badge>
-                              )}
+                                  Client: {tx.userId.firstName} {tx.userId.lastName}
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="text-[10px] md:text-xs text-gray-500 flex items-center justify-between w-full mt-1 md:mt-1.5">
+                              <span className="flex items-center shrink-0">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {new Date(tx.paymentDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                              <div className="flex items-center gap-2 overflow-hidden">
+                                <span className="flex items-center uppercase font-black text-[8px] md:text-[9px] bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-600 dark:text-gray-400 shrink-0">
+                                  {tx.paymentMethod}
+                                </span>
+                                <span className="text-blue-700 dark:text-blue-400 font-black truncate max-w-[80px] sm:max-w-none">
+                                  {tx.installmentType === 'emi' ? `EMI #${tx.installmentNumber}` : 'Settlement'}
+                                </span>
+                              </div>
                             </div>
-                            <p className="text-xs text-gray-500 flex items-center gap-3 mt-1">
-                              <span className="flex items-center"><Calendar className="h-3 w-3 mr-1" /> {new Date(tx.paymentDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                              <span className="flex items-center uppercase font-bold text-[10px] bg-gray-100 px-1.5 py-0.5 rounded">{tx.paymentMethod}</span>
-                              <span className="text-blue-700 font-medium">{tx.installmentType === 'emi' ? `Installment #${tx.installmentNumber}` : 'Full Settlement'}</span>
-                            </p>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between md:justify-end gap-6">
-                          <div className="text-right">
-                            <p className="text-xl font-black text-gray-900 dark:text-white">{formatCurrency(tx.amountPaid)}</p>
-                            <p className="text-[10px] text-gray-400 font-mono tracking-tighter">TXN: {tx._id.slice(-12).toUpperCase()}</p>
+                        <div className="flex items-center justify-between md:justify-end gap-4 md:gap-8 bg-blue-50/50 dark:bg-blue-900/10 p-3 md:p-0 rounded-xl md:bg-transparent md:dark:bg-transparent -mx-1 md:mx-0">
+                          <div className="text-left md:text-right">
+                            <p className="text-lg md:text-xl font-black text-blue-900 dark:text-blue-300">{formatCurrency(tx.amountPaid)}</p>
+                            <p className="text-[9px] text-gray-400 font-mono tracking-tighter">REF: {tx._id.slice(-8).toUpperCase()}</p>
                           </div>
                           <div className="flex gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-9 px-3 border-gray-200 hover:border-blue-800 hover:text-blue-800 transition-all"
+                              className="h-8 md:h-9 px-2 md:px-3 bg-white border-gray-200 hover:border-blue-800 hover:text-blue-800 transition-all font-bold text-xs"
                               onClick={() => handleDownloadInvoice(tx._id, tx.propertyName)}
                             >
-                              <Download className="h-4 w-4 mr-2" />
-                              Invoice
+                              <Download className="h-4 w-4 md:mr-2" />
+                              <span className="hidden md:inline">Invoice</span>
                             </Button>
                           </div>
                         </div>
@@ -1222,18 +1249,18 @@ const PaymentsPage = ({ isAdmin = false }) => {
                       <div className="text-center py-10 text-gray-500 italic">No records found for this category.</div>
                     ) : (
                       detailsData.map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:bg-white hover:shadow-md">
+                        <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:bg-white hover:shadow-md gap-3">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white border border-gray-200 text-blue-600 rounded-xl flex items-center justify-center font-bold">
+                            <div className="w-10 h-10 bg-white border border-gray-200 text-blue-600 rounded-xl flex items-center justify-center font-bold shrink-0">
                               {item.name.charAt(0)}
                             </div>
-                            <div>
-                              <p className="font-bold text-gray-900">{item.name}</p>
-                              <p className="text-xs text-gray-500 font-medium">{item.phone} • {item.email}</p>
+                            <div className="min-w-0">
+                              <p className="font-bold text-gray-900 truncate">{item.name}</p>
+                              <p className="text-[10px] md:text-xs text-gray-500 font-medium truncate">{item.phone} • {item.email}</p>
                             </div>
                           </div>
-                          <div className="text-right shrink-0">
-                            <p className={`text-lg font-black ${detailsType === 'pending' ? 'text-red-600' : 'text-blue-600'}`}>
+                          <div className="text-left sm:text-right shrink-0 bg-white/50 sm:bg-transparent p-2 sm:p-0 rounded-lg">
+                            <p className={`text-base md:text-lg font-black ${detailsType === 'pending' ? 'text-red-600' : 'text-blue-600'}`}>
                               {formatCurrency(detailsType === 'nextPayment' ? item.nextAmount : item.amount)}
                             </p>
                             {detailsType === 'nextPayment' && item.nextDate && (
