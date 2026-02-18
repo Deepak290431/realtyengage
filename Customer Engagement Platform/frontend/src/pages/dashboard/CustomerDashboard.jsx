@@ -430,8 +430,8 @@ const CustomerDashboard = () => {
                   <FileText className="h-4 w-4 mr-1" />
                   Enquiries
                 </Button>
-                <Button variant="outline" className="border-blue-200 hover:bg-blue-50" onClick={() => navigate('/dashboard/enquiries?type=site_visit')}>
-                  <Calendar className="h-4 w-4 mr-1 text-blue-600" />
+                <Button variant="outline" className="border-blue-200 hover:bg-blue-600 hover:text-white transition-colors group" onClick={() => navigate('/dashboard/enquiries?type=site_visit')}>
+                  <Calendar className="h-4 w-4 mr-1 text-blue-600 group-hover:text-white transition-colors" />
                   Schedule Visit
                 </Button>
                 <Button variant="outline" onClick={() => navigate('/dashboard/support')}>

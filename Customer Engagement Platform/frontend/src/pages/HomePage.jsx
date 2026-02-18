@@ -230,7 +230,7 @@ const HomePage = () => {
                   Explore Properties
                 </Button>
                 <Button
-                  className="h-14 px-8 text-lg text-gray-900 border-gray-300 hover:bg-gray-50 dark:text-white dark:border-gray-700 dark:hover:bg-gray-800"
+                  className="h-14 px-8 text-lg text-gray-900 border-gray-300 hover:bg-primary hover:text-white transition-all dark:text-white dark:border-gray-700 dark:hover:bg-primary/90"
                   variant="outline"
                   onClick={() => {
                     if (isAuthenticated) {
