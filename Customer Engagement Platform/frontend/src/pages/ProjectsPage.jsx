@@ -31,6 +31,7 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 
 import projectService from '../services/projectService';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 const ProjectsPage = ({ isAdmin = false }) => {
   const navigate = useNavigate();
@@ -187,6 +188,8 @@ const ProjectsPage = ({ isAdmin = false }) => {
       </div>
     );
   }
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -455,9 +458,10 @@ const ProjectsPage = ({ isAdmin = false }) => {
                       <Card className="overflow-hidden hover:shadow-xl transition-all duration-300">
                         <div className="relative h-48 overflow-hidden">
                           <img
-                            src={project.images && project.images.length > 0 ? (project.images[0].url || project.images[0]) : (project.image || "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800")}
+                            src={normalizeImageUrl(project.images?.[0] || project.image)}
                             alt={project.name}
                             className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                            onError={handleImageError}
                           />
                           <Badge className={`absolute top-3 right-3 ${getStatusColor(project.status)}`}>
                             {getStatusIcon(project.status)}

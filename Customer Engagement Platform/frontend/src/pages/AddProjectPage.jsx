@@ -26,6 +26,7 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 import projectService from '../services/projectService';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 const AddProjectPage = () => {
     const { user } = useSelector((state) => state.auth);
@@ -153,19 +154,33 @@ const AddProjectPage = () => {
         setAmenities(amenities.filter(a => a !== amenity));
     };
 
-    const handleImageAdd = (e) => {
-        // Basic image URL input simulation
-        const url = prompt('Enter image URL:');
-        if (url) {
-            setImages([...images, url]);
-            toast.success('Image added');
-        }
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        files.forEach(file => {
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error(`${file.name} is too large (max 2MB)`);
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImages(prev => [...prev, reader.result]);
+            };
+            reader.readAsDataURL(file);
+        });
     };
-    const handleQRAdd = () => {
-        const url = prompt('Enter Owner UPI QR Code Image URL:');
-        if (url) {
-            setUpiQRCode(url);
-            toast.success('UPI QR Code added');
+
+    const handleQRChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 1024 * 1024) {
+                toast.error('QR code is too large (max 1MB)');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setUpiQRCode(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
     };
     return (
@@ -374,16 +389,33 @@ const AddProjectPage = () => {
                             <h2 className="text-lg font-semibold mb-4">Project Images</h2>
                             <div className="grid grid-cols-2 gap-2 mb-4">
                                 {images.map((url, i) => (
-                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border">
-                                        <img src={url} alt="" className="w-full h-full object-cover" />
-                                        <button className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1" onClick={() => setImages(images.filter((_, idx) => idx !== i))}>
+                                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border group">
+                                        <img src={normalizeImageUrl(url)} alt="" className="w-full h-full object-cover" onError={handleImageError} />
+                                        <button
+                                            type="button"
+                                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            onClick={() => setImages(images.filter((_, idx) => idx !== i))}
+                                        >
                                             <X className="h-3 w-3" />
                                         </button>
                                     </div>
                                 ))}
                             </div>
-                            <Button type="button" variant="outline" className="w-full" onClick={handleImageAdd}>
-                                <Plus className="h-4 w-4 mr-2" /> Add Image URL
+                            <input
+                                type="file"
+                                id="project-images"
+                                multiple
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleImageChange}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full border-dashed"
+                                onClick={() => document.getElementById('project-images').click()}
+                            >
+                                <Upload className="h-4 w-4 mr-2" /> Upload Project Images
                             </Button>
                         </Card>
 
@@ -393,7 +425,7 @@ const AddProjectPage = () => {
                             </h2>
                             {upiQRCode ? (
                                 <div className="relative aspect-square rounded-lg overflow-hidden border mb-4">
-                                    <img src={upiQRCode} alt="Owner UPI QR" className="w-full h-full object-cover" />
+                                    <img src={normalizeImageUrl(upiQRCode)} alt="Owner UPI QR" className="w-full h-full object-cover" onError={handleImageError} />
                                     <button
                                         type="button"
                                         className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors"
@@ -403,10 +435,24 @@ const AddProjectPage = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <Button type="button" variant="outline" className="w-full mb-4 border-dashed border-2 py-8 h-auto flex-col gap-2" onClick={handleQRAdd}>
-                                    <Plus className="h-8 w-8 text-gray-400" />
-                                    <span>Add Owner's UPI QR URL</span>
-                                </Button>
+                                <>
+                                    <input
+                                        type="file"
+                                        id="qr-code"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleQRChange}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full mb-4 border-dashed border-2 py-8 h-auto flex-col gap-2"
+                                        onClick={() => document.getElementById('qr-code').click()}
+                                    >
+                                        <QrCode className="h-8 w-8 text-gray-400" />
+                                        <span>Upload Owner's UPI QR</span>
+                                    </Button>
+                                </>
                             )}
                             <p className="text-[10px] text-gray-400 italic text-center">This QR will be shown to customers during UPI payment.</p>
                         </Card>

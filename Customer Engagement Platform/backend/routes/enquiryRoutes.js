@@ -113,7 +113,7 @@ router.get('/',
 
       // Execute query with pagination
       const enquiries = await Enquiry.find(filter)
-        .populate('projectId', 'name area status pricing')
+        .populate('projectId', 'name area status pricing images')
         .populate('customerId', 'firstName lastName email phone')
         .populate('assignedTo', 'firstName lastName')
         .sort(sortObj)

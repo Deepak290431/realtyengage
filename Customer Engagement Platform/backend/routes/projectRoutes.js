@@ -418,7 +418,7 @@ router.post('/:id/images',
   [
     param('id').isMongoId(),
     body('images').isArray({ min: 1 }),
-    body('images.*.url').isURL(),
+    body('images.*.url').notEmpty(),
     body('images.*.caption').optional().trim()
   ],
   handleValidationErrors,

@@ -111,8 +111,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/realtyeng
 app.use(compression());
 app.use(helmet());
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));

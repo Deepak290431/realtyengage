@@ -6,6 +6,9 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 import toast from 'react-hot-toast';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
+
+
 
 /**
  * VirtualTourViewer Component
@@ -288,7 +291,7 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                         }}
                     >
                         <img
-                            src={currentMedia.url}
+                            src={normalizeImageUrl(currentMedia.url)}
                             alt={currentMedia.title}
                             className="w-full h-full object-contain md:object-cover sm:object-cover"
                             style={{
@@ -297,6 +300,7 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                                 backfaceVisibility: 'hidden'
                             }}
                             draggable={false}
+                            onError={handleImageError}
                         />
                     </div>
                 )}
@@ -304,7 +308,7 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                 {type === '360_video' && (
                     <video
                         ref={videoRef}
-                        src={currentMedia.url}
+                        src={normalizeImageUrl(currentMedia.url)}
                         className="w-full h-full object-contain md:object-cover sm:object-cover cursor-grab active:cursor-grabbing"
                         onMouseDown={handleMouseDown}
                         onTouchStart={handleTouchStart}
@@ -316,6 +320,7 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                         }}
                         loop
                         playsInline
+                        onError={handleImageError}
                     />
                 )}
             </div>
@@ -429,9 +434,10 @@ const VirtualTourViewer = ({ projectId, virtualTourData, onClose }) => {
                                 }`}
                         >
                             <img
-                                src={img.url}
+                                src={normalizeImageUrl(img.url)}
                                 alt={img.title}
                                 className="w-full h-full object-cover"
+                                onError={handleImageError}
                             />
                         </button>
                     ))}

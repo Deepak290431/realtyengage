@@ -49,6 +49,7 @@ import VirtualTourManager from '../components/VirtualTourManager';
 
 import projectService from '../services/projectService';
 import { virtualTourAPI } from '../services/api';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 const ProjectDetailPage = ({ isAdmin = false }) => {
     const { id } = useParams();
@@ -150,7 +151,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
     if (!project) return null;
 
     const images = project.images && project.images.length > 0
-        ? project.images.map(img => img.url || img)
+        ? project.images.map(normalizeImageUrl)
         : ['https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800'];
 
     const handlePrevImage = () => {
@@ -245,6 +246,7 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                     src={images[currentImageIndex]}
                     alt={project.name}
                     className="w-full h-full object-cover transition-opacity duration-500"
+                    onError={handleImageError}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
 

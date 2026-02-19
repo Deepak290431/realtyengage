@@ -32,7 +32,7 @@ const GoogleMap = ({
   const [mapType, setMapType] = useState('roadmap');
   const [zoom, setZoom] = useState(15);
   const [selectedPlace, setSelectedPlace] = useState(null);
-  const [isClassicMode, setIsClassicMode] = useState(false);
+  const [isClassicMode, setIsClassicMode] = useState(true);
 
   // Generate Google Maps embed URL
   const generateMapUrl = () => {
@@ -119,9 +119,10 @@ const GoogleMap = ({
                 variant="outline"
                 className="bg-white/10 text-white border-white/20 hover:bg-white/20 h-8 text-[11px]"
                 onClick={() => setIsClassicMode(!isClassicMode)}
+                title={isClassicMode ? "Switch to interactive Pro Map (Requires API Key)" : "Switch to stable Classic Map"}
               >
                 <Layers className="h-3.5 w-3.5 mr-1" />
-                {isClassicMode ? 'Use Pro Map' : 'Use Classic Map'}
+                {isClassicMode ? 'Enable Pro Map' : 'Use Classic Map'}
               </Button>
               {/* Map Type Toggle */}
               <div className="flex bg-white/20 rounded-lg p-0.5">

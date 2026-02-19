@@ -30,6 +30,7 @@ import { Badge } from '../../components/ui/badge';
 
 import { dashboardAPI, paymentAPI } from '../../services/api';
 import enquiryService from '../../services/enquiryService';
+import { normalizeImageUrl, handleImageError } from '../../utils/imageUtils';
 
 const CustomerDashboard = () => {
   const navigate = useNavigate();
@@ -260,9 +261,10 @@ const CustomerDashboard = () => {
                     return (
                       <div key={enquiry._id} className="flex flex-col sm:flex-row items-start space-y-4 sm:space-y-0 sm:space-x-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
                         <img
-                          src={project.images && project.images.length > 0 ? (project.images[0].url || project.images[0]) : "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400"}
+                          src={normalizeImageUrl(project.images?.[0] || project.image)}
                           alt={project.name}
                           className="w-full sm:w-24 h-48 sm:h-24 rounded-lg object-cover shadow-sm"
+                          onError={handleImageError}
                         />
                         <div className="flex-1 w-full">
                           <div className="flex items-center justify-between mb-2">

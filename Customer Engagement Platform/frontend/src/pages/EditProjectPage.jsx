@@ -27,6 +27,7 @@ import { Input } from '../components/ui/input';
 import { Badge } from '../components/ui/badge';
 
 import projectService from '../services/projectService';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 const EditProjectPage = () => {
   const { user } = useSelector((state) => state.auth);
@@ -79,7 +80,12 @@ const EditProjectPage = () => {
 
         setConfigurations(proj.configurations || []);
         setAmenities((proj.amenities || []).map(a => typeof a === 'string' ? a : (a.name || '')));
-        setImages(proj.images || []);
+        setImages((proj.images || []).map(img => ({
+          id: img._id || Math.random(),
+          name: img.caption || 'Project Image',
+          url: img.url,
+          isPrimary: img.isPrimary
+        })));
         setUpiQRCode(proj.pricing?.upiQRCode || null);
         setRawProject(proj);
       } catch (error) {
@@ -130,7 +136,10 @@ const EditProjectPage = () => {
           price: c.price.toString().includes('Lac') ? c.price : (c.price.toString().includes('L') ? c.price : `${c.price} Lac`)
         })),
         amenities: amenities.map(name => ({ name })),
-        images: images
+        images: images.map((img, idx) => ({
+          url: img.url,
+          isPrimary: idx === 0 // Mark first image as primary
+        }))
       };
 
       await projectService.updateProject(id, payload);
@@ -197,14 +206,22 @@ const EditProjectPage = () => {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    // In production, these would be uploaded to a server
-    const newImages = files.map(file => ({
-      id: Date.now() + Math.random(),
-      name: file.name,
-      url: URL.createObjectURL(file)
-    }));
-    setImages([...images, ...newImages]);
-    toast.success(`${files.length} image(s) added`);
+    files.forEach(file => {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 2MB)`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImages(prev => [...prev, {
+          id: Date.now() + Math.random(),
+          name: file.name,
+          url: reader.result
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+    toast.success(`${files.length} image(s) processed`);
   };
 
   const handleRemoveImage = (imageId) => {
@@ -215,11 +232,18 @@ const EditProjectPage = () => {
   const handleQRUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Mock upload for now - in production use projectService.uploadImage
-      setUpiQRCode({
-        url: URL.createObjectURL(file),
-        name: file.name
-      });
+      if (file.size > 1024 * 1024) {
+        toast.error('QR code is too large (max 1MB)');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUpiQRCode({
+          url: reader.result,
+          name: file.name
+        });
+      };
+      reader.readAsDataURL(file);
       toast.success('UPI QR Code uploaded locally');
     }
   };
@@ -661,9 +685,10 @@ const EditProjectPage = () => {
                   ) : (
                     <div className="relative group rounded-xl overflow-hidden border-2 border-blue-100 p-2">
                       <img
-                        src={upiQRCode.url}
+                        src={normalizeImageUrl(upiQRCode.url)}
                         alt="UPI QR"
                         className="w-full h-48 object-contain rounded-lg"
+                        onError={handleImageError}
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <Button
@@ -707,18 +732,22 @@ const EditProjectPage = () => {
                   </label>
 
                   {images.length > 0 && (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {images.map((image) => (
-                        <div key={image.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                          <span className="text-sm truncate flex-1">{image.name}</span>
-                          <Button
+                        <div key={image.id} className="relative group aspect-square rounded-lg overflow-hidden border">
+                          <img
+                            src={normalizeImageUrl(image.url)}
+                            alt=""
+                            className="w-full h-full object-cover"
+                            onError={handleImageError}
+                          />
+                          <button
                             type="button"
-                            variant="ghost"
-                            size="sm"
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => handleRemoveImage(image.id)}
                           >
-                            <X className="h-4 w-4" />
-                          </Button>
+                            <X className="h-3 w-3" />
+                          </button>
                         </div>
                       ))}
                     </div>

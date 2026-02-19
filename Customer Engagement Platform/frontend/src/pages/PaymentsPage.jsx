@@ -34,8 +34,8 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import enquiryService from '../services/enquiryService';
 import { setEnquiries } from '../store/slices/enquirySlice';
-import projectService from '../services/projectService';
 import paymentService from '../services/paymentService';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 const PaymentsPage = ({ isAdmin = false }) => {
   const navigate = useNavigate();
@@ -424,6 +424,8 @@ const PaymentsPage = ({ isAdmin = false }) => {
     }
     return 0;
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -950,9 +952,10 @@ const PaymentsPage = ({ isAdmin = false }) => {
                             <div className="bg-white p-4 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.4)] mb-6 mx-auto w-fit min-w-[180px] min-h-[180px] flex items-center justify-center">
                               {selectedEnquiryForPayment?.projectId?.pricing?.upiQRCode?.url ? (
                                 <img
-                                  src={selectedEnquiryForPayment.projectId.pricing.upiQRCode.url}
+                                  src={normalizeImageUrl(selectedEnquiryForPayment.projectId.pricing.upiQRCode.url)}
                                   alt="UPI QR Code"
                                   className="w-40 h-40 object-contain"
+                                  onError={handleImageError}
                                 />
                               ) : (
                                 <div className="w-40 h-40 bg-white flex items-center justify-center relative overflow-hidden">

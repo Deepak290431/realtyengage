@@ -11,6 +11,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { virtualTourAPI } from '../services/api';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 /**
  * VirtualTourManager Component
@@ -331,9 +332,10 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                             <div key={img._id || index} className="relative group">
                                 <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                                     <img
-                                        src={img.url}
+                                        src={normalizeImageUrl(img.url)}
                                         alt={img.title}
                                         className="w-full h-full object-cover"
+                                        onError={handleImageError}
                                     />
                                 </div>
                                 <div className="mt-2">
@@ -395,9 +397,10 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                     </div>
                     <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
                         <video
-                            src={virtualTour.video360.url}
+                            src={normalizeImageUrl(virtualTour.video360.url)}
                             controls
                             className="w-full h-full"
+                            onError={handleImageError}
                         />
                     </div>
                     <div className="mt-4">
@@ -643,6 +646,7 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                                         value={editTitle}
                                         onChange={(e) => setEditTitle(e.target.value)}
                                         placeholder="Enter title"
+                                        onError={handleImageError}
                                     />
                                 </div>
 
@@ -652,6 +656,7 @@ const VirtualTourManager = ({ projectId, projectName, onUpdate }) => {
                                         value={editDescription}
                                         onChange={(e) => setEditDescription(e.target.value)}
                                         placeholder="Enter description"
+                                        onError={handleImageError}
                                     />
                                 </div>
 
