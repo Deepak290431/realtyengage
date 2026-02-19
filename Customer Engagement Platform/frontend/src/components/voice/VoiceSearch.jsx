@@ -44,14 +44,14 @@ const VOICE_COMMANDS = {
     'go home': '/',
     'show projects': '/projects',
     'view projects': '/projects',
-    'my payments': '/payments',
-    'show payments': '/payments',
-    'my enquiries': '/enquiries',
-    'show enquiries': '/enquiries',
-    'support': '/support',
-    'help': '/support',
+    'my payments': '/dashboard/payments',
+    'show payments': '/dashboard/payments',
+    'my enquiries': '/dashboard/enquiries',
+    'show enquiries': '/dashboard/enquiries',
+    'support': '/dashboard/support',
+    'help': '/dashboard/support',
     'dashboard': '/dashboard',
-    'profile': '/profile'
+    'profile': '/dashboard/profile'
   },
   search: {
     keywords: ['search', 'find', 'show', 'look for', 'filter'],
@@ -254,15 +254,15 @@ const VoiceSearch = ({ onSearch, isOpen, onClose }) => {
   const handleAction = (action) => {
     switch (action) {
       case 'payment':
-        navigate('/payments');
+        navigate('/dashboard/payments');
         toast.success('Opening payment page');
         break;
       case 'enquiry':
-        navigate('/enquiries');
+        navigate('/dashboard/enquiries');
         toast.success('Opening enquiries');
         break;
       case 'support':
-        navigate('/support');
+        navigate('/dashboard/support');
         toast.success('Opening support');
         break;
       case 'emi':

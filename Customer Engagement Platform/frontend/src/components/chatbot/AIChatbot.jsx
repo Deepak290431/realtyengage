@@ -73,14 +73,14 @@ const AIChatbot = ({ isOpen, onClose }) => {
         type: 'bot',
         text: response.message || response.data?.message,
         timestamp: new Date(),
-        quickActions: response.quickActions || response.data?.quickActions,
+        quickActions: response.quickActions || response.data?.quickActions || response.suggestions || response.data?.suggestions,
       };
 
       setMessages(prev => [...prev, botResponse]);
 
       // Update quick actions if provided
-      if (response.quickActions || response.data?.quickActions) {
-        setQuickActions(response.quickActions || response.data.quickActions);
+      if (response.quickActions || response.data?.quickActions || response.suggestions || response.data?.suggestions) {
+        setQuickActions(response.quickActions || response.data?.quickActions || response.suggestions || response.data?.suggestions);
       }
     } catch (error) {
       console.error('Chatbot error:', error);
@@ -116,7 +116,7 @@ const AIChatbot = ({ isOpen, onClose }) => {
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="fixed bottom-4 right-4 z-50 w-96 max-w-[calc(100vw-2rem)]"
+        className="fixed bottom-0 right-0 md:bottom-4 md:right-4 z-[200] w-full md:w-96 max-w-full md:max-w-[calc(100vw-2rem)]"
       >
         <Card className="shadow-2xl border-0 overflow-hidden">
           {/* Header */}
@@ -173,8 +173,8 @@ const AIChatbot = ({ isOpen, onClose }) => {
                     >
                       <div
                         className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center ${message.type === 'user'
-                            ? 'bg-primary'
-                            : 'bg-gray-200 dark:bg-gray-700'
+                          ? 'bg-primary'
+                          : 'bg-gray-200 dark:bg-gray-700'
                           }`}
                       >
                         {message.type === 'user' ? (
@@ -186,8 +186,8 @@ const AIChatbot = ({ isOpen, onClose }) => {
                       <div className="flex-1">
                         <div
                           className={`rounded-lg p-3 ${message.type === 'user'
-                              ? 'bg-primary text-white'
-                              : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
+                            ? 'bg-primary text-white'
+                            : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700'
                             }`}
                         >
                           <div className="text-sm whitespace-pre-wrap">{message.text}</div>

@@ -415,7 +415,7 @@ const CustomerDashboard = () => {
                   <p className="text-sm text-gray-500 text-center py-4">No recent activities.</p>
                 )}
               </div>
-              <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/activities')}>
+              <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/dashboard/enquiries')}>
                 View All Activities
               </Button>
             </Card>

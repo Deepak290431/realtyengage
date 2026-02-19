@@ -16,7 +16,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: MONGODB_URI
-        value: mongodb+srv://Deepak:UG74BN9lAe0vWYhP@cluster0.p53ob.mongodb.net/realtyengage?retryWrites=true&w=majority&appName=Cluster0
+        # IMPORTANT: Set this value in the Render Dashboard envVars section
+        # Do NOT commit sensitive credentials to this file
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
