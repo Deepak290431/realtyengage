@@ -37,6 +37,9 @@ const AddProjectPage = () => {
     const [amenities, setAmenities] = useState([]);
     const [newAmenity, setNewAmenity] = useState('');
     const [images, setImages] = useState([]);
+    const [imageUrlInput, setImageUrlInput] = useState('');
+    const [specifications, setSpecifications] = useState([]);
+    const [newSpec, setNewSpec] = useState({ label: '', value: '' });
     const [upiQRCode, setUpiQRCode] = useState('');
 
     const {
@@ -80,9 +83,10 @@ const AddProjectPage = () => {
                 },
                 location: {
                     address: data.location,
-                    latitude: 12.9716, // Default for Bangalore
-                    longitude: 77.5946
+                    latitude: Number(data.latitude) || 12.9716,
+                    longitude: Number(data.longitude) || 77.5946
                 },
+                specifications,
                 configurations: configurations.map(c => ({
                     ...c,
                     price: c.price.toString().includes('L') ? c.price : `${c.price}L`
@@ -157,8 +161,8 @@ const AddProjectPage = () => {
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
         files.forEach(file => {
-            if (file.size > 2 * 1024 * 1024) {
-                toast.error(`${file.name} is too large (max 2MB)`);
+            if (file.size > 15 * 1024 * 1024) {
+                toast.error(`${file.name} is too large (max 15MB)`);
                 return;
             }
             const reader = new FileReader();
@@ -167,6 +171,25 @@ const AddProjectPage = () => {
             };
             reader.readAsDataURL(file);
         });
+    };
+
+    const handleAddImageUrl = () => {
+        if (imageUrlInput.trim()) {
+            setImages(prev => [...prev, imageUrlInput.trim()]);
+            setImageUrlInput('');
+            toast.success('Image link added!');
+        }
+    };
+
+    const handleAddSpec = () => {
+        if (newSpec.label.trim() && newSpec.value.trim()) {
+            setSpecifications([...specifications, { ...newSpec }]);
+            setNewSpec({ label: '', value: '' });
+        }
+    };
+
+    const handleRemoveSpec = (index) => {
+        setSpecifications(specifications.filter((_, i) => i !== index));
     };
 
     const handleQRChange = (e) => {
@@ -248,12 +271,16 @@ const AddProjectPage = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium mb-1">RERA ID</label>
-                                    <Input {...register('reraId')} placeholder="PRM/KA/RERA..." />
-                                </div>
-                                <div>
                                     <label className="block text-sm font-medium mb-1">Completion Date</label>
                                     <Input type="date" {...register('completionDate')} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 text-blue-600">Latitude</label>
+                                    <Input type="number" step="any" {...register('latitude')} placeholder="12.9716" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium mb-1 text-blue-600">Longitude</label>
+                                    <Input type="number" step="any" {...register('longitude')} placeholder="77.5946" />
                                 </div>
                             </div>
                         </Card>
@@ -364,6 +391,44 @@ const AddProjectPage = () => {
                         </Card>
 
                         <Card className="p-6">
+                            <h2 className="text-lg font-semibold mb-4 flex items-center">
+                                <FileText className="h-5 w-5 mr-2" /> Specifications
+                            </h2>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                                    <Input
+                                        placeholder="Label (e.g. Structure)"
+                                        value={newSpec.label}
+                                        onChange={e => setNewSpec({ ...newSpec, label: e.target.value })}
+                                    />
+                                    <div className="flex gap-2">
+                                        <Input
+                                            placeholder="Value (e.g. RCC Framed)"
+                                            value={newSpec.value}
+                                            onChange={e => setNewSpec({ ...newSpec, value: e.target.value })}
+                                        />
+                                        <Button type="button" onClick={handleAddSpec} size="icon" className="shrink-0">
+                                            <Plus className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-3">
+                                    {specifications.map((spec, index) => (
+                                        <div key={index} className="flex justify-between items-center p-3 border rounded-lg bg-gray-50">
+                                            <div className="text-sm">
+                                                <span className="font-bold text-gray-500 uppercase text-[10px] block">{spec.label}</span>
+                                                <span>{spec.value}</span>
+                                            </div>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveSpec(index)}>
+                                                <Trash2 className="h-4 w-4 text-red-500" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </Card>
+
+                        <Card className="p-6">
                             <h2 className="text-lg font-semibold mb-4">Description</h2>
                             <textarea {...register('description')} className="w-full p-3 border rounded-lg h-32 dark:bg-gray-800" placeholder="Describe the project..." />
                         </Card>
@@ -401,6 +466,14 @@ const AddProjectPage = () => {
                                     </div>
                                 ))}
                             </div>
+                            <div className="flex gap-2 mb-4">
+                                <Input
+                                    value={imageUrlInput}
+                                    onChange={e => setImageUrlInput(e.target.value)}
+                                    placeholder="Paste image link here..."
+                                />
+                                <Button type="button" variant="secondary" onClick={handleAddImageUrl}>Add Link</Button>
+                            </div>
                             <input
                                 type="file"
                                 id="project-images"
@@ -409,14 +482,20 @@ const AddProjectPage = () => {
                                 className="hidden"
                                 onChange={handleImageChange}
                             />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full border-dashed"
-                                onClick={() => document.getElementById('project-images').click()}
-                            >
-                                <Upload className="h-4 w-4 mr-2" /> Upload Project Images
-                            </Button>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="border-dashed h-20 flex-col gap-1"
+                                    onClick={() => document.getElementById('project-images').click()}
+                                >
+                                    <Upload className="h-5 w-5" />
+                                    <span className="text-[10px]">Upload Files</span>
+                                </Button>
+                                <p className="text-[10px] text-gray-400 p-2 italic flex items-center">
+                                    Max size: 15MB per image.
+                                </p>
+                            </div>
                         </Card>
 
                         <Card className="p-6">

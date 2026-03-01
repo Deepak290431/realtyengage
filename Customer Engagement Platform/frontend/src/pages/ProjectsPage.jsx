@@ -20,8 +20,10 @@ import {
   Clock,
   TrendingUp,
   Plus,
-  Video
+  Video,
+  Trash2
 } from 'lucide-react';
+import adminService from '../services/adminService';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -180,7 +182,18 @@ const ProjectsPage = ({ isAdmin = false }) => {
       navigate('/login', { state: { from: `/dashboard/enquiries?project=${projectId}` } });
     }
   };
-
+  const handleResetProjects = async () => {
+    if (window.confirm('⚠️ CRITICAL ACTION: This will permanently DELETE ALL projects from the system. This cannot be undone. Are you sure?')) {
+      try {
+        toast.loading('Clearing all projects...', { id: 'reset' });
+        await adminService.resetProjects();
+        toast.success('System Reset: All projects cleared', { id: 'reset' });
+        window.location.reload(); // Hard reload to clear all cached project states
+      } catch (error) {
+        toast.error('Failed to reset projects', { id: 'reset' });
+      }
+    }
+  };
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -206,13 +219,25 @@ const ProjectsPage = ({ isAdmin = false }) => {
                 Manage your property listings and details
               </p>
             </div>
-            <Button
-              onClick={() => navigate('/admin/projects/new')}
-              className="bg-green-600 hover:bg-green-700 w-full md:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Project
-            </Button>
+            <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+              {user?.role === 'super_admin' && (
+                <Button
+                  variant="destructive"
+                  className="bg-red-600 hover:bg-red-700 font-bold"
+                  onClick={handleResetProjects}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Reset All Projects
+                </Button>
+              )}
+              <Button
+                onClick={() => navigate('/admin/projects/new')}
+                className="bg-green-600 hover:bg-green-700 w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Project
+              </Button>
+            </div>
           </div>
         </div>
       ) : (
@@ -565,7 +590,7 @@ const ProjectsPage = ({ isAdmin = false }) => {
                             {(!isAdmin && user?.role !== 'admin') && (
                               <Button
                                 variant="outline"
-                                className="flex-1 h-10 md:h-9 text-sm font-bold border-primary text-primary hover:bg-primary/5"
+                                className="flex-1 h-10 md:h-9 text-sm font-bold border-primary text-primary hover:bg-primary/5 hover:text-primary"
                                 onClick={() => handleEnquiry(project._id || project.id)}
                               >
                                 <MessageCircle className="h-4 w-4 mr-2" />

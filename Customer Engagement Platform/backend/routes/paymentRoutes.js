@@ -168,8 +168,7 @@ router.post('/verify',
 
       // Find payment by order ID
       const payment = await Payment.findOne({
-        'gatewayDetails.orderId': orderId,
-        customerId: req.userId
+        'gatewayDetails.orderId': orderId
       });
 
       if (!payment) {
@@ -392,7 +391,8 @@ router.get('/',
 
       // Build filter
       let filter = {};
-      if (req.user.role === 'customer') {
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+      if (!isAdmin) {
         filter.customerId = req.userId;
       }
       if (status) filter.status = status;
@@ -457,7 +457,7 @@ router.get('/:id',
 
       // Check authorization
       const isOwner = payment.customerId._id.toString() === req.userId.toString();
-      const isAdmin = req.user.role === 'admin';
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
       if (!isOwner && !isAdmin) {
         return res.status(403).json({
@@ -625,7 +625,7 @@ router.get('/:id/invoice',
       if (payment) {
         // Check authorization
         const isOwner = payment.customerId._id.toString() === user._id.toString();
-        const isAdmin = user.role === 'admin';
+        const isAdmin = user.role === 'admin' || user.role === 'super_admin';
         if (!isOwner && !isAdmin) return res.status(403).json({ error: 'Access denied' });
 
         invoiceData = {
@@ -659,7 +659,7 @@ router.get('/:id/invoice',
 
         // Check authorization
         const isOwner = transaction.userId._id.toString() === user._id.toString();
-        const isAdmin = user.role === 'admin';
+        const isAdmin = user.role === 'admin' || user.role === 'super_admin';
         if (!isOwner && !isAdmin) return res.status(403).json({ error: 'Access denied' });
 
         // Map Transaction to Invoice format
@@ -804,7 +804,8 @@ router.get('/transactions/history',
   async (req, res) => {
     try {
       let filter = {};
-      if (req.user.role === 'customer') {
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+      if (!isAdmin) {
         filter.userId = req.userId;
       }
 

@@ -110,7 +110,8 @@ router.get('/quick-stats',
   authenticateToken,
   async (req, res) => {
     try {
-      if (req.user.role === 'admin') {
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+      if (isAdmin) {
         const [projects, enquiries, payments, tickets, customers] = await Promise.all([
           Project.countDocuments({ isActive: true }),
           Enquiry.countDocuments(),
@@ -200,7 +201,8 @@ router.get('/activities',
   authenticateToken,
   async (req, res) => {
     try {
-      const filter = req.user.role === 'admin' ? {} : { customerId: req.userId };
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+      const filter = isAdmin ? {} : { customerId: req.userId };
 
       const [payments, enquiries] = await Promise.all([
         Payment.find(filter).sort('-createdAt').limit(5).populate('projectId customerId'),

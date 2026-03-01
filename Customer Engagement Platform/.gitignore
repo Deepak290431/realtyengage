@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+*/node_modules/
+
+# OS/IDE
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
+*.swp
+*.swo
+
+# Backend
+backend/.env
+backend/.env.local
+backend/logs/
+backend/*.log
+backend/debug_images.js
+backend/test-virtual-tour.js
+backend/{
+backend/seedAdmin.js
+
+# Frontend
+frontend/build/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+frontend/*.log
+frontend/.netlify/
+
+# Local build artifacts
+dist/
+build/
+.cache/
+coverage/
+
+# Project specific / Deployment
+tmp/
+.gemini/
+*.mp4
+*.webm
+*.txt
+overview.txt
+PROJECT_QA_GUIDE.md
+START_ALL.bat
+brochures/
+invoices/
+
+# Env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

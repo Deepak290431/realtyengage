@@ -184,7 +184,7 @@ async function seedDatabase() {
 
     // Create admin user
     console.log('👤 Creating admin user...');
-    const adminPassword = await bcrypt.hash('Admin@123456', 10);
+    const adminPassword = 'Admin@123456';
     const admin = await User.create({
       email: 'admin@realtyengage.com',
       password: adminPassword,
@@ -202,7 +202,7 @@ async function seedDatabase() {
 
     // Create sample customers
     console.log('👥 Creating sample customers...');
-    const customerPassword = await bcrypt.hash('Customer@123', 10);
+    const customerPassword = 'Customer@123';
     const customers = await User.create([
       {
         email: 'john.doe@example.com',

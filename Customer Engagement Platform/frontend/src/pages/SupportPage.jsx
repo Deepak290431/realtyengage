@@ -86,7 +86,8 @@ const SupportPage = ({ isAdmin = false }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'open': return 'text-blue-600 bg-blue-50';
-      case 'in_progress': return 'text-yellow-600 bg-yellow-50';
+      case 'in_review': return 'text-yellow-600 bg-yellow-50';
+      case 'pending_customer': return 'text-orange-600 bg-orange-50';
       case 'resolved': return 'text-green-600 bg-green-50';
       case 'closed': return 'text-gray-600 bg-gray-50';
       default: return 'text-gray-600 bg-gray-50';
@@ -96,9 +97,10 @@ const SupportPage = ({ isAdmin = false }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'open': return <AlertCircle className="h-4 w-4" />;
-      case 'in_progress': return <Clock className="h-4 w-4" />;
+      case 'in_review': return <Clock className="h-4 w-4" />;
+      case 'pending_customer': return <User className="h-4 w-4" />;
       case 'resolved': return <CheckCircle className="h-4 w-4" />;
-      case 'closed': return <XCircle className="h-4 w-4" />;
+      case 'closed': return <Plus className="h-4 w-4 opacity-50" />; // Or XCircle
       default: return <HelpCircle className="h-4 w-4" />;
     }
   };
@@ -146,6 +148,28 @@ const SupportPage = ({ isAdmin = false }) => {
     } catch (error) {
       console.error('Failed to send reply:', error);
       toast.error('Failed to send reply');
+    }
+  };
+
+  const handleResolve = async () => {
+    if (!selectedTicket) return;
+
+    try {
+      const ticketId = selectedTicket._id || selectedTicket.id;
+      // If replyMessage is empty, use a default resolution text
+      const resolutionText = replyMessage.trim() || 'Ticket marked as resolved by support staff.';
+
+      const response = await supportService.resolveTicket(ticketId, resolutionText);
+
+      const updatedTicket = response.data || response;
+
+      setTickets(tickets.map(t => (t._id === ticketId || t.id === ticketId) ? updatedTicket : t));
+      setSelectedTicket(updatedTicket);
+      setReplyMessage('');
+      toast.success('Ticket marked as resolved!');
+    } catch (error) {
+      console.error('Failed to resolve ticket:', error);
+      toast.error('Failed to resolve ticket');
     }
   };
 
@@ -232,7 +256,7 @@ const SupportPage = ({ isAdmin = false }) => {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="flex justify-between items-center mb-6">
             <div className="flex space-x-2">
-              {['all', 'open', 'resolved'].map(status => (
+              {['all', 'open', 'in_review', 'resolved'].map(status => (
                 <Button
                   key={status}
                   variant={filterStatus === status ? 'default' : 'outline'}
@@ -307,36 +331,68 @@ const SupportPage = ({ isAdmin = false }) => {
                     <p className="text-sm">{selectedTicket.description}</p>
                   </div>
 
-                  {selectedTicket.comments?.map((msg, idx) => (
-                    <div
-                      key={idx}
-                      className={`p-3 rounded-lg ${(msg.author?.role || msg.senderRole) === 'customer' || msg.type === 'customer'
-                        ? 'bg-blue-600 text-white ml-4'
-                        : 'bg-white dark:bg-gray-800 mr-4 border'
-                        }`}
-                    >
-                      <div className="flex justify-between mb-1">
-                        <span className="font-bold text-xs uppercase opacity-80">
-                          {msg.author?.firstName || msg.sender?.firstName || msg.sender || 'Staff'}
-                        </span>
-                        <span className="text-[10px] opacity-70">
-                          {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString()}
-                        </span>
+                  {selectedTicket.comments?.map((msg, idx) => {
+                    const msgAuthorId = msg.author?._id?.toString() || msg.author?.toString();
+                    const ticketCustomerId = selectedTicket.customerId?._id?.toString() || selectedTicket.customerId?.toString();
+
+                    const isAuthorMsg = msgAuthorId === ticketCustomerId ||
+                      ['customer', 'user'].includes(msg.author?.role) ||
+                      msg.type === 'customer';
+
+                    const authorName = msg.author && typeof msg.author === 'object' && msg.author.firstName
+                      ? `${msg.author.firstName} ${msg.author.lastName || ''}`.trim()
+                      : (isAuthorMsg && selectedTicket.customerId?.firstName
+                        ? `${selectedTicket.customerId.firstName} ${selectedTicket.customerId.lastName || ''}`.trim()
+                        : (isAuthorMsg ? 'Customer' : 'Staff'));
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-lg ${isAuthorMsg
+                          ? 'bg-blue-600 text-white ml-4'
+                          : 'bg-white dark:bg-gray-800 mr-4 border'
+                          }`}
+                      >
+                        <div className="flex justify-between mb-1">
+                          <span className="font-bold text-xs uppercase opacity-80">
+                            {authorName}
+                          </span>
+                          <span className="text-[10px] opacity-70">
+                            {new Date(msg.createdAt || msg.timestamp).toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <p className="text-sm">{msg.text || msg.message}</p>
                       </div>
-                      <p className="text-sm">{msg.text || msg.message}</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="Type reply..."
-                    value={replyMessage}
-                    onChange={(e) => setReplyMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleReply()}
-                  />
-                  <Button size="icon" onClick={handleReply} disabled={!replyMessage.trim()}>
-                    <Send className="h-4 w-4" />
-                  </Button>
+                <div className="flex flex-col space-y-2">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Type reply..."
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleReply()}
+                      disabled={selectedTicket.status === 'closed'}
+                    />
+                    <Button
+                      size="icon"
+                      onClick={handleReply}
+                      disabled={!replyMessage.trim() || selectedTicket.status === 'closed'}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {isAdmin && selectedTicket.status !== 'resolved' && selectedTicket.status !== 'closed' && (
+                    <Button
+                      variant="outline"
+                      className="w-full text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 transition-colors"
+                      onClick={handleResolve}
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Mark as Resolved
+                    </Button>
+                  )}
                 </div>
               </Card>
             )}

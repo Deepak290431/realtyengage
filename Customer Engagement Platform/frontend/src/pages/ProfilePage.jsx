@@ -64,8 +64,22 @@ const ProfilePage = ({ isAdmin = false }) => {
       address: user?.address?.street || '',
       city: user?.address?.city || '',
       state: user?.address?.state || '',
-      pincode: user?.address?.pincode || ''
+      pincode: user?.address?.pincode || '',
+      // Notification Preferences
+      emailNotifications: user?.notificationPreferences?.emailNotifications ?? true,
+      smsNotifications: user?.notificationPreferences?.smsNotifications ?? true,
+      paymentReminders: user?.notificationPreferences?.paymentReminders ?? true,
+      propertyUpdates: user?.notificationPreferences?.propertyUpdates ?? true,
+      marketingEmails: user?.notificationPreferences?.marketingEmails ?? false
     }
+  });
+
+  const [notificationState, setNotificationState] = useState({
+    emailNotifications: user?.notificationPreferences?.emailNotifications ?? true,
+    smsNotifications: user?.notificationPreferences?.smsNotifications ?? true,
+    paymentReminders: user?.notificationPreferences?.paymentReminders ?? true,
+    propertyUpdates: user?.notificationPreferences?.propertyUpdates ?? true,
+    marketingEmails: user?.notificationPreferences?.marketingEmails ?? false
   });
 
   const {
@@ -90,6 +104,13 @@ const ProfilePage = ({ isAdmin = false }) => {
       setValue('state', user.address?.state || '');
       setValue('pincode', user.address?.pincode || '');
       setProfileImage(user.profilePicture);
+      setNotificationState({
+        emailNotifications: user.notificationPreferences?.emailNotifications ?? true,
+        smsNotifications: user.notificationPreferences?.smsNotifications ?? true,
+        paymentReminders: user.notificationPreferences?.paymentReminders ?? true,
+        propertyUpdates: user.notificationPreferences?.propertyUpdates ?? true,
+        marketingEmails: user.notificationPreferences?.marketingEmails ?? false
+      });
     }
   }, [user, setValue]);
 
@@ -229,6 +250,27 @@ const ProfilePage = ({ isAdmin = false }) => {
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    setIsLoading(true);
+    try {
+      await dispatch(updateProfile({ notificationPreferences: notificationState })).unwrap();
+      toast.success('Notification preferences updated!');
+
+      // Simulate Real-time push integration
+      if (notificationState.emailNotifications || notificationState.smsNotifications) {
+        console.log(`[Real-time Push] Registered preference for: ${[
+          notificationState.emailNotifications ? 'Email' : null,
+          notificationState.smsNotifications ? 'SMS' : null
+        ].filter(Boolean).join(', ')}`);
+      }
+
+    } catch (error) {
+      toast.error(error?.message || 'Failed to update notification preferences');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -530,36 +572,63 @@ const ProfilePage = ({ isAdmin = false }) => {
           </motion.div>
         </div>
 
-        {/* Notifications Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-4xl"
-        >
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Notification Preferences</h2>
-            <div className="space-y-4">
-              {[
-                { label: 'Email Notifications', description: 'Receive updates via email' },
-                { label: 'SMS Notifications', description: 'Receive updates via SMS' },
-                { label: 'Payment Reminders', description: 'Get reminded about upcoming payments' },
-                { label: 'Property Updates', description: 'Updates about your properties' },
-                { label: 'Marketing Emails', description: 'Receive promotional offers' }
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div>
-                    <p className="font-medium">{item.label}</p>
-                    <p className="text-sm text-gray-500">{item.description}</p>
+        {/* Notifications Section (Customer Only) */}
+        {!isAdmin && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-4xl"
+          >
+            <Card className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-semibold">Notification Preferences</h2>
+                <Button
+                  onClick={handleSaveNotifications}
+                  disabled={isLoading}
+                  className="bg-[#0B1F33] text-white"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading ? 'Saving...' : 'Save Preferences'}
+                </Button>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { id: 'emailNotifications', label: 'Email Notifications', description: 'Real-time updates via your registered email address' },
+                  { id: 'smsNotifications', label: 'SMS Notifications', description: 'Instant alerts on your mobile phone' },
+                  { id: 'paymentReminders', label: 'Payment Reminders', description: 'Get reminded about upcoming payments and dues' },
+                  { id: 'propertyUpdates', label: 'Property Updates', description: 'Stay updated about the status of your properties' },
+                  { id: 'marketingEmails', label: 'Marketing Emails', description: 'Receive promotional offers and new property alerts' }
+                ].map((item) => (
+                  <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 transition-all hover:shadow-sm">
+                    <div>
+                      <p className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        {item.id === 'emailNotifications' && <Mail className="h-4 w-4 text-blue-600" />}
+                        {item.id === 'smsNotifications' && <Smartphone className="h-4 w-4 text-green-600" />}
+                        {item.label}
+                      </p>
+                      <p className="text-sm text-gray-500">{item.description}</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={notificationState[item.id]}
+                        onChange={() => setNotificationState(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-[#0B1F33]"></div>
+                    </label>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" className="sr-only peer" defaultChecked={index < 3} />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
+                ))}
+              </div>
+              <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800">
+                <p className="text-xs text-blue-800 dark:text-blue-300 flex items-center gap-2 font-medium">
+                  <Bell className="h-4 w-4" />
+                  Real-time push notifications are delivered instantly when your preferences are enabled.
+                </p>
+              </div>
+            </Card>
+          </motion.div>
+        )}
       </div>
 
       {/* Password Change Modal */}

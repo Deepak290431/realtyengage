@@ -645,32 +645,34 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                     <div className="lg:col-span-1">
                         <div className="sticky top-4 space-y-4">
                             {/* Contact Card */}
-                            <Card className="p-6">
-                                <div className="space-y-3">
-                                    {(user) && (
-                                        <>
-                                            <Button className="w-full shadow-lg" onClick={handleEnquiry}>
-                                                <MessageCircle className="h-4 w-4 mr-2" />
-                                                Send Enquiry
-                                            </Button>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <Button variant="outline" className="w-full" onClick={handleCallNow}>
-                                                    <Phone className="h-4 w-4 mr-2" />
-                                                    Call
+                            {!isAdmin && (
+                                <Card className="p-6">
+                                    <div className="space-y-3">
+                                        {(user) && (
+                                            <>
+                                                <Button className="w-full shadow-lg" onClick={handleEnquiry}>
+                                                    <MessageCircle className="h-4 w-4 mr-2" />
+                                                    Send Enquiry
                                                 </Button>
-                                                <Button variant="outline" className="w-full" onClick={handleScheduleVisit}>
-                                                    <Calendar className="h-4 w-4 mr-2" />
-                                                    Visit
-                                                </Button>
-                                            </div>
-                                        </>
-                                    )}
-                                    <Button variant="outline" className="w-full" onClick={handleDownloadBrochure}>
-                                        <Download className="h-4 w-4 mr-2" />
-                                        Download Brochure
-                                    </Button>
-                                </div>
-                            </Card>
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <Button variant="outline" className="w-full" onClick={handleCallNow}>
+                                                        <Phone className="h-4 w-4 mr-2" />
+                                                        Call
+                                                    </Button>
+                                                    <Button variant="outline" className="w-full" onClick={handleScheduleVisit}>
+                                                        <Calendar className="h-4 w-4 mr-2" />
+                                                        Visit
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                        <Button variant="outline" className="w-full" onClick={handleDownloadBrochure}>
+                                            <Download className="h-4 w-4 mr-2" />
+                                            Download Brochure
+                                        </Button>
+                                    </div>
+                                </Card>
+                            )}
 
                             {/* EMI Calculator */}
                             <Card className="p-6">

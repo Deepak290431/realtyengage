@@ -23,8 +23,10 @@ import {
   Banknote,
   User,
   X,
-  QrCode
+  QrCode,
+  Trash2
 } from 'lucide-react';
+import adminService from '../services/adminService';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
@@ -112,6 +114,19 @@ const PaymentsPage = ({ isAdmin = false }) => {
       toast.error('Failed to sync data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetPayments = async () => {
+    if (window.confirm('⚠️ CRITICAL ACTION: This will permanently DELETE ALL payments and transactions from the system. This cannot be undone. Are you sure?')) {
+      try {
+        toast.loading('Clearing all financial data...', { id: 'reset' });
+        await adminService.resetPayments();
+        toast.success('System Reset: All payments cleared', { id: 'reset' });
+        fetchData();
+      } catch (error) {
+        toast.error('Failed to reset financial data', { id: 'reset' });
+      }
     }
   };
 
@@ -440,6 +455,16 @@ const PaymentsPage = ({ isAdmin = false }) => {
               Track and manage all customer payments
             </p>
           </div>
+          {user?.role === 'super_admin' && (
+            <Button
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700 font-bold mt-4 md:mt-0"
+              onClick={handleResetPayments}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Reset All Financial Records
+            </Button>
+          )}
         </div>
       ) : (
         <div className="hero-gradient text-white py-12">

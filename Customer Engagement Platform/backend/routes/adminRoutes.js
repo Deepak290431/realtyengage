@@ -221,4 +221,58 @@ router.get('/audit-logs', authenticateToken, requireSuperAdmin, async (req, res)
     }
 });
 
+// @route   DELETE /api/admin/reset/enquiries
+// @desc    Clear all enquiries (Super Admin only)
+// @access  Private (Super Admin)
+router.delete('/reset/enquiries', authenticateToken, requireSuperAdmin, async (req, res) => {
+    try {
+        const Enquiry = require('../models/Enquiry');
+        await Enquiry.deleteMany({});
+        res.json({ success: true, message: 'All enquiries have been cleared successfully.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to clear enquiries', message: error.message });
+    }
+});
+
+// @route   DELETE /api/admin/reset/projects
+// @desc    Clear all projects (Super Admin only)
+// @access  Private (Super Admin)
+router.delete('/reset/projects', authenticateToken, requireSuperAdmin, async (req, res) => {
+    try {
+        const Project = require('../models/Project');
+        await Project.deleteMany({});
+        res.json({ success: true, message: 'All projects have been cleared successfully.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to clear projects', message: error.message });
+    }
+});
+
+// @route   DELETE /api/admin/reset/customers
+// @desc    Clear all customers (Super Admin only)
+// @access  Private (Super Admin)
+router.delete('/reset/customers', authenticateToken, requireSuperAdmin, async (req, res) => {
+    try {
+        const User = require('../models/User');
+        await User.deleteMany({ role: { $in: ['customer', 'user'] } });
+        res.json({ success: true, message: 'All customers and users have been cleared successfully.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to clear customers', message: error.message });
+    }
+});
+
+// @route   DELETE /api/admin/reset/payments
+// @desc    Clear all payments and transactions (Super Admin only)
+// @access  Private (Super Admin)
+router.delete('/reset/payments', authenticateToken, requireSuperAdmin, async (req, res) => {
+    try {
+        const Payment = require('../models/Payment');
+        const Transaction = require('../models/Transaction');
+        await Payment.deleteMany({});
+        await Transaction.deleteMany({});
+        res.json({ success: true, message: 'All payments and transactions have been cleared successfully.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to clear payments', message: error.message });
+    }
+});
+
 module.exports = router;

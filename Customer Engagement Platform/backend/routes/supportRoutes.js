@@ -22,7 +22,7 @@ const handleValidationErrors = (req, res, next) => {
 router.post('/requests',
   authenticateToken,
   [
-    body('type').isIn(['feedback', 'grievance', 'suggestion', 'technical', 'billing']),
+    body('type').isIn(['feedback', 'grievance', 'suggestion', 'technical', 'billing', 'other']),
     body('category').optional().trim(),
     body('subject').notEmpty().trim().isLength({ max: 200 }),
     body('description').notEmpty().trim().isLength({ max: 2000 }),
@@ -74,7 +74,8 @@ router.get('/requests',
 
       // Build filter
       let filter = {};
-      if (req.user.role === 'customer') {
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+      if (!isAdmin) {
         filter.customerId = req.userId;
       }
       if (status) filter.status = status;
@@ -93,6 +94,7 @@ router.get('/requests',
       const tickets = await SupportRequest.find(filter)
         .populate('customerId', 'firstName lastName email')
         .populate('assignedTo', 'firstName lastName')
+        .populate('comments.author', 'firstName lastName role')
         .sort(sortObj)
         .limit(limit * 1)
         .skip((page - 1) * limit);
@@ -142,7 +144,7 @@ router.get('/requests/:id',
 
       // Check authorization
       const isOwner = ticket.customerId._id.toString() === req.userId.toString();
-      const isAdmin = req.user.role === 'admin';
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
       if (!isOwner && !isAdmin) {
         return res.status(403).json({
@@ -150,8 +152,8 @@ router.get('/requests/:id',
         });
       }
 
-      // Filter internal comments for customers
-      if (req.user.role === 'customer') {
+      // Filter internal comments for non-admins
+      if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
         ticket.comments = ticket.comments.filter(comment => !comment.isInternal);
       }
 
@@ -193,7 +195,7 @@ router.put('/requests/:id',
 
       // Check authorization
       const isOwner = ticket.customerId.toString() === req.userId.toString();
-      const isAdmin = req.user.role === 'admin';
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
       if (!isOwner && !isAdmin) {
         return res.status(403).json({
@@ -271,7 +273,7 @@ router.post('/requests/:id/comments',
 
       // Check authorization
       const isOwner = ticket.customerId.toString() === req.userId.toString();
-      const isAdmin = req.user.role === 'admin';
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
       if (!isOwner && !isAdmin) {
         return res.status(403).json({
@@ -280,7 +282,8 @@ router.post('/requests/:id/comments',
       }
 
       // Only admins can add internal comments
-      const isInternal = req.user.role === 'admin' ? (req.body.isInternal || false) : false;
+      const isAdminUser = req.user.role === 'admin' || req.user.role === 'super_admin';
+      const isInternal = isAdminUser ? (req.body.isInternal || false) : false;
 
       await ticket.addComment(req.body.text, req.userId, isInternal, req.body.attachments);
 

@@ -356,7 +356,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                             <p className="font-bold text-gray-900 dark:text-white truncate">{user?.name}</p>
                             <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                             <Badge variant="outline" className="mt-2 text-[10px] bg-primary/5 text-primary border-primary/20">
-                              {user?.role?.toUpperCase()}
+                              {(user?.role === 'user' ? 'customer' : user?.role)?.toUpperCase()}
                             </Badge>
                           </div>
 
@@ -479,7 +479,7 @@ const Header = ({ onToggleChatbot, isChatbotOpen: isChatbotOpenProp }) => {
                       <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user?.name}</p>
                       <p className="text-[11px] text-gray-700 dark:text-gray-300 font-semibold truncate">{user?.email}</p>
                       <Badge variant={isAdmin ? 'destructive' : 'secondary'} className="mt-0.5 text-[9px] h-4 font-semibold px-1.5 uppercase tracking-tight">
-                        {user?.role}
+                        {user?.role === 'user' ? 'customer' : user?.role}
                       </Badge>
                     </div>
                   </div>

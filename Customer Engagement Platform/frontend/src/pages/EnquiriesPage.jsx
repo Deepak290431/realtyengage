@@ -10,7 +10,6 @@ import {
     Clock,
     AlertTriangle,
     ChevronRight,
-    MoreVertical,
     Send,
     Plus,
     ArrowRight,
@@ -19,8 +18,10 @@ import {
     Phone,
     Tag,
     X,
-    CreditCard
+    CreditCard,
+    Trash2
 } from 'lucide-react';
+import adminService from '../services/adminService';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -102,7 +103,18 @@ const EnquiriesPage = ({ isAdmin = false }) => {
             dispatch(setLoading(false));
         }
     };
-
+    const handleResetEnquiries = async () => {
+        if (window.confirm('⚠️ CRITICAL ACTION: This will permanently DELETE ALL enquiries from the system. This cannot be undone. Are you sure?')) {
+            try {
+                toast.loading('Clearing all enquiries...', { id: 'reset' });
+                await adminService.resetEnquiries();
+                toast.success('System Reset: All enquiries cleared', { id: 'reset' });
+                fetchEnquiries();
+            } catch (error) {
+                toast.error('Failed to reset enquiries', { id: 'reset' });
+            }
+        }
+    };
     const handleUpdateStatus = async (id, newStatus) => {
         try {
             const response = await enquiryService.updateEnquiry(id, { status: newStatus });
@@ -113,7 +125,12 @@ const EnquiriesPage = ({ isAdmin = false }) => {
         }
     };
 
-    const handleToggleOk = async (id, currentVal) => {
+    const handleToggleOk = async (id, currentVal, status) => {
+        if (!currentVal && status !== 'converted') {
+            toast.error('Select converted tag first');
+            return;
+        }
+
         try {
             const response = await enquiryService.updateEnquiry(id, { isOk: !currentVal });
             dispatch(updateEnquiry(response.data));
@@ -221,6 +238,16 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                             Track and respond to potential customer enquiries
                         </p>
                     </div>
+                    {user?.role === 'super_admin' && (
+                        <Button
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700 font-bold"
+                            onClick={handleResetEnquiries}
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Reset All Enquiries
+                        </Button>
+                    )}
                 </div>
             ) : (
                 <div className="hero-gradient text-white py-12">
@@ -367,7 +394,7 @@ const EnquiriesPage = ({ isAdmin = false }) => {
                                                                 size="sm"
                                                                 variant={enquiry.isOk ? "default" : "outline"}
                                                                 className={`h-8 px-2 md:px-3 text-[10px] font-bold ${enquiry.isOk ? "bg-green-600 hover:bg-green-700" : ""}`}
-                                                                onClick={() => handleToggleOk(enquiry._id, enquiry.isOk)}
+                                                                onClick={() => handleToggleOk(enquiry._id, enquiry.isOk, enquiry.status)}
                                                                 disabled={enquiry.status === 'rejected' || enquiry.isOk}
                                                             >
                                                                 {enquiry.isOk ? 'OK Given' : 'Give OK'}

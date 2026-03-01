@@ -148,16 +148,16 @@ export const paymentAPI = {
 
 // Support API
 export const supportAPI = {
-  getTickets: (params) => api.get('/support/tickets', { params }),
-  getTicketById: (id) => api.get(`/support/tickets/${id}`),
-  createTicket: (ticketData) => api.post('/support/tickets', ticketData),
-  updateTicket: (id, ticketData) => api.put(`/support/tickets/${id}`, ticketData),
-  deleteTicket: (id) => api.delete(`/support/tickets/${id}`),
-  replyToTicket: (id, message) => api.post(`/support/tickets/${id}/reply`, { message }),
-  closeTicket: (id) => api.patch(`/support/tickets/${id}/close`),
-  getMyTickets: () => api.get('/support/my-tickets'),
-  assignTicket: (id, userId) => api.patch(`/support/tickets/${id}/assign`, { assignedTo: userId }),
-  updateTicketPriority: (id, priority) => api.patch(`/support/tickets/${id}/priority`, { priority }),
+  getTickets: (params) => api.get('/support/requests', { params }),
+  getTicketById: (id) => api.get(`/support/requests/${id}`),
+  createTicket: (ticketData) => api.post('/support/requests', ticketData),
+  updateTicket: (id, ticketData) => api.put(`/support/requests/${id}`, ticketData),
+  deleteTicket: (id) => api.delete(`/support/requests/${id}`),
+  replyToTicket: (id, message) => api.post(`/support/requests/${id}/comments`, { text: message }),
+  closeTicket: (id) => api.patch(`/support/requests/${id}/close`),
+  getMyTickets: () => api.get('/support/requests'),
+  assignTicket: (id, userId) => api.patch(`/support/requests/${id}/assign`, { assignedTo: userId }),
+  updateTicketPriority: (id, priority) => api.patch(`/support/requests/${id}/priority`, { priority }),
   getFAQs: () => api.get('/support/faqs'),
   searchFAQs: (query) => api.get('/support/faqs/search', { params: { q: query } }),
 };

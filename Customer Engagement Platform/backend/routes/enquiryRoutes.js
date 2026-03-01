@@ -97,7 +97,8 @@ router.get('/',
 
       // Build filter
       let filter = {};
-      if (req.user.role === 'customer') {
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+      if (!isAdmin) {
         filter.customerId = req.userId;
       }
       if (status) filter.status = status;
@@ -165,7 +166,7 @@ router.get('/:id',
 
       // Check authorization
       const isOwner = enquiry.customerId._id.toString() === req.userId.toString();
-      const isAdmin = req.user.role === 'admin';
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
       if (!isOwner && !isAdmin) {
         return res.status(403).json({
@@ -223,7 +224,8 @@ router.put('/:id',
 
       // If enquiry is converted, update user status
       if (updates.status === 'converted') {
-        const user = await User.findById(enquiry.customerId);
+        const customerId = enquiry.customerId._id || enquiry.customerId;
+        const user = await User.findById(customerId);
         if (user && user.statusType === 'just_enquired') {
           user.statusType = 'paid_initial';
           await user.save();
@@ -268,7 +270,7 @@ router.post('/:id/notes',
 
       // Check authorization
       const isOwner = enquiry.customerId.toString() === req.userId.toString();
-      const isAdmin = req.user.role === 'admin';
+      const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
 
       if (!isOwner && !isAdmin) {
         return res.status(403).json({
@@ -277,7 +279,8 @@ router.post('/:id/notes',
       }
 
       // Customers can't add internal notes
-      const isInternal = req.user.role === 'admin' ? req.body.isInternal : false;
+      const isAdminUser = req.user.role === 'admin' || req.user.role === 'super_admin';
+      const isInternal = isAdminUser ? req.body.isInternal : false;
 
       await enquiry.addNote(req.body.text, req.userId, isInternal);
 

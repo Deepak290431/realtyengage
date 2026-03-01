@@ -8,7 +8,6 @@ import {
     Mail,
     Phone,
     Calendar,
-    MoreVertical,
     Shield,
     UserCheck,
     UserX,
@@ -16,7 +15,9 @@ import {
     Trash2,
     ChevronRight,
     Download,
-    AlertCircle
+    AlertCircle,
+    Eye,
+    EyeOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -49,6 +50,7 @@ const UserManagementPage = () => {
         password: '',
         role: 'admin'
     });
+    const [showPassword, setShowPassword] = useState(false);
 
     // Edit User Modal State
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -108,6 +110,7 @@ const UserManagementPage = () => {
                 password: '',
                 role: 'admin'
             });
+            setShowPassword(false);
             fetchUsers();
         } catch (error) {
             console.error('Failed to add staff:', error);
@@ -191,7 +194,8 @@ const UserManagementPage = () => {
             user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.phone?.includes(searchTerm);
 
-        const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+        const matchesRole = roleFilter === 'all' ||
+            (roleFilter === 'customer' ? ['customer', 'user'].includes(user.role) : user.role === roleFilter);
 
         // Requirement: Remove Super Admin from staff management page list
         const isNotSuperAdmin = user.role !== 'super_admin';
@@ -203,8 +207,8 @@ const UserManagementPage = () => {
         switch (role) {
             case 'admin': return 'bg-[#C9A24D]/10 text-[#C9A24D] border-[#C9A24D]/20';
             case 'super_admin': return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'customer': return 'bg-blue-50 text-[#0B1F33] border-blue-100';
-            case 'user': return 'bg-blue-50 text-blue-700 border-blue-100';
+            case 'customer':
+            case 'user': return 'bg-blue-50 text-[#0B1F33] border-blue-100';
             default: return 'bg-gray-100 text-gray-700 border-gray-200';
         }
     };
@@ -230,7 +234,17 @@ const UserManagementPage = () => {
                         >
                             <Button
                                 className="bg-[#0B1F33] hover:bg-[#0B1F33]/90 text-white font-bold shadow-lg h-12 px-6"
-                                onClick={() => setIsAddModalOpen(true)}
+                                onClick={() => {
+                                    setAddFormData({
+                                        firstName: '',
+                                        lastName: '',
+                                        email: '',
+                                        phone: '',
+                                        password: '',
+                                        role: 'admin'
+                                    });
+                                    setIsAddModalOpen(true);
+                                }}
                             >
                                 <UserPlus className="mr-2 h-5 w-5" />
                                 Add New Staff
@@ -311,13 +325,11 @@ const UserManagementPage = () => {
                                                             {user.firstName} {user.lastName}
                                                         </h3>
                                                         <Badge className={`${getRoleBadge(user.role)} pointer-events-none`}>
-                                                            {user.role}
+                                                            {user.role === 'user' ? 'customer' : user.role}
                                                         </Badge>
                                                     </div>
                                                 </div>
-                                                <Button variant="ghost" size="sm" className="rounded-full h-8 w-8 p-0">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
+
                                             </div>
 
                                             <div className="space-y-3 text-sm text-gray-500 dark:text-gray-400 mb-6">
@@ -414,6 +426,7 @@ const UserManagementPage = () => {
                                             value={addFormData.firstName}
                                             onChange={handleInputChange}
                                             placeholder="John"
+                                            autoComplete="off"
                                             required
                                         />
                                     </div>
@@ -437,6 +450,7 @@ const UserManagementPage = () => {
                                         value={addFormData.email}
                                         onChange={handleInputChange}
                                         placeholder="john.doe@realtyengage.com"
+                                        autoComplete="off"
                                         required
                                     />
                                 </div>
@@ -469,15 +483,26 @@ const UserManagementPage = () => {
 
                                 <div className="space-y-1">
                                     <label className="text-sm font-semibold text-gray-600 dark:text-gray-400">Initial Password</label>
-                                    <Input
-                                        type="password"
-                                        name="password"
-                                        value={addFormData.password}
-                                        onChange={handleInputChange}
-                                        placeholder="Min 6 characters"
-                                        required
-                                        minLength={6}
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            name="password"
+                                            value={addFormData.password}
+                                            onChange={handleInputChange}
+                                            placeholder="Min 6 characters"
+                                            autoComplete="new-password"
+                                            required
+                                            minLength={6}
+                                            className="pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
                                     <p className="text-xs text-gray-400">Please share this password securely with the new staff member.</p>
                                 </div>
 

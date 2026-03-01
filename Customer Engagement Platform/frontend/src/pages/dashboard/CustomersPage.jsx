@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users, Search, Filter, Phone, Mail, MessageSquare,
-    MapPin, Calendar, Tag, MoreVertical, X,
-    Plus, Send, History, User, Building, Clock, ChevronRight
+    MapPin, Calendar, Tag, X,
+    Plus, Send, History, User, Building, Clock, ChevronRight,
+    Trash2
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import adminService from '../../services/adminService';
 import { toast } from 'react-hot-toast';
 import { Card } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
@@ -16,9 +19,22 @@ const CustomersPage = () => {
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('All');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const { user } = useSelector((state) => state.auth);
+
+    const handleResetCustomers = async () => {
+        if (window.confirm('⚠️ CRITICAL ACTION: This will permanently DELETE ALL customers and users (non-admins). This cannot be undone. Are you sure?')) {
+            try {
+                toast.loading('Clearing all customers...', { id: 'reset' });
+                await adminService.resetCustomers();
+                toast.success('System Reset: All customers cleared', { id: 'reset' });
+                fetchCustomers();
+            } catch (error) {
+                toast.error('Failed to reset system', { id: 'reset' });
+            }
+        }
+    };
 
     // Detail view state
     const [activeTab, setActiveTab] = useState('details');
@@ -121,14 +137,26 @@ const CustomersPage = () => {
                             Manage your leads, track status, and convert enquiries.
                         </p>
                     </div>
-                    <Button
-                        onClick={fetchCustomers}
-                        variant="outline"
-                        className="w-full md:w-auto shadow-sm border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 h-10 md:h-11"
-                    >
-                        <Clock className="h-4 w-4" />
-                        Refresh List
-                    </Button>
+                    <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                        {user?.role === 'super_admin' && (
+                            <Button
+                                variant="destructive"
+                                className="bg-red-600 hover:bg-red-700 font-bold"
+                                onClick={handleResetCustomers}
+                            >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Reset All Customers
+                            </Button>
+                        )}
+                        <Button
+                            onClick={fetchCustomers}
+                            variant="outline"
+                            className="w-full md:w-auto shadow-sm border-gray-200 text-gray-700 hover:bg-gray-50 flex items-center justify-center gap-2 h-10 md:h-11"
+                        >
+                            <Clock className="h-4 w-4" />
+                            Refresh List
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Filters */}

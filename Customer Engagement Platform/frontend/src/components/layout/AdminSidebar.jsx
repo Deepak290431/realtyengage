@@ -8,7 +8,6 @@ import {
     CreditCard,
     Users,
     Settings,
-    MoreVertical,
     Shield,
     ChevronRight,
     PlusCircle,

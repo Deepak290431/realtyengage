@@ -59,14 +59,7 @@ const AdminSettingsPage = () => {
         confirm: false
     });
 
-    // Notification Preferences
-    const [notifications, setNotifications] = useState({
-        emailNotifications: true,
-        newEnquiries: true,
-        paymentUpdates: true,
-        systemAlerts: true,
-        weeklyReports: false
-    });
+
 
     // Theme Preference
     const [theme, setTheme] = useState(user?.preferences?.theme || 'light');
@@ -81,7 +74,6 @@ const AdminSettingsPage = () => {
     const tabs = [
         { id: 'profile', label: 'Profile', icon: User },
         { id: 'security', label: 'Security', icon: Lock },
-        { id: 'notifications', label: 'Notifications', icon: Bell },
         { id: 'appearance', label: 'Appearance', icon: Palette },
         { id: 'activity', label: 'Activity Log', icon: Clock }
     ];
@@ -124,19 +116,7 @@ const AdminSettingsPage = () => {
         }
     };
 
-    const handleSaveNotifications = async () => {
-        setSaving(true);
-        try {
-            // API call to update notification preferences
-            // await authAPI.updateNotifications(notifications);
-            toast.success('Notification preferences updated');
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to update preferences');
-        } finally {
-            setSaving(false);
-        }
-    };
+
 
     const handleSaveTheme = async () => {
         setSaving(true);
@@ -180,8 +160,8 @@ const AdminSettingsPage = () => {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                                            ? 'bg-[#0B1F33]/10 text-[#0B1F33] dark:bg-blue-900/20 dark:text-blue-300'
-                                            : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                                        ? 'bg-[#0B1F33]/10 text-[#0B1F33] dark:bg-blue-900/20 dark:text-blue-300'
+                                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                                         }`}
                                 >
                                     <tab.icon className={`h-5 w-5 ${activeTab === tab.id ? 'text-[#0B1F33]' : 'text-gray-400'}`} />
@@ -376,44 +356,7 @@ const AdminSettingsPage = () => {
                                 </Card>
                             )}
 
-                            {/* Notifications Tab */}
-                            {activeTab === 'notifications' && (
-                                <Card className="p-6 border-none shadow-md">
-                                    <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                                        <Bell className="h-5 w-5 text-[#0B1F33]" />
-                                        Notification Preferences
-                                    </h2>
-                                    <div className="space-y-4">
-                                        {Object.entries({
-                                            emailNotifications: 'Email Notifications',
-                                            newEnquiries: 'New Enquiry Alerts',
-                                            paymentUpdates: 'Payment Updates',
-                                            systemAlerts: 'System Alerts',
-                                            weeklyReports: 'Weekly Summary Reports'
-                                        }).map(([key, label]) => (
-                                            <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                                                <div>
-                                                    <p className="font-medium">{label}</p>
-                                                    <p className="text-sm text-gray-500">Receive notifications for {label.toLowerCase()}</p>
-                                                </div>
-                                                <Toggle
-                                                    checked={notifications[key]}
-                                                    onChange={(val) => setNotifications({ ...notifications, [key]: val })}
-                                                />
-                                            </div>
-                                        ))}
 
-                                        <Button
-                                            onClick={handleSaveNotifications}
-                                            disabled={saving}
-                                            className="bg-[#0B1F33] hover:opacity-90 mt-6"
-                                        >
-                                            <Save className="h-4 w-4 mr-2" />
-                                            {saving ? 'Saving...' : 'Save Preferences'}
-                                        </Button>
-                                    </div>
-                                </Card>
-                            )}
 
                             {/* Appearance Tab */}
                             {activeTab === 'appearance' && (
@@ -431,8 +374,8 @@ const AdminSettingsPage = () => {
                                                         key={themeOption}
                                                         onClick={() => setTheme(themeOption)}
                                                         className={`cursor-pointer p-6 border-2 rounded-xl transition-all ${theme === themeOption
-                                                                ? 'border-[#0B1F33] bg-[#0B1F33]/5'
-                                                                : 'border-gray-200 hover:border-gray-300'
+                                                            ? 'border-[#0B1F33] bg-[#0B1F33]/5'
+                                                            : 'border-gray-200 hover:border-gray-300'
                                                             }`}
                                                     >
                                                         <div className="flex items-center gap-3">

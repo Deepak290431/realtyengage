@@ -13,7 +13,7 @@ const supportRequestSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['feedback', 'grievance', 'suggestion', 'technical', 'billing'],
+    enum: ['feedback', 'grievance', 'suggestion', 'technical', 'billing', 'other'],
     required: true
   },
   category: {
@@ -125,7 +125,7 @@ supportRequestSchema.index({ assignedTo: 1 });
 supportRequestSchema.index({ createdAt: -1 });
 
 // Virtual for age of ticket
-supportRequestSchema.virtual('ageInDays').get(function() {
+supportRequestSchema.virtual('ageInDays').get(function () {
   const now = new Date();
   const created = new Date(this.createdAt);
   const diffTime = Math.abs(now - created);
@@ -134,38 +134,55 @@ supportRequestSchema.virtual('ageInDays').get(function() {
 });
 
 // Virtual for response time status
-supportRequestSchema.virtual('isResponseOverdue').get(function() {
+supportRequestSchema.virtual('isResponseOverdue').get(function () {
   if (this.firstResponseAt || this.status === 'closed') return false;
   if (!this.sla.responseDeadline) return false;
   return new Date() > new Date(this.sla.responseDeadline);
 });
 
 // Virtual for resolution time status
-supportRequestSchema.virtual('isResolutionOverdue').get(function() {
+supportRequestSchema.virtual('isResolutionOverdue').get(function () {
   if (this.status === 'resolved' || this.status === 'closed') return false;
   if (!this.sla.resolutionDeadline) return false;
   return new Date() > new Date(this.sla.resolutionDeadline);
 });
 
 // Pre-save hook to generate ticket number and set SLA
-supportRequestSchema.pre('save', async function(next) {
+supportRequestSchema.pre('save', async function (next) {
   // Generate ticket number for new requests
   if (this.isNew && !this.ticketNumber) {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const count = await mongoose.model('SupportRequest').countDocuments();
-    const sequential = String(count + 1).padStart(5, '0');
-    this.ticketNumber = `TKT${year}${month}${sequential}`;
+    let sequential = '';
+    let ticketNumberCandidate = '';
+    let isUnique = false;
+    let attempt = 0;
+
+    while (!isUnique && attempt < 10) { // Try up to 10 times to find a unique number
+      const count = await this.constructor.countDocuments();
+      sequential = String(count + 1 + attempt).padStart(5, '0');
+      ticketNumberCandidate = `TKT${year}${month}${sequential}`;
+      const existing = await this.constructor.findOne({ ticketNumber: ticketNumberCandidate });
+      if (!existing) {
+        isUnique = true;
+      }
+      attempt++;
+    }
+
+    if (!isUnique) {
+      return next(new Error('Failed to generate a unique ticket number after multiple attempts.'));
+    }
+    this.ticketNumber = ticketNumberCandidate;
   }
-  
+
   // Set SLA deadlines based on priority
   if (this.isNew) {
     const now = new Date();
     let responseHours = 24; // default
     let resolutionHours = 72; // default
-    
-    switch(this.priority) {
+
+    switch (this.priority) {
       case 'urgent':
         responseHours = 2;
         resolutionHours = 24;
@@ -183,11 +200,11 @@ supportRequestSchema.pre('save', async function(next) {
         resolutionHours = 120;
         break;
     }
-    
+
     this.sla.responseDeadline = new Date(now.getTime() + responseHours * 60 * 60 * 1000);
     this.sla.resolutionDeadline = new Date(now.getTime() + resolutionHours * 60 * 60 * 1000);
   }
-  
+
   // Track first response time
   if (this.comments.length > 0 && !this.firstResponseAt) {
     const adminComments = this.comments.filter(c => !c.isInternal || c.author.role === 'admin');
@@ -196,18 +213,18 @@ supportRequestSchema.pre('save', async function(next) {
       this.sla.responseTime = Math.abs(new Date(this.firstResponseAt) - new Date(this.createdAt)) / (1000 * 60 * 60);
     }
   }
-  
+
   // Track resolution time
   if (this.status === 'resolved' && !this.resolution.resolvedAt) {
     this.resolution.resolvedAt = new Date();
     this.sla.resolutionTime = Math.abs(new Date() - new Date(this.createdAt)) / (1000 * 60 * 60);
   }
-  
+
   // Track closure
   if (this.status === 'closed' && !this.closedAt) {
     this.closedAt = new Date();
   }
-  
+
   // Check SLA breach
   if (this.sla.responseDeadline && new Date() > this.sla.responseDeadline && !this.firstResponseAt) {
     this.sla.breached = true;
@@ -215,12 +232,12 @@ supportRequestSchema.pre('save', async function(next) {
   if (this.sla.resolutionDeadline && new Date() > this.sla.resolutionDeadline && this.status !== 'resolved' && this.status !== 'closed') {
     this.sla.breached = true;
   }
-  
+
   next();
 });
 
 // Method to add comment
-supportRequestSchema.methods.addComment = function(text, authorId, isInternal = false, attachments = []) {
+supportRequestSchema.methods.addComment = function (text, authorId, isInternal = false, attachments = []) {
   this.comments.push({
     text,
     author: authorId,
@@ -231,14 +248,14 @@ supportRequestSchema.methods.addComment = function(text, authorId, isInternal = 
 };
 
 // Method to assign to support agent
-supportRequestSchema.methods.assignToAgent = function(agentId) {
+supportRequestSchema.methods.assignToAgent = function (agentId) {
   this.assignedTo = agentId;
   this.status = 'in_review';
   return this.save();
 };
 
 // Method to resolve ticket
-supportRequestSchema.methods.resolve = function(resolutionText, resolvedById) {
+supportRequestSchema.methods.resolve = function (resolutionText, resolvedById) {
   this.status = 'resolved';
   this.resolution = {
     text: resolutionText,
@@ -249,7 +266,7 @@ supportRequestSchema.methods.resolve = function(resolutionText, resolvedById) {
 };
 
 // Method to reopen ticket
-supportRequestSchema.methods.reopen = function(reason) {
+supportRequestSchema.methods.reopen = function (reason) {
   if (this.status === 'closed' || this.status === 'resolved') {
     this.status = 'open';
     this.reopenedCount += 1;
@@ -268,11 +285,11 @@ supportRequestSchema.methods.reopen = function(reason) {
 };
 
 // Method to rate support
-supportRequestSchema.methods.addRating = function(score, feedback) {
+supportRequestSchema.methods.addRating = function (score, feedback) {
   if (this.status !== 'resolved' && this.status !== 'closed') {
     throw new Error('Can only rate resolved or closed tickets');
   }
-  
+
   this.rating = {
     score,
     feedback,
@@ -282,7 +299,7 @@ supportRequestSchema.methods.addRating = function(score, feedback) {
 };
 
 // Static method to get statistics
-supportRequestSchema.statics.getStatistics = async function(filter = {}) {
+supportRequestSchema.statics.getStatistics = async function (filter = {}) {
   const stats = await this.aggregate([
     { $match: filter },
     {
@@ -298,7 +315,7 @@ supportRequestSchema.statics.getStatistics = async function(filter = {}) {
       }
     }
   ]);
-  
+
   const priorityStats = await this.aggregate([
     { $match: filter },
     {
@@ -308,7 +325,7 @@ supportRequestSchema.statics.getStatistics = async function(filter = {}) {
       }
     }
   ]);
-  
+
   const typeStats = await this.aggregate([
     { $match: filter },
     {
@@ -318,7 +335,7 @@ supportRequestSchema.statics.getStatistics = async function(filter = {}) {
       }
     }
   ]);
-  
+
   return {
     byStatus: stats,
     byPriority: priorityStats,

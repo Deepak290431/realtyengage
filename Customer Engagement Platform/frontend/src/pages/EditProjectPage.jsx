@@ -40,6 +40,9 @@ const EditProjectPage = () => {
   const [amenities, setAmenities] = useState([]);
   const [newAmenity, setNewAmenity] = useState('');
   const [images, setImages] = useState([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [specifications, setSpecifications] = useState([]);
+  const [newSpec, setNewSpec] = useState({ label: '', value: '' });
   const [upiQRCode, setUpiQRCode] = useState(null);
   const [rawProject, setRawProject] = useState(null);
 
@@ -75,8 +78,12 @@ const EditProjectPage = () => {
           latePenaltyType: proj.pricing?.penaltyConfig?.latePenaltyType || 'fixed',
           latePenaltyValue: proj.pricing?.penaltyConfig?.latePenaltyValue || 0,
           gracePeriodDays: proj.pricing?.penaltyConfig?.gracePeriodDays || 0,
+          latitude: proj.location?.latitude || '',
+          longitude: proj.location?.longitude || '',
           description: proj.description
         });
+
+        setSpecifications(proj.specifications || []);
 
         setConfigurations(proj.configurations || []);
         setAmenities((proj.amenities || []).map(a => typeof a === 'string' ? a : (a.name || '')));
@@ -128,9 +135,10 @@ const EditProjectPage = () => {
         },
         location: {
           address: data.location,
-          latitude: 12.9716, // Default coordinate if not provided
-          longitude: 77.5946
+          latitude: Number(data.latitude) || 12.9716,
+          longitude: Number(data.longitude) || 77.5946
         },
+        specifications,
         configurations: configurations.map(c => ({
           ...c,
           price: c.price.toString().includes('Lac') ? c.price : (c.price.toString().includes('L') ? c.price : `${c.price} Lac`)
@@ -207,8 +215,8 @@ const EditProjectPage = () => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     files.forEach(file => {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error(`${file.name} is too large (max 2MB)`);
+      if (file.size > 15 * 1024 * 1024) {
+        toast.error(`${file.name} is too large (max 15MB)`);
         return;
       }
       const reader = new FileReader();
@@ -221,7 +229,29 @@ const EditProjectPage = () => {
       };
       reader.readAsDataURL(file);
     });
-    toast.success(`${files.length} image(s) processed`);
+  };
+
+  const handleAddImageUrl = () => {
+    if (imageUrlInput.trim()) {
+      setImages(prev => [...prev, {
+        id: Date.now() + Math.random(),
+        name: 'Remote Image',
+        url: imageUrlInput.trim()
+      }]);
+      setImageUrlInput('');
+      toast.success('Image link added!');
+    }
+  };
+
+  const handleAddSpec = () => {
+    if (newSpec.label.trim() && newSpec.value.trim()) {
+      setSpecifications([...specifications, { ...newSpec }]);
+      setNewSpec({ label: '', value: '' });
+    }
+  };
+
+  const handleRemoveSpec = (index) => {
+    setSpecifications(specifications.filter((_, i) => i !== index));
   };
 
   const handleRemoveImage = (imageId) => {
@@ -408,17 +438,26 @@ const EditProjectPage = () => {
                       <option value="Under Construction">Under Construction</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Delivery Date
-                    </label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="date"
-                        {...register('deliveryDate')}
-                        className="pl-10"
-                      />
+                  <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Delivery Date</label>
+                        <div className="relative">
+                          <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input type="date" {...register('deliveryDate')} className="pl-10" />
+                        </div>
+                      </div>
+                      <div className="opacity-0">Filler</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1 text-blue-600">Latitude</label>
+                        <Input type="number" step="any" {...register('latitude')} placeholder="12.9716" />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1 text-blue-600">Longitude</label>
+                        <Input type="number" step="any" {...register('longitude')} placeholder="77.5946" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -654,6 +693,49 @@ const EditProjectPage = () => {
                   )}
                 </div>
               </Card>
+
+              {/* Specifications */}
+              <Card className="p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Specifications
+                </h2>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                    <Input
+                      placeholder="Label (e.g. Structure)"
+                      value={newSpec.label}
+                      onChange={e => setNewSpec({ ...newSpec, label: e.target.value })}
+                    />
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Value (e.g. RCC Framed)"
+                        value={newSpec.value}
+                        onChange={e => setNewSpec({ ...newSpec, value: e.target.value })}
+                      />
+                      <Button type="button" onClick={handleAddSpec} size="icon" className="shrink-0">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    {specifications.map((spec, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 border rounded-lg bg-gray-50">
+                        <div className="text-sm">
+                          <span className="font-bold text-gray-500 uppercase text-[10px] block">{spec.label}</span>
+                          <span className="font-medium">{spec.value}</span>
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveSpec(index)}>
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                    {specifications.length === 0 && (
+                      <p className="text-sm text-gray-400 italic col-span-2">No specifications added yet.</p>
+                    )}
+                  </div>
+                </div>
+              </Card>
             </div>
 
             {/* Sidebar */}
@@ -713,11 +795,19 @@ const EditProjectPage = () => {
                   Project Images
                 </h2>
                 <div className="space-y-4">
+                  <div className="flex gap-2 mb-4">
+                    <Input
+                      value={imageUrlInput}
+                      onChange={e => setImageUrlInput(e.target.value)}
+                      placeholder="Paste image link here..."
+                    />
+                    <Button type="button" variant="secondary" onClick={handleAddImageUrl} size="sm">Add Link</Button>
+                  </div>
                   <label className="block">
                     <div className="flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-lg appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
                       <div className="flex flex-col items-center space-y-2">
                         <Upload className="h-8 w-8 text-gray-400" />
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-gray-600 text-center">
                           Drop files or click to upload
                         </span>
                       </div>
@@ -730,6 +820,9 @@ const EditProjectPage = () => {
                       onChange={handleImageUpload}
                     />
                   </label>
+                  <p className="text-[10px] text-gray-400 italic text-center">
+                    Max size: 15MB per image.
+                  </p>
 
                   {images.length > 0 && (
                     <div className="grid grid-cols-2 gap-2">
@@ -814,7 +907,9 @@ const EditProjectPage = () => {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Created</span>
-                    <span className="text-sm font-medium">Jan 14, 2026</span>
+                    <span className="text-sm font-medium">
+                      {rawProject?.createdAt ? new Date(rawProject.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Views</span>

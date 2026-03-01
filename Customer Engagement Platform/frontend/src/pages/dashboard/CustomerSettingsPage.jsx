@@ -145,15 +145,16 @@ const CustomerSettingsPage = () => {
 
     // Notification State
     const [notifs, setNotifs] = useState({
-        newProperty: true,
-        enquiryUpdate: true,
-        paymentReminder: true,
-        lateEMI: true,
-        offers: false,
+        newProperty: user?.notificationPreferences?.newProperty ?? true,
+        enquiryUpdate: user?.notificationPreferences?.enquiryUpdate ?? true,
+        paymentReminder: user?.notificationPreferences?.paymentReminder ?? true,
+        lateEMI: user?.notificationPreferences?.lateEMI ?? true,
+        offers: user?.notificationPreferences?.offers ?? false,
         channels: {
-            email: true,
-            whatsapp: true,
-            inApp: true
+            email: user?.notificationPreferences?.emailNotifications ?? true,
+            sms: user?.notificationPreferences?.smsNotifications ?? true,
+            whatsapp: user?.notificationPreferences?.whatsappEnabled ?? true,
+            inApp: user?.notificationPreferences?.inAppEnabled ?? true
         }
     });
 
@@ -175,18 +176,34 @@ const CustomerSettingsPage = () => {
         setShowOtp(true);
     };
 
-    const handleLogoutAllDevices = async () => {
-        if (!window.confirm('Are you sure you want to sign out from all devices? This will also log you out from your current session.')) {
-            return;
-        }
-
+    const handleSaveNotifications = async () => {
         setIsSaving(true);
         try {
-            await dispatch(logoutAll()).unwrap();
-            toast.success('Successfully logged out from all devices');
-            navigate('/login');
+            await dispatch(updateProfile({
+                notificationPreferences: {
+                    newProperty: notifs.newProperty,
+                    enquiryUpdate: notifs.enquiryUpdate,
+                    paymentReminder: notifs.paymentReminder,
+                    lateEMI: notifs.lateEMI,
+                    offers: notifs.offers,
+                    emailNotifications: notifs.channels.email,
+                    smsNotifications: notifs.channels.sms,
+                    whatsappEnabled: notifs.channels.whatsapp,
+                    inAppEnabled: notifs.channels.inApp
+                }
+            })).unwrap();
+
+            toast.success('Real-time notification preferences saved!');
+
+            // Log for push registration simulation
+            if (notifs.channels.email || notifs.channels.sms) {
+                console.log(`[Push Service] Registered real-time delivery for: ${[
+                    notifs.channels.email ? 'Email' : null,
+                    notifs.channels.sms ? 'SMS' : null
+                ].filter(Boolean).join(' & ')}`);
+            }
         } catch (error) {
-            toast.error(error || 'Failed to log out from other devices');
+            toast.error(error || 'Failed to update notifications');
         } finally {
             setIsSaving(false);
         }
@@ -435,7 +452,22 @@ const CustomerSettingsPage = () => {
                                                 <Button
                                                     variant="outline"
                                                     className="w-full text-red-500 border-red-100 hover:bg-red-50 rounded-xl mt-4"
-                                                    onClick={handleLogoutAllDevices}
+                                                    onClick={async () => {
+                                                        if (!window.confirm('Are you sure you want to sign out from all devices? This will also log you out from your current session.')) {
+                                                            return;
+                                                        }
+
+                                                        setIsSaving(true);
+                                                        try {
+                                                            await dispatch(logoutAll()).unwrap();
+                                                            toast.success('Successfully logged out from all devices');
+                                                            navigate('/login');
+                                                        } catch (error) {
+                                                            toast.error(error || 'Failed to log out from other devices');
+                                                        } finally {
+                                                            setIsSaving(false);
+                                                        }
+                                                    }}
                                                     disabled={isSaving}
                                                 >
                                                     {isSaving ? 'Processing...' : 'Logout from all devices'}
@@ -461,11 +493,21 @@ const CustomerSettingsPage = () => {
                                 {activeTab === 'notifications' && (
                                     <div className="space-y-6">
                                         <Card className="p-8 border-none shadow-lg">
-                                            <SectionHeader
-                                                icon={Bell}
-                                                title="Notification Settings"
-                                                subtitle="Take control of what alerts you receive and where."
-                                            />
+                                            <div className="flex justify-between items-center mb-6">
+                                                <SectionHeader
+                                                    icon={Bell}
+                                                    title="Real-Time Notification Settings"
+                                                    subtitle="Choose how you want to be alerted for important updates."
+                                                />
+                                                <Button
+                                                    onClick={handleSaveNotifications}
+                                                    disabled={isSaving}
+                                                    className="bg-blue-800 text-white rounded-xl shadow-lg shadow-blue-100"
+                                                >
+                                                    <Save className="h-4 w-4 mr-2" />
+                                                    {isSaving ? 'Saving...' : 'Save Preferences'}
+                                                </Button>
+                                            </div>
 
                                             <div className="grid lg:grid-cols-2 gap-8">
                                                 <div className="space-y-4">
@@ -493,16 +535,20 @@ const CustomerSettingsPage = () => {
                                                 <div className="space-y-4">
                                                     <h4 className="font-bold text-lg mb-4 text-blue-800">Delivery Channels</h4>
                                                     {[
-                                                        { id: 'email', label: 'Email Notifications', icon: Mail },
-                                                        { id: 'whatsapp', label: 'WhatsApp Messenger', icon: MessageSquare },
-                                                        { id: 'inApp', label: 'In-app Notifications', icon: Bell },
+                                                        { id: 'email', label: 'Email Alerts (Real-time)', icon: Mail, color: 'text-blue-600' },
+                                                        { id: 'sms', label: 'SMS Alerts (Real-time)', icon: Smartphone, color: 'text-green-600' },
+                                                        { id: 'whatsapp', label: 'WhatsApp Messenger', icon: MessageSquare, color: 'text-green-500' },
+                                                        { id: 'inApp', label: 'In-app Notifications', icon: Bell, color: 'text-orange-500' },
                                                     ].map(item => (
                                                         <div key={item.id} className="flex items-center justify-between p-5 bg-blue-50/40 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                                                             <div className="flex items-center gap-4">
                                                                 <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
-                                                                    <item.icon className="h-5 w-5 text-blue-700" />
+                                                                    <item.icon className={`h-5 w-5 ${item.color}`} />
                                                                 </div>
-                                                                <span className="font-bold text-gray-800 dark:text-gray-200">{item.label}</span>
+                                                                <div>
+                                                                    <span className="font-bold text-gray-800 dark:text-gray-200">{item.label}</span>
+                                                                    {item.id === 'sms' && <p className="text-[10px] text-gray-500 font-medium italic">Standard SMS rates apply</p>}
+                                                                </div>
                                                             </div>
                                                             <Toggle
                                                                 checked={notifs.channels[item.id]}
@@ -511,15 +557,20 @@ const CustomerSettingsPage = () => {
                                                         </div>
                                                     ))}
 
-                                                    <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-900/30">
-                                                        <div className="flex items-start gap-4">
-                                                            <Smartphone className="h-6 w-6 text-blue-800 mt-1" />
-                                                            <div>
-                                                                <h5 className="font-bold text-blue-900 dark:text-blue-300">Push Notifications</h5>
-                                                                <p className="text-sm text-blue-700 dark:text-blue-400 mb-4">Enable browser or mobile app push alerts for real-time updates.</p>
-                                                                <Button size="sm" className="bg-blue-800 hover:bg-blue-900 rounded-lg">Enable Browser Notifications</Button>
+                                                    <div className="mt-8 p-6 bg-gradient-to-br from-blue-900 to-[#0B1F33] text-white rounded-3xl shadow-xl relative overflow-hidden">
+                                                        <div className="relative z-10">
+                                                            <div className="flex items-center gap-3 mb-4">
+                                                                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                                                    <Zap className="h-6 w-6 text-yellow-400" />
+                                                                </div>
+                                                                <h5 className="font-bold text-xl">Push Technology</h5>
                                                             </div>
+                                                            <p className="text-sm text-blue-100 mb-6">Experience instant, low-latency updates directly to your screen or phone.</p>
+                                                            <Button className="w-full bg-white text-blue-900 hover:bg-gray-100 font-bold rounded-xl h-12">
+                                                                Configure Push Token
+                                                            </Button>
                                                         </div>
+                                                        <Globe className="absolute -bottom-10 -right-10 h-48 w-48 text-white/10" />
                                                     </div>
                                                 </div>
                                             </div>

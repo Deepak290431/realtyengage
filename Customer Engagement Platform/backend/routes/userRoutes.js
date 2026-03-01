@@ -112,7 +112,7 @@ router.post('/',
   authenticateToken,
   authorizeRoles('admin'),
   [
-    body('email').isEmail().normalizeEmail().withMessage('Please provide a valid email'),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }).withMessage('Please provide a valid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('firstName').notEmpty().trim().escape().withMessage('First name is required'),
     body('lastName').notEmpty().trim().escape().withMessage('Last name is required'),

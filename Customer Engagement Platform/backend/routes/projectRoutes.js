@@ -237,39 +237,70 @@ router.post('/',
           // Find all users who opted in for notifications
           const users = await User.find({ 'preferences.notifications': true, isActive: true });
 
-          if (users.length === 0) return;
-
-          console.log(`Sending launch notifications to ${users.length} users...`);
-
-          // For the demo, we'll send a single broadcast email logic or just loop
-          // In production, use a BCC list or a mailing service API
-          for (const user of users) {
-            try {
-              await sendEmail({
-                to: user.email,
-                subject: `New Project Launched: ${project.name}`,
-                html: `
-                  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
-                    <img src="${project.images && project.images.length > 0 ? project.images[0].url : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'}" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
-                    <h2 style="color: #0B1F33; text-align: center;">Discover Our Newest Project!</h2>
-                    <p style="font-size: 16px; color: #555;">Hi ${user.firstName},</p>
-                    <p style="font-size: 16px; color: #555;">We are excited to announce the launch of <strong>${project.name}</strong> in <strong>${project.area}</strong>.</p>
-                    <p style="font-size: 16px; color: #555;">${project.shortDescription || project.description.substring(0, 100) + '...'}</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                      <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/projects/${project._id}" style="background-color: #C9A24D; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">View Details</a>
-                    </div>
-                    <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-                    <p style="font-size: 12px; color: #aaa; text-align: center;">You received this email because you opted for property updates.</p>
-                    <p style="font-size: 12px; color: #aaa; text-align: center;">© 2026 RealtyEngage. All rights reserved.</p>
-                  </div>
-                `
-              });
-            } catch (err) {
-              console.error(`Failed to notify user ${user.email}:`, err.message);
-            }
+          if (users.length === 0) {
+            console.log('No users found with notification preferences enabled.');
+            return;
           }
+
+          console.log(`🚀 Notifying ${users.length} users about new project: ${project.name}`);
+
+          const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+          const projectUrl = `${frontendUrl}/projects/${project._id}`;
+          const projectImage = project.images && project.images.length > 0
+            ? project.images[0].url
+            : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
+
+          // Send emails in parallel with a small delay to avoid SMTP flooding
+          // For higher volume, use a worker queue (bull/bee)
+          const emailPromises = users.map(user => {
+            return sendEmail({
+              to: user.email,
+              subject: `🔥 New Launch: ${project.name} is now live!`,
+              html: `
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fdfdfd; border: 1px solid #eee; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                  <div style="background: linear-gradient(135deg, #0B1F33 0%, #1a3a5a 100%); padding: 30px; text-align: center; color: white;">
+                    <h1 style="margin: 0; font-size: 24px; letter-spacing: 1px; color: #C9A24D;">NEW PROJECT LAUNCH</h1>
+                    <p style="margin: 10px 0 0 0; opacity: 0.8; font-size: 14px;">Exclusive Early Access for Registered Customers</p>
+                  </div>
+                  
+                  <div style="padding: 25px;">
+                    <img src="${projectImage}" style="width: 100%; height: 250px; object-cover; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    
+                    <h2 style="color: #0B1F33; margin-top: 0; font-size: 22px;">Hi ${user.firstName || 'Valued Customer'},</h2>
+                    <p style="color: #444; font-size: 16px; line-height: 1.6;">We are thrilled to unveil our latest premium project, <strong>${project.name}</strong>, strategically located in the heart of <strong>${project.area}</strong>.</p>
+                    
+                    <div style="background-color: #f8f9fa; border-left: 4px solid #C9A24D; padding: 15px; margin: 20px 0;">
+                      <p style="margin: 0; color: #333; font-style: italic;">"${project.shortDescription || (project.description ? project.description.substring(0, 120) + '...' : 'Explore modern living at its best.')}"</p>
+                    </div>
+
+                    <p style="color: #444; font-size: 15px;">Be among the first to explore floor plans, amenities, and exclusive launch pricing.</p>
+                    
+                    <div style="text-align: center; margin: 35px 0;">
+                      <a href="${projectUrl}" style="background: #C9A24D; color: #0B1F33; padding: 15px 40px; text-decoration: none; border-radius: 6px; font-weight: 800; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">VIEW PROJECT DETAILS</a>
+                    </div>
+                  </div>
+                  
+                  <div style="background-color: #f4f4f4; padding: 20px; text-align: center; color: #888; font-size: 12px; border-top: 1px solid #eee;">
+                    <p style="margin: 0 0 10px 0;">You received this email because you're a registered customer at RealtyEngage.</p>
+                    <div style="margin-bottom: 10px;">
+                      <a href="${frontendUrl}/dashboard/settings" style="color: #0B1F33; text-decoration: none; font-weight: bold;">Unsubscribe / Manage Preferences</a>
+                    </div>
+                    <p style="margin: 0;">&copy; 2026 RealtyEngage Real Estate Services. All rights reserved.</p>
+                  </div>
+                </div>
+              `
+            }).catch(err => {
+              console.error(`❌ notification failed for ${user.email}:`, err.message);
+              return null;
+            });
+          });
+
+          const results = await Promise.all(emailPromises);
+          const successCount = results.filter(r => r !== null).length;
+          console.log(`✅ Successfully notified ${successCount}/${users.length} users about ${project.name}.`);
+
         } catch (err) {
-          console.error('Launch notification system error:', err);
+          console.error('CRITICAL ERROR in launch notification system:', err);
         }
       };
 

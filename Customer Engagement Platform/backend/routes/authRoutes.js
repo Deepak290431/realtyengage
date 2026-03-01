@@ -31,7 +31,7 @@ const handleValidationErrors = (req, res, next) => {
 router.post('/register',
   authRateLimiter,
   [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('firstName').notEmpty().trim().escape(),
     body('lastName').notEmpty().trim().escape(),
@@ -100,7 +100,7 @@ router.post('/register',
 router.post('/login',
   authRateLimiter,
   [
-    body('email').isEmail().normalizeEmail(),
+    body('email').isEmail().normalizeEmail({ gmail_remove_dots: false }),
     body('password').notEmpty()
   ],
   handleValidationErrors,
@@ -118,6 +118,14 @@ router.post('/login',
         });
       }
 
+      // Check if user is a Google-only user
+      if (user.authProvider === 'google' && !user.password) {
+        return res.status(401).json({
+          error: 'Authentication failed',
+          message: 'This account is registered via Google. Please use Google Login.'
+        });
+      }
+
       // Check password
       const isPasswordValid = await user.comparePassword(password);
 
@@ -125,6 +133,14 @@ router.post('/login',
         return res.status(401).json({
           error: 'Authentication failed',
           message: 'Invalid credentials'
+        });
+      }
+
+      // Check if account is active
+      if (user.isActive === false) {
+        return res.status(403).json({
+          error: 'Authentication failed',
+          message: 'Your account has been suspended. Please contact support.'
         });
       }
 
@@ -246,7 +262,7 @@ router.post('/google',
           email,
           googleId,
           firstName: firstName || 'Google',
-          lastName: lastName || 'User',
+          lastName: lastName || '', // Removed 'User' tag
           profilePicture,
           role: 'user',
           authProvider: 'google',
