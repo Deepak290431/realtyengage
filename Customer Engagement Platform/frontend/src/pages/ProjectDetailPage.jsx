@@ -719,9 +719,10 @@ const ProjectDetailPage = ({ isAdmin = false }) => {
                                             }}
                                         >
                                             <img
-                                                src={property.images && property.images.length > 0 ? (property.images[0].url || property.images[0]) : "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=200"}
+                                                src={normalizeImageUrl(property.images?.[0] || property.image)}
                                                 alt={property.name}
                                                 className="w-20 h-20 rounded-lg object-cover shadow-sm"
+                                                onError={handleImageError}
                                             />
                                             <div className="flex-1">
                                                 <p className="font-bold text-sm text-gray-900 dark:text-gray-100">{property.name}</p>

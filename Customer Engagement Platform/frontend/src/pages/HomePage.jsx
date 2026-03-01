@@ -30,6 +30,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import projectService from '../services/projectService';
+import { normalizeImageUrl, handleImageError } from '../utils/imageUtils';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -134,7 +135,7 @@ const HomePage = () => {
     location: p.location?.address || p.area,
     type: p.type || 'Property',
     price: `₹${(p.pricing?.basePrice / 100000).toFixed(1)} Lakhs`,
-    image: p.images?.[0]?.url || p.images?.[0] || 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
+    image: p.images?.[0], // Leave it as a raw image object/string to be handled by normalizeImageUrl
     status: p.status
   })) : [
     {
@@ -412,9 +413,10 @@ const HomePage = () => {
                 <Card className="overflow-hidden hover:shadow-2xl transition-shadow duration-300">
                   <div className="relative h-64">
                     <img
-                      src={project.image}
+                      src={normalizeImageUrl(project.image)}
                       alt={project.name}
                       className="w-full h-full object-cover"
+                      onError={handleImageError}
                     />
                     <div className="absolute top-4 left-4">
                       <Badge
